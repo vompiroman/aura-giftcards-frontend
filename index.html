@@ -1825,7 +1825,7 @@ function LanguageSwitcher() {
         onClick={() => setOpen(!open)}
         className="nav-btn lang-btn"
       >
-        <span className="nav-icon">&#x1F310;</span>
+        <span className="nav-icon">🌐</span>
         <span className="nav-text" style={{color: 'var(--gold)'}}>{labels[lang]}</span>
       </button>
       {open && (
@@ -1884,18 +1884,18 @@ function UserDropdown({ auth, onNavigate }) {
   return (
     <div className="user-dropdown-container" ref={dropdownRef}>
       <button className="nav-btn user-btn" onClick={() => setOpen(!open)}>
-        &#x1F464;
+        👤
       </button>
       {open && (
         <div className="user-dropdown-menu animate-fadeIn">
           <div className="dropdown-header">{auth.user.email}</div>
           {auth.user.email === 'nassym.yak@gmail.com' && (
-            <button onClick={() => { setOpen(false); onNavigate('admin'); }} style={{color: 'var(--gold)'}}>&#x1F451; Administration</button>
+            <button onClick={() => { setOpen(false); onNavigate('admin'); }} style={{color: 'var(--gold)'}}>👑 Administration</button>
           )}
-          <button onClick={() => { setOpen(false); onNavigate('profile'); }}>&#x1F464; {t('navAccount')}</button>
-          <button onClick={() => { setOpen(false); onNavigate('orders'); }}>&#x1F4E6; {t('navOrders')}</button>
+          <button onClick={() => { setOpen(false); onNavigate('profile'); }}>👤 {t('navAccount')}</button>
+          <button onClick={() => { setOpen(false); onNavigate('orders'); }}>📦 {t('navOrders')}</button>
           <hr/>
-          <button style={{color: 'var(--red)'}} onClick={() => { setOpen(false); auth.logout(); }}>&#x1F6AA; {t('navLogout')}</button>
+          <button style={{color: 'var(--red)'}} onClick={() => { setOpen(false); auth.logout(); }}>🚪 {t('navLogout')}</button>
         </div>
       )}
     </div>
@@ -1934,25 +1934,25 @@ function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBu
         </div>
         <nav className="nav-links">
           <button className="nav-btn" onClick={() => onNavigate('home')}>
-            <span className="nav-icon">&#x1F3E0;</span>
+            <span className="nav-icon">🏠</span>
             <span className="nav-text">{t('navHome')}</span>
           </button>
           <button className="nav-btn" onClick={() => onNavigate('shop')}>
-            <span className="nav-icon">&#x1F6CD;&#xFE0F;</span>
+            <span className="nav-icon">🛍️</span>
             <span className="nav-text">{t('navShop')}</span>
           </button>
           {auth.user ? (
             <UserDropdown auth={auth} onNavigate={onNavigate} />
           ) : (
             <button className="login-btn" onClick={onLoginClick}>
-              <span className="nav-icon">&#x1F464;</span>
+              <span className="nav-icon">👤</span>
               <span className="nav-text">{t('navLogin')}</span>
             </button>
           )}
           <LanguageSwitcher />
           <ThemeToggle />
           <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} onClick={onCartClick}>
-            &#x1F6D2;
+            🛒
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
         </nav>
@@ -1973,7 +1973,7 @@ function HeroSection({ onShopClick }) {
       <div className="hero-content">
         <h1 className="animate-fadeInUp">
           <span className="gradient-text">{t('heroTitle1')}</span>
-          <br />{t('heroTitle2')} &#x1F1E9;&#x1F1FF;
+          <br />{t('heroTitle2')} 🇩🇿
         </h1>
         <p className="hero-subtitle animate-fadeInUp delay-1">
           <span className="services-list">{t('heroDesc1')}</span>
@@ -1985,13 +1985,13 @@ function HeroSection({ onShopClick }) {
         </button>
         <div className="trust-badges animate-fadeInUp delay-3">
           <div className="trust-badge">
-            <span>&#x2705;</span> {t('trustClients')}
+            <span>✅</span> {t('trustClients')}
           </div>
           <div className="trust-badge">
-            <span>&#x26A1;</span> {t('trustDelivery')}
+            <span>⚡</span> {t('trustDelivery')}
           </div>
           <div className="trust-badge">
-            <span>&#x1F512;</span> {t('trustSecure')}
+            <span>🔒</span> {t('trustSecure')}
           </div>
         </div>
       </div>
@@ -2047,8 +2047,8 @@ function ProductCard({ product, onAddToCart, className, style }) {
         <span className="price-currency">DA</span>
       </div>
       <button className={'add-to-cart-btn ' + product.color + (added ? ' added' : '')} onClick={handleAdd}>
-        <span className="cart-icon">&#x1F6D2; {t('addToCart')}</span>
-        <span className="check-icon">&#x2714; {t('added')}</span>
+        <span className="cart-icon">🛒 {t('addToCart')}</span>
+        <span className="check-icon">✔ {t('added')}</span>
       </button>
     </div>
   );
@@ -2236,7 +2236,7 @@ function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
         <div className="cart-items">
           {cart.length === 0 ? (
             <div className="cart-empty">
-              <div className="cart-empty-icon">&#x1F6D2;</div>
+              <div className="cart-empty-icon">🛒</div>
               <p>{t('cartEmpty')}</p>
               <p style={{fontSize: '0.82rem'}}>{t('cartEmptySub')}</p>
             </div>
@@ -2480,7 +2480,7 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
 const CredentialsForm = ({ service, color, icon, creds, setCreds, onSubmit, sent }) => {
   if (sent) return (
     <div style={{color: color, marginBottom: '2rem', padding: '1rem', background: `${color}15`, borderRadius: '8px', border: `1px solid ${color}`}}>
-      &#x2705; Vos identifiants {service} ont été envoyés avec succès ! Nous activerons votre compte d'ici quelques minutes.
+      ✅ Vos identifiants {service} ont été envoyés avec succès ! Nous activerons votre compte d'ici quelques minutes.
     </div>
   );
   return (
@@ -2635,7 +2635,7 @@ function SuccessPage({ onNavigate }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: `🥋 **Nouveau compte Crunchyroll à activer !**\n**Commande :** ${orderId}\n**Email :** ${crunchCreds.email}\n**Mot de passe :** ${crunchCreds.password}\n**Numéro WhatsApp :** ${crunchCreds.whatsapp}\n\n[&#x1F464;  Valider et activer la commande](${validationLink})`
+          content: `🥋 **Nouveau compte Crunchyroll à activer !**\n**Commande :** ${orderId}\n**Email :** ${crunchCreds.email}\n**Mot de passe :** ${crunchCreds.password}\n**Numéro WhatsApp :** ${crunchCreds.whatsapp}\n\n[👤  Valider et activer la commande](${validationLink})`
         })
       */
     } catch (err) { console.error('Error', err); }
@@ -2647,7 +2647,7 @@ function SuccessPage({ onNavigate }) {
 
   return (
     <div className="success-page animate-fadeInUp">
-      <div className="success-icon">&#x2714;</div>
+      <div className="success-icon">✔</div>
       <h2 style={{fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem'}}>{t('successTitle')}</h2>
       <p style={{color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6}}>
         {t('successDesc')}
@@ -2794,7 +2794,7 @@ function CustomSelect({ value, onChange, options, style = {} }) {
           fontSize: '0.95rem'
         }}>
         <span>{selectedOption.label}</span>
-        <span style={{transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', fontSize: '0.8rem', color: 'var(--gold)'}}>&#x25BC;</span>
+        <span style={{transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', fontSize: '0.8rem', color: 'var(--gold)'}}>▼</span>
       </button>
 
       {open && (
@@ -2993,7 +2993,7 @@ function AdminInventory({ auth }) {
                 <span style={{color: 'var(--text-secondary)'}}>{item.account_password}</span>
                 {item.profile_name && (
                   <span style={{color: 'var(--netflix)', marginLeft: '1rem'}}>
-                    &#x1F464; {item.profile_name} {item.profile_pin ? `(&#x1F512; ${item.profile_pin})` : ''}
+                    👤 {item.profile_name} {item.profile_pin ? `(🔒 ${item.profile_pin})` : ''}
                   </span>
                 )}
                 {item.is_used && <span style={{marginLeft: '1rem', fontSize: '0.8rem', color: 'var(--red)'}}>● Assigné (CMD: {item.assigned_order_id})</span>}
@@ -3147,7 +3147,7 @@ function AdminDashboard({ auth }) {
   if (loading) return (
     <div className="orders-container animate-fadeInUp">
       <div className="section-header">
-        <h2 style={{color: 'var(--gold)'}}>&#x1F451; Panel Administration</h2>
+        <h2 style={{color: 'var(--gold)'}}>👑 Panel Administration</h2>
         <p>Chargement en cours...</p>
       </div>
       <div className="orders-list">
@@ -3202,11 +3202,11 @@ function AdminDashboard({ auth }) {
   return (
     <div className="orders-container animate-fadeInUp">
       <div className="section-header">
-        <h2 style={{color: 'var(--gold)'}}>&#x1F451; Panel Administration</h2>
+        <h2 style={{color: 'var(--gold)'}}>👑 Panel Administration</h2>
         <div style={{display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
-          <button className={`nav-btn ${adminTab === 'orders' ? 'active' : ''}`} style={adminTab === 'orders' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('orders')}>&#x1F4E6; Commandes</button>
-          <button className={`nav-btn ${adminTab === 'inventory' ? 'active' : ''}`} style={adminTab === 'inventory' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('inventory')}>&#x1F4E6; Stocks</button>
-          <button className={`nav-btn ${adminTab === 'stats' ? 'active' : ''}`} style={adminTab === 'stats' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('stats')}>&#x1F4CA; Stats</button>
+          <button className={`nav-btn ${adminTab === 'orders' ? 'active' : ''}`} style={adminTab === 'orders' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('orders')}>📦 Commandes</button>
+          <button className={`nav-btn ${adminTab === 'inventory' ? 'active' : ''}`} style={adminTab === 'inventory' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('inventory')}>📦 Stocks</button>
+          <button className={`nav-btn ${adminTab === 'stats' ? 'active' : ''}`} style={adminTab === 'stats' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('stats')}>📊 Stats</button>
         </div>
       </div>
 
@@ -3290,12 +3290,12 @@ function AdminDashboard({ auth }) {
                             <span style={{fontWeight: 600, color: 'var(--gold)'}}>{item.price} DA</span>
                             {cred && (
                               <div style={{width: '100%', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', border: '1px dashed rgba(255,255,255,0.1)'}}>
-                                &#x1F4E7; <strong style={{color: '#fff'}}>{cred.account_email}</strong> | &#x1F511; <strong style={{color: '#fff'}}>{cred.account_password}</strong>
+                                📧 <strong style={{color: '#fff'}}>{cred.account_email}</strong> | 🔑 <strong style={{color: '#fff'}}>{cred.account_password}</strong>
                               </div>
                             )}
                             {item.client_credentials && (
                               <div style={{width: '100%', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', border: '1px dashed rgba(255,255,255,0.1)'}}>
-                                &#x1F4E7; <strong style={{color: '#fff'}}>{item.client_credentials.email}</strong> | &#x1F511; <strong style={{color: '#fff'}}>{item.client_credentials.password}</strong> | &#x1F4AC; <strong style={{color: '#fff'}}>{item.client_credentials.whatsapp}</strong>
+                                📧 <strong style={{color: '#fff'}}>{item.client_credentials.email}</strong> | 🔑 <strong style={{color: '#fff'}}>{item.client_credentials.password}</strong> | 💬 <strong style={{color: '#fff'}}>{item.client_credentials.whatsapp}</strong>
                               </div>
                             )}
                           </div>
@@ -3348,7 +3348,7 @@ function AdminDashboard({ auth }) {
                         e.preventDefault();
                         const phone = prompt('Entrez le numéro de téléphone (WhatsApp) du client pour le relancer :');
                         if (phone) window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}`, '_blank');
-                      }} className="btn btn-secondary" style={{padding: '0.5rem 1rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}>&#x1F4AC; WhatsApp</a>
+                      }} className="btn btn-secondary" style={{padding: '0.5rem 1rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}>💬 WhatsApp</a>
                     </div>
                   </div>
                 </div>
@@ -3425,7 +3425,7 @@ const NetflixOTPButton = ({ orderId, auth }) => {
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(229,9,20,0.1)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(229,9,20,0.3)', marginTop: '1rem'}}>
-      <h5 style={{color: '#E50914', margin: 0}}>&#x1F512; Code de connexion Netflix</h5>
+      <h5 style={{color: '#E50914', margin: 0}}>🔒 Code de connexion Netflix</h5>
       <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0}}>
         Allez sur Netflix, entrez l'email ci-dessus, et quand Netflix vous demande un code, cliquez sur le bouton ci-dessous.
       </p>
@@ -3435,7 +3435,7 @@ const NetflixOTPButton = ({ orderId, auth }) => {
         </div>
       ) : (
         <button className="btn" onClick={getOTP} disabled={loading} style={{background: '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: loading ? 'wait' : 'pointer'}}>
-          {loading ? 'Recherche du code en cours...' : '&#x1F4E5; Obtenir le code Netflix'}
+          {loading ? 'Recherche du code en cours...' : '📥 Obtenir le code Netflix'}
         </button>
       )}
     </div>
@@ -3486,7 +3486,7 @@ function OrdersPage({ auth }) {
   if (loading) return (
     <div className="orders-container animate-fadeInUp">
       <div className="section-header">
-        <h2>&#x1F4E6; {t('navOrders')}</h2>
+        <h2>📦 {t('navOrders')}</h2>
         <p>Chargement de vos commandes...</p>
       </div>
       <div className="orders-list">
@@ -3504,7 +3504,7 @@ function OrdersPage({ auth }) {
       
       {orders.length === 0 ? (
         <div className="dashboard-card" style={{textAlign: 'center'}}>
-          <div style={{fontSize: '3rem', marginBottom: '1rem'}}>&#x1F4E6;</div>
+          <div style={{fontSize: '3rem', marginBottom: '1rem'}}>📦</div>
           <p style={{color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem'}}>{t('ordersEmpty')}</p>
           <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer"
             style={{display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
@@ -3566,7 +3566,7 @@ function OrdersPage({ auth }) {
               {items.length > 1 && (
                 <div style={{textAlign: 'center', marginTop: '0.5rem', marginBottom: expandedOrders[order.order_id] ? '0' : '0.5rem'}}>
                   <button onClick={() => toggleExpanded(order.order_id)} style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '20px'}}>
-                    {expandedOrders[order.order_id] ? '&#x25B2; Masquer les détails' : `&#x25BC; Gérer mes services (${items.length})`}
+                    {expandedOrders[order.order_id] ? '▲ Masquer les détails' : `▼ Gérer mes services (${items.length})`}
                   </button>
                 </div>
               )}
@@ -3585,35 +3585,35 @@ function OrdersPage({ auth }) {
                         {creds ? (
                           <>
                             <h4 style={{marginBottom: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                              <span style={{fontSize: '1.2rem'}}>&#x1F511;</span> Vos Identifiants ({creds.service})
+                              <span style={{fontSize: '1.2rem'}}>🔑</span> Vos Identifiants ({creds.service})
                             </h4>
                             <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem'}}>
                               <div style={{flex: 1, minWidth: '200px'}}>
                                 <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Email / Identifiant</label>
                                 <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
                                   <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_email}</span>
-                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_email); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>&#x1F4CB;</button>
+                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_email); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
                                 </div>
                               </div>
                               <div style={{flex: 1, minWidth: '200px'}}>
                                 <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
                                 <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
                                   <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_password}</span>
-                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_password); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>&#x1F4CB;</button>
+                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_password); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
                                 </div>
                               </div>
                             </div>
                             {creds.profile_name && (
                               <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem'}}>
                                 <div style={{flex: 1, minWidth: '200px'}}>
-                                  <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>&#x1F464; Profil attribué</label>
+                                  <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>👤 Profil attribué</label>
                                   <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
                                     <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)'}}>{creds.profile_name}</span>
                                   </div>
                                 </div>
                                 {creds.profile_pin && (
                                   <div style={{flex: 1, minWidth: '200px'}}>
-                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>&#x1F512; Code PIN</label>
+                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>🔒 Code PIN</label>
                                     <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
                                       <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)', letterSpacing: '2px'}}>{creds.profile_pin}</span>
                                     </div>
@@ -3786,7 +3786,7 @@ function SocialProofPopup() {
       boxShadow: '0 10px 30px rgba(0,0,0,0.5)', maxWidth: '320px'
     }}>
       <div style={{background: 'rgba(212,165,116,0.1)', color: 'var(--gold)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem'}}>
-        &#x1F6CD;&#xFE0F;
+        🛍️
       </div>
       <div>
         <p style={{margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
@@ -3951,7 +3951,7 @@ function AuraGiftCards() {
             }
           } catch(e) { alert("❌ Erreur: "+e.message); }
         }} style={{position:'fixed', bottom:'80px', left:'20px', zIndex:9999, background:'var(--spotify)', color:'#000', padding:'12px 24px', borderRadius:'8px', fontWeight:700, cursor:'pointer', border:'none', boxShadow:'0 4px 12px rgba(29,185,84,0.3)'}}>
-          &#x1FA84; Générer une commande Test (Admin)
+          🪄 Générer une commande Test (Admin)
         </button>
       )}
 
