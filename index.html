@@ -1,0 +1,4125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Stream — Comptes Streaming | Netflix, Spotify, Crunchyroll</title>
+  <meta name="description" content="Achetez vos comptes Netflix, Spotify et Crunchyroll au meilleur prix en Algérie. Livraison instantanée, paiement sécurisé.">
+  <meta property="og:title" content="Aura Stream — Comptes Streaming">
+  <meta property="og:description" content="Netflix, Spotify, Crunchyroll au meilleur prix en Algérie. Livraison instantanée.">
+  <meta property="og:image" content="logo.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1048802778090797');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1048802778090797&ev=PageView&noscript=1"/></noscript>
+  <!-- End Meta Pixel Code -->
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    select option {
+      background-color: #06060b;
+      color: #f0ece6;
+    }
+    :root {
+      --bg-primary: #06060b;
+      --bg-secondary: #0d0d15;
+      --bg-card: rgba(255,255,255,0.03);
+      --bg-card-hover: rgba(255,255,255,0.06);
+      --text-primary: #f0ece6;
+      --text-secondary: #8a8690;
+      --text-muted: #5a5660;
+      --gold: #d4a574;
+      --gold-light: #e8c9a0;
+      --red: #e63946;
+      --red-glow: rgba(230,57,70,0.3);
+      --green-whatsapp: #25D366;
+      --netflix: #E50914;
+      --spotify: #1DB954;
+      --crunchyroll: #F47521;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.12);
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    [data-theme="light"] {
+      --bg-primary: #f5f3ef;
+      --bg-secondary: #eae6df;
+      --bg-card: rgba(0,0,0,0.03);
+      --bg-card-hover: rgba(0,0,0,0.06);
+      --text-primary: #1a1a2e;
+      --text-secondary: #555566;
+      --text-muted: #888899;
+      --gold: #b8864a;
+      --gold-light: #c9974f;
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,0,0,0.15);
+      --glass: rgba(0,0,0,0.03);
+      --glass-border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    [data-theme="light"] body { background: var(--bg-primary); color: var(--text-primary); }
+    [data-theme="light"] .header { background: rgba(245,243,239,0.85); }
+    [data-theme="light"] .dashboard-card { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.06); }
+    [data-theme="light"] .modal { background: #fff; border: 1px solid rgba(0,0,0,0.1); }
+    [data-theme="light"] .modal-overlay { background: rgba(0,0,0,0.3); }
+    [data-theme="light"] .form-input { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: var(--text-primary); }
+    [data-theme="light"] .cart-sidebar { background: #fff; border-left: 1px solid rgba(0,0,0,0.1); }
+    [data-theme="light"] .product-card { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .product-card:hover { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.12); }
+    [data-theme="light"] .footer { background: #e8e4dd; }
+    [data-theme="light"] .top-banner { background: linear-gradient(90deg, #b8864a, #c9974f); }
+    [data-theme="light"] .hero { background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%); }
+    [data-theme="light"] .checkout-card { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.06); }
+    [data-theme="light"] .nav-btn { color: var(--text-secondary); }
+    [data-theme="light"] .nav-btn:hover { color: var(--text-primary); background: rgba(0,0,0,0.05); }
+    [data-theme="light"] .theme-toggle { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); color: var(--text-primary); }
+    [data-theme="light"] .theme-toggle:hover { background: rgba(0,0,0,0.1); }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font-family: inherit; cursor: pointer; transition: var(--transition); }
+    input { font-family: inherit; }
+    a { text-decoration: none; color: inherit; }
+
+    /* Loading Screen */
+    .loading-screen {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 100vh; gap: 1.5rem;
+    }
+    .loading-spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(212,165,116,0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes slideOutRight {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 var(--red-glow); }
+      50% { box-shadow: 0 0 0 12px transparent; }
+    }
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes orbFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+    }
+    @keyframes orbFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-40px, 30px) scale(0.9); }
+      66% { transform: translate(20px, -40px) scale(1.1); }
+    }
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+
+    .animate-fadeInUp { animation: fadeInUp 0.6s ease-out both; }
+    .animate-fadeIn { animation: fadeIn 0.4s ease-out both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px) rotate(-4deg); }
+      40%, 80% { transform: translateX(4px) rotate(4deg); }
+    }
+    .shake-animation {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-card) 25%, rgba(255,255,255,0.05) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: var(--radius-xs);
+    }
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Scroll Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Urgency Banner */
+    .top-banner {
+      background: linear-gradient(90deg, var(--red), #c0392b, var(--red));
+      background-size: 200% 100%;
+      animation: gradientShift 3s ease infinite;
+      padding: 0.6rem 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      position: relative;
+      z-index: 100;
+    }
+    .top-banner span { animation: pulse 2s ease infinite; display: inline-block; }
+
+    /* Header */
+    .header {
+      position: sticky; top: 0; z-index: 90;
+      background: rgba(6,6,11,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+    }
+    .header-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      height: 64px;
+    }
+    .logo {
+      font-size: 1.35rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      cursor: pointer; letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 0.25rem; align-items: center; }
+    .nav-btn {
+      background: none; border: none; color: var(--text-secondary);
+      padding: 0.5rem 0.85rem; border-radius: var(--radius-xs);
+      font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .nav-icon { display: none; font-size: 1.1rem; }
+    .nav-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+    .lang-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-primary);
+      border-radius: var(--radius-xs); padding: 0.4rem 0.6rem; font-weight: 700;
+    }
+    .lang-btn:hover { background: rgba(255,255,255,0.1); }
+    .cart-btn {
+      position: relative; background: var(--glass); border: 1px solid var(--glass-border);
+      color: var(--text-primary); padding: 0.5rem 1rem; border-radius: var(--radius-sm);
+      font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .cart-btn:hover { background: var(--bg-card-hover); border-color: var(--border-hover); }
+    .cart-badge {
+      background: var(--red); color: #fff; font-size: 0.7rem; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; top: -6px; right: -6px;
+    }
+    .login-btn {
+      background: var(--bg-card); border: 1px solid var(--border); color: #fff;
+      padding: 0.5rem 1.2rem; border-radius: var(--radius-sm);
+      font-size: 0.88rem; font-weight: 600; transition: var(--transition);
+    }
+    .login-btn:hover { border-color: var(--gold); transform: translateY(-1px); background: rgba(255,255,255,0.02); }
+
+    /* User Dropdown */
+    .user-dropdown-container { position: relative; display: inline-block; }
+    .user-btn {
+      font-size: 1.1rem; padding: 0.4rem 0.6rem; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+    }
+    .user-btn:hover { background: rgba(255,255,255,0.1); }
+    .user-dropdown-menu {
+      position: absolute; top: 110%; right: 0;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); min-width: 200px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 100;
+      overflow: hidden;
+    }
+    .user-dropdown-menu .dropdown-header {
+      padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);
+      font-size: 0.8rem; color: var(--text-muted); font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .user-dropdown-menu button {
+      display: block; width: 100%; text-align: left; background: none; border: none;
+      padding: 0.8rem 1rem; color: var(--text-primary); font-size: 0.9rem; font-weight: 500;
+    }
+    .user-dropdown-menu button:hover { background: rgba(255,255,255,0.05); }
+    .user-dropdown-menu hr { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* Hero */
+    .hero {
+      position: relative; overflow: hidden;
+      padding: 5rem 1.5rem 4rem; text-align: center;
+      min-height: 520px; display: flex; align-items: center; justify-content: center;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .hero-orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15;
+    }
+    .hero-orb-1 {
+      width: 500px; height: 500px; top: -100px; left: -100px;
+      background: var(--netflix);
+      animation: orbFloat1 15s ease-in-out infinite;
+    }
+    .hero-orb-2 {
+      width: 400px; height: 400px; bottom: -100px; right: -50px;
+      background: var(--spotify);
+      animation: orbFloat2 18s ease-in-out infinite;
+    }
+    .hero-orb-3 {
+      width: 350px; height: 350px; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--crunchyroll);
+      animation: orbFloat1 20s ease-in-out infinite reverse;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 720px; }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 900;
+      line-height: 1.1; margin-bottom: 1.2rem; letter-spacing: -0.03em;
+    }
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--gold), #fff, var(--gold-light), var(--gold));
+      background-size: 300% 300%;
+      animation: gradientShift 4s ease infinite;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-subtitle {
+      font-size: 1.15rem; color: var(--text-secondary);
+      margin-bottom: 2.5rem; font-weight: 400; line-height: 1.6;
+    }
+    .hero-subtitle .services-list {
+      color: var(--text-primary); font-weight: 600;
+    }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: var(--red); border: none; color: #fff;
+      padding: 1rem 2.5rem; border-radius: 50px;
+      font-size: 1.1rem; font-weight: 700;
+      animation: pulse 2s ease infinite;
+      letter-spacing: 0.01em;
+    }
+    .hero-cta:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 12px 40px var(--red-glow);
+    }
+    .hero-cta svg { transition: transform 0.3s; }
+    .hero-cta:hover svg { transform: translateX(4px); }
+    .trust-badges {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .trust-badge {
+      display: flex; align-items: center; gap: 0.5rem;
+      color: var(--text-secondary); font-size: 0.88rem; font-weight: 500;
+    }
+    .trust-badge-icon {
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+    }
+
+    /* Products Section */
+    .section { padding: 4rem 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .section-header {
+      text-align: center; margin-bottom: 3rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800;
+      margin-bottom: 0.75rem; letter-spacing: -0.02em;
+    }
+    .section-subtitle {
+      color: var(--text-secondary); font-size: 1.05rem; max-width: 500px; margin: 0 auto;
+    }
+    .products-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Product Card */
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      position: relative;
+      transition: var(--transition);
+      overflow: hidden;
+    }
+    .product-card::before {
+      content: ''; position: absolute; inset: 0;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.02));
+      pointer-events: none;
+    }
+    .product-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+    .product-card.netflix:hover { border-color: rgba(229,9,20,0.3); box-shadow: 0 8px 32px rgba(229,9,20,0.1); }
+    .product-card.spotify:hover { border-color: rgba(29,185,84,0.3); box-shadow: 0 8px 32px rgba(29,185,84,0.1); }
+    .product-card.crunchyroll:hover { border-color: rgba(244,117,33,0.3); box-shadow: 0 8px 32px rgba(244,117,33,0.1); }
+
+    .popular-badge {
+      position: absolute; top: 1rem; right: 1rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #0a0a0f; font-size: 0.72rem; font-weight: 700;
+      padding: 0.3rem 0.75rem; border-radius: 50px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .product-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; margin-bottom: 1.25rem;
+    }
+    .product-icon.netflix { background: rgba(229,9,20,0.12); }
+    .product-icon.spotify { background: rgba(29,185,84,0.12); }
+    .product-icon.crunchyroll { background: rgba(244,117,33,0.12); }
+
+    .product-name {
+      font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem;
+      letter-spacing: -0.01em;
+    }
+    .product-desc {
+      color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;
+    }
+    .duration-selector {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .duration-btn {
+      flex: 1; padding: 0.65rem 0.75rem; border-radius: var(--radius-xs);
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
+      text-align: center;
+    }
+    .duration-btn:hover { border-color: var(--border-hover); color: var(--text-primary); }
+    .duration-btn.active {
+      background: rgba(255,255,255,0.06); border-color: var(--gold);
+      color: var(--text-primary);
+    }
+    .product-price {
+      display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .price-current {
+      font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;
+    }
+    .price-currency { font-size: 1rem; color: var(--text-secondary); font-weight: 500; }
+    .price-per { font-size: 0.82rem; color: var(--text-muted); }
+    .add-to-cart-btn {
+      width: 100%; padding: 0.85rem; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); font-size: 0.95rem; font-weight: 600;
+      color: #fff; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      background: var(--bg-card); transition: var(--transition);
+    }
+    .add-to-cart-btn.netflix:hover { border-color: var(--netflix); background: rgba(255,255,255,0.02); }
+    .add-to-cart-btn.spotify:hover { border-color: var(--spotify); background: rgba(255,255,255,0.02); }
+    .add-to-cart-btn.crunchyroll:hover { border-color: var(--crunchyroll); background: rgba(255,255,255,0.02); }
+    .add-to-cart-btn:hover { transform: translateY(-1px); }
+    .add-to-cart-btn .check-icon { display: none; }
+    .add-to-cart-btn.added { background: #2a9d4e !important; }
+    .add-to-cart-btn.added .check-icon { display: inline; }
+    .add-to-cart-btn.added .cart-icon { display: none; }
+
+    /* Social Proof */
+    .social-proof {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 2rem; margin-bottom: 3rem; text-align: center;
+    }
+    .stat-number {
+      font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 900;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 0.3rem;
+    }
+    .stat-label { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+
+    .testimonials-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;
+    }
+    .testimonial {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+      transition: var(--transition);
+    }
+    .testimonial:hover { border-color: var(--border-hover); }
+    .testimonial-stars { color: #fbbf24; margin-bottom: 0.75rem; font-size: 0.9rem; letter-spacing: 2px; }
+    .testimonial-text {
+      color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6;
+      margin-bottom: 1rem; font-style: italic;
+    }
+    .testimonial-author { font-weight: 600; font-size: 0.88rem; }
+    .testimonial-service { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* Cart Sidebar */
+    .cart-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); z-index: 200;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 400px; max-width: 90vw;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      z-index: 201; display: flex; flex-direction: column;
+      animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cart-header {
+      padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .cart-header h2 { font-size: 1.2rem; font-weight: 700; }
+    .cart-close {
+      background: none; border: none; color: var(--text-secondary);
+      font-size: 1.5rem; padding: 0.25rem;
+    }
+    .cart-close:hover { color: var(--text-primary); }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 0; border-bottom: 1px solid var(--border);
+    }
+    .cart-item-info { display: flex; align-items: center; gap: 0.75rem; }
+    .cart-item-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .cart-item-name { font-weight: 600; font-size: 0.95rem; }
+    .cart-item-duration { color: var(--text-muted); font-size: 0.82rem; }
+    .cart-item-right { display: flex; align-items: center; gap: 0.75rem; }
+    .cart-item-price { font-weight: 700; color: var(--gold); }
+    .cart-item-remove {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 1.2rem; padding: 0.25rem;
+    }
+    .cart-item-remove:hover { color: var(--red); }
+    .cart-empty {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; height: 100%; gap: 1rem;
+      color: var(--text-muted); text-align: center; padding: 2rem;
+    }
+    .cart-empty-icon { font-size: 3rem; opacity: 0.4; }
+    .cart-footer {
+      padding: 1.5rem; border-top: 1px solid var(--border);
+    }
+    .cart-total {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; font-size: 1.1rem;
+    }
+    .cart-total-amount { font-weight: 800; font-size: 1.3rem; color: var(--gold); }
+    .checkout-btn {
+      width: 100%; padding: 1rem; border: none; border-radius: var(--radius-sm);
+      background: var(--red); color: #fff; font-size: 1rem; font-weight: 700;
+      animation: pulse 2s ease infinite;
+    }
+    .checkout-btn:hover {
+      background: #d32f3e; transform: translateY(-1px);
+    }
+    .cart-whatsapp-help {
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+      margin-top: 0.75rem; color: var(--text-muted); font-size: 0.82rem;
+    }
+    .cart-whatsapp-help a {
+      color: var(--green-whatsapp); font-weight: 600; text-decoration: underline;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px); z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease-out; padding: 1rem;
+    }
+    .modal {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem; width: 100%;
+      max-width: 420px; position: relative;
+      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: none; border: none; color: var(--text-muted);
+      font-size: 1.3rem;
+    }
+    .modal-close:hover { color: var(--text-primary); }
+    .modal h2 {
+      font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .modal-subtitle {
+      color: var(--text-secondary); text-align: center;
+      margin-bottom: 1.5rem; font-size: 0.9rem;
+    }
+    .form-input {
+      width: 100%; padding: 0.85rem 1rem; margin-bottom: 0.85rem;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: var(--radius-xs); color: var(--text-primary);
+      font-size: 0.95rem; outline: none; transition: var(--transition);
+    }
+    .form-input:focus { border-color: var(--gold); background: rgba(255,255,255,0.06); }
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-submit {
+      width: 100%; padding: 0.85rem; background: var(--bg-card);
+      border: 1px solid var(--border); color: #fff; border-radius: var(--radius-xs);
+      font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; transition: var(--transition);
+    }
+    .form-submit:hover { border-color: var(--gold); transform: translateY(-1px); background: rgba(255,255,255,0.02); }
+    .form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .form-toggle {
+      width: 100%; background: none; border: 1px solid var(--border);
+      color: var(--text-secondary); padding: 0.75rem;
+      border-radius: var(--radius-xs); font-size: 0.9rem;
+    }
+    .form-toggle:hover { border-color: var(--border-hover); color: var(--text-primary); }
+    .form-error {
+      color: var(--red); font-size: 0.85rem; margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    /* Checkout */
+    .checkout-page {
+      max-width: 520px; margin: 0 auto;
+    }
+    .checkout-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem;
+    }
+    .checkout-item {
+      display: flex; justify-content: space-between;
+      padding: 0.6rem 0; font-size: 0.95rem;
+    }
+    .checkout-divider {
+      border: none; border-top: 1px solid var(--border); margin: 0.75rem 0;
+    }
+    .checkout-total {
+      display: flex; justify-content: space-between;
+      font-size: 1.2rem; font-weight: 700; padding-top: 0.5rem;
+    }
+    .checkout-pay-btn {
+      width: 100%; padding: 1rem; margin-top: 1.5rem;
+      background: var(--bg-card); border: 1px solid var(--border); color: #fff;
+      border-radius: var(--radius-sm); font-size: 1.05rem; font-weight: 700; transition: var(--transition);
+    }
+    .checkout-pay-btn:hover { border-color: var(--gold); transform: translateY(-1px); background: rgba(255,255,255,0.02); }
+    .checkout-pay-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Success */
+    .success-page {
+      max-width: 500px; margin: 0 auto; text-align: center;
+    }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(42,157,78,0.12); border: 2px solid rgba(42,157,78,0.3);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem; font-size: 2.2rem;
+      animation: countUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Dashboard */
+    .dashboard-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem;
+    }
+
+    /* WhatsApp Floating */
+    .whatsapp-float {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 150;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--green-whatsapp); border: none; color: #fff;
+      font-size: 1.6rem; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.35);
+      transition: var(--transition);
+    }
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 30px rgba(37,211,102,0.45);
+    }
+    .whatsapp-tooltip {
+      position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+      background: #fff; color: #1a1a1a; padding: 0.5rem 1rem;
+      border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0; transition: var(--transition); pointer-events: none;
+    }
+    .whatsapp-tooltip::after {
+      content: ''; position: absolute; left: 100%; top: 50%;
+      transform: translateY(-50%);
+      border: 6px solid transparent; border-left-color: #fff;
+    }
+    .whatsapp-float:hover .whatsapp-tooltip { opacity: 1; }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 1.5rem 2rem; background: var(--bg-secondary);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .footer-brand .logo { margin-bottom: 0.75rem; display: inline-block; }
+    .footer-brand p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; }
+    .footer-section h4 {
+      font-size: 0.88rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 1rem;
+    }
+    .footer-section ul { list-style: none; }
+    .footer-section li {
+      margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.88rem;
+    }
+    .footer-section a:hover { color: var(--gold); }
+    .footer-bottom {
+      max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem;
+      border-top: 1px solid var(--border); text-align: center;
+      color: var(--text-muted); font-size: 0.82rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { padding: 0 0.5rem; }
+      .header-inner { height: 60px; }
+      .nav-links { gap: 0.1rem; }
+      .logo { font-size: 1.1rem; }
+      .nav-text { display: none; }
+      .nav-icon { display: inline-block; font-size: 1.35rem; }
+      
+      /* Make all buttons uniform on mobile */
+      .nav-btn, .cart-btn, .user-btn, .lang-btn, .login-btn {
+        background: transparent !important;
+        border: none !important;
+        padding: 0.4rem !important;
+        box-shadow: none !important;
+        font-size: 1.35rem !important;
+      }
+      .cart-badge { top: 2px !important; right: 0px !important; }
+      .hero { padding: 3rem 1rem 2.5rem; min-height: 460px; }
+      .hero-cta { padding: 1rem 2rem; font-size: 1.05rem; width: 100%; justify-content: center; }
+      .trust-badges { gap: 1rem; }
+      .trust-badge { font-size: 0.82rem; }
+      .section { padding: 3rem 1rem; }
+      .products-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+      
+      /* Mobile Hover & Active States */
+      .product-card:hover { transform: none; box-shadow: none; }
+      .product-card:active { transform: scale(0.98); border-color: var(--border-hover); }
+      .hero-cta:hover { transform: none; box-shadow: none; }
+      .hero-cta:active { transform: scale(0.96); }
+      .add-to-cart-btn:hover { transform: none; }
+      .add-to-cart-btn:active { transform: scale(0.96); }
+      .duration-btn { padding: 0.85rem; font-size: 0.95rem; } /* Larger touch targets */
+
+      .stats-grid { gap: 1rem; }
+      .stat-number { font-size: 1.8rem; }
+      .stat-label { font-size: 0.82rem; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      
+      /* Full width cart sidebar on mobile */
+      .cart-sidebar { width: 100%; max-width: 100%; }
+      
+      /* Bottom Sheet Modal */
+      .modal { 
+        margin-top: auto; 
+        border-radius: 24px 24px 0 0; 
+        padding: 2.5rem 1.5rem;
+        max-width: 100%;
+        animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .form-input, .form-submit, .form-toggle, .checkout-pay-btn {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+    }
+    @keyframes slideInUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    @media (max-width: 480px) {
+      .nav-links { gap: 0.15rem; }
+      .nav-btn { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+      .login-btn { padding: 0.4rem 0.8rem; font-size: 0.82rem; }
+      .lang-switcher button { font-size: 1.1rem; padding: 0.25rem 0.3rem; }
+      .stats-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .footer-inner { grid-template-columns: 1fr; text-align: center; }
+      .cart-btn { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+    }
+
+    /* RTL Support */
+    html[dir="rtl"] .cart-sidebar {
+      right: auto;
+      left: 0;
+      border-left: none;
+      border-right: 1px solid var(--border);
+      animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+    html[dir="rtl"] .user-dropdown-menu {
+      right: auto;
+      left: 0;
+    }
+    html[dir="rtl"] .popular-badge {
+      right: auto;
+      left: 1rem;
+    }
+    html[dir="rtl"] .modal-close {
+      right: auto;
+      left: 1rem;
+    }
+    html[dir="rtl"] .whatsapp-float {
+      right: auto;
+      left: 1.5rem;
+    }
+    html[dir="rtl"] .whatsapp-tooltip {
+      right: calc(100% + 12px);
+      left: auto;
+    }
+    html[dir="rtl"] .whatsapp-tooltip::after {
+      left: auto;
+      right: auto;
+      left: -12px;
+      border: 6px solid transparent;
+      border-right-color: #fff;
+    }
+    html[dir="rtl"] .cart-badge {
+      right: auto;
+      left: -6px;
+    }
+    html[dir="rtl"] .testimonial-text {
+      text-align: right;
+    }
+    html[dir="rtl"] .user-dropdown-menu button {
+      text-align: right;
+    }
+    html[dir="rtl"] .cart-item-info {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .cart-item {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .checkout-item {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .checkout-total {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .product-price {
+      flex-direction: row-reverse;
+    }
+
+    /* Toasts */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+    }
+    .toast {
+      background: var(--bg-secondary);
+      border: 1px solid var(--gold);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .whatsapp-tooltip {
+      position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
+      background: #fff; color: #1a1a1a; padding: 0.5rem 1rem;
+      border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+      white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0; transition: var(--transition); pointer-events: none;
+    }
+    .whatsapp-tooltip::after {
+      content: ''; position: absolute; left: 100%; top: 50%;
+      transform: translateY(-50%);
+      border: 6px solid transparent; border-left-color: #fff;
+    }
+    .whatsapp-float:hover .whatsapp-tooltip { opacity: 1; }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 1.5rem 2rem; background: var(--bg-secondary);
+    }
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .footer-brand .logo { margin-bottom: 0.75rem; display: inline-block; }
+    .footer-brand p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; }
+    .footer-section h4 {
+      font-size: 0.88rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-secondary); margin-bottom: 1rem;
+    }
+    .footer-section ul { list-style: none; }
+    .footer-section li {
+      margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.88rem;
+    }
+    .footer-section a:hover { color: var(--gold); }
+    .footer-bottom {
+      max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem;
+      border-top: 1px solid var(--border); text-align: center;
+      color: var(--text-muted); font-size: 0.82rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { padding: 0 0.5rem; }
+      .header-inner { height: 60px; }
+      .nav-links { gap: 0.1rem; }
+      .logo { font-size: 1.1rem; }
+      .nav-text { display: none; }
+      .nav-icon { display: inline-block; font-size: 1.35rem; }
+      
+      /* Make all buttons uniform on mobile */
+      .nav-btn, .cart-btn, .user-btn, .lang-btn, .login-btn {
+        background: transparent !important;
+        border: none !important;
+        padding: 0.4rem !important;
+        box-shadow: none !important;
+        font-size: 1.35rem !important;
+      }
+      .cart-badge { top: 2px !important; right: 0px !important; }
+      .hero { padding: 3rem 1rem 2.5rem; min-height: 460px; }
+      .hero-cta { padding: 1rem 2rem; font-size: 1.05rem; width: 100%; justify-content: center; }
+      .trust-badges { gap: 1rem; }
+      .trust-badge { font-size: 0.82rem; }
+      .section { padding: 3rem 1rem; }
+      .products-grid { grid-template-columns: 1fr; gap: 1.2rem; }
+      
+      /* Mobile Hover & Active States */
+      .product-card:hover { transform: none; box-shadow: none; }
+      .product-card:active { transform: scale(0.98); border-color: var(--border-hover); }
+      .hero-cta:hover { transform: none; box-shadow: none; }
+      .hero-cta:active { transform: scale(0.96); }
+      .add-to-cart-btn:hover { transform: none; }
+      .add-to-cart-btn:active { transform: scale(0.96); }
+      .duration-btn { padding: 0.85rem; font-size: 0.95rem; } /* Larger touch targets */
+
+      .stats-grid { gap: 1rem; }
+      .stat-number { font-size: 1.8rem; }
+      .stat-label { font-size: 0.82rem; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+      
+      /* Full width cart sidebar on mobile */
+      .cart-sidebar { width: 100%; max-width: 100%; }
+      
+      /* Bottom Sheet Modal */
+      .modal { 
+        margin-top: auto; 
+        border-radius: 24px 24px 0 0; 
+        padding: 2.5rem 1.5rem;
+        max-width: 100%;
+        animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .form-input, .form-submit, .form-toggle, .checkout-pay-btn {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+    }
+    @keyframes slideInUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    @media (max-width: 480px) {
+      .nav-links { gap: 0.15rem; }
+      .nav-btn { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+      .login-btn { padding: 0.4rem 0.8rem; font-size: 0.82rem; }
+      .lang-switcher button { font-size: 1.1rem; padding: 0.25rem 0.3rem; }
+      .stats-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .footer-inner { grid-template-columns: 1fr; text-align: center; }
+      .cart-btn { padding: 0.4rem 0.6rem; font-size: 0.85rem; }
+    }
+
+    /* RTL Support */
+    html[dir="rtl"] .cart-sidebar {
+      right: auto;
+      left: 0;
+      border-left: none;
+      border-right: 1px solid var(--border);
+      animation: slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+    html[dir="rtl"] .user-dropdown-menu {
+      right: auto;
+      left: 0;
+    }
+    html[dir="rtl"] .popular-badge {
+      right: auto;
+      left: 1rem;
+    }
+    html[dir="rtl"] .modal-close {
+      right: auto;
+      left: 1rem;
+    }
+    html[dir="rtl"] .whatsapp-float {
+      right: auto;
+      left: 1.5rem;
+    }
+    html[dir="rtl"] .whatsapp-tooltip {
+      right: calc(100% + 12px);
+      left: auto;
+    }
+    html[dir="rtl"] .whatsapp-tooltip::after {
+      left: auto;
+      right: auto;
+      left: -12px;
+      border: 6px solid transparent;
+      border-right-color: #fff;
+    }
+    html[dir="rtl"] .cart-badge {
+      right: auto;
+      left: -6px;
+    }
+    html[dir="rtl"] .testimonial-text {
+      text-align: right;
+    }
+    html[dir="rtl"] .user-dropdown-menu button {
+      text-align: right;
+    }
+    html[dir="rtl"] .cart-item-info {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .cart-item {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .checkout-item {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .checkout-total {
+      flex-direction: row-reverse;
+    }
+    html[dir="rtl"] .product-price {
+      flex-direction: row-reverse;
+    }
+
+    /* Toasts */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10000;
+    }
+    .toast {
+      background: var(--bg-secondary);
+      border: 1px solid var(--gold);
+      color: var(--text-primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards, fadeOut 0.5s ease 3s forwards;
+    }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+
+  </style>
+  <script>
+    window.addEventListener('error', function(e) {
+      var root = document.getElementById('root');
+      if (root && root.querySelector('.loading-screen')) {
+        root.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;">'
+          + '<p style="color:#e63946;font-size:1.3rem;margin-bottom:1rem;">Erreur de chargement</p>'
+          + '<p style="color:#8a8690;">Veuillez verifier votre connexion internet et recharger la page.</p>'
+          + '<p style="color:#5a5660;font-size:0.8rem;margin-top:1rem;">' + e.message + '</p></div>';
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="root">
+    <div class="loading-screen">
+      <div class="loading-spinner"></div>
+      <p style="color:var(--gold);font-weight:500;">Chargement...</p>
+    </div>
+  </div>
+
+  <script type="text/babel">
+const API_BASE = 'https://aura-giftcards-api.onrender.com/api';
+
+const CATALOG = {
+  "Netflix 1 mois": 600,
+  "Netflix 2 mois": 1100,
+  "Netflix 3 mois": 4000,
+  "Netflix 6 mois": 7500,
+  "Netflix 12 mois": 14000,
+  "Spotify 1 mois": 200,
+  "Spotify 2 mois": 900,
+  "Spotify 3 mois": 2400,
+  "Crunchyroll 1 mois": 500,
+  "Crunchyroll 3 mois": 3200,
+  "Crunchyroll 1 an": 3000,
+};
+
+function unitPrice(itemOrName) {
+  const name = typeof itemOrName === 'object' && itemOrName ? (itemOrName.name || (itemOrName.type + ' ' + (itemOrName.canonicalDuration || '1 mois'))) : itemOrName;
+  return CATALOG[name] ?? (typeof itemOrName === 'object' && itemOrName?.price ? itemOrName.price : 0);
+}
+
+function displayCartTotal(items) {
+  if (!Array.isArray(items)) return 0;
+  return items.reduce((sum, it) => sum + unitPrice(it) * (Number(it?.quantity) || 1), 0);
+}
+
+function formatDA(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("fr-DZ").format(n) + " DA";
+}
+
+window.toastSubscribers = [];
+window.showToast = (message, type = 'success') => {
+  window.toastSubscribers.forEach(cb => cb(message, type));
+};
+
+function ToastContainer() {
+  const [toasts, setToasts] = React.useState([]);
+
+  React.useEffect(() => {
+    const handler = (msg, type) => {
+      const id = Date.now();
+      setToasts(t => [...t, { id, msg, type }]);
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3500);
+    };
+    window.toastSubscribers.push(handler);
+    return () => {
+      window.toastSubscribers = window.toastSubscribers.filter(cb => cb !== handler);
+    };
+  }, []);
+
+  return (
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className="toast">
+          {t.type === 'success' ? '✅' : '⚠️'} {t.msg}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const PRODUCTS = [
+  {
+    id: 'netflix',
+    name: 'Netflix',
+    logo: 'https://api.iconify.design/mdi:netflix.svg?color=%23E50914',
+    descKey: 'descNetflix',
+    color: 'netflix',
+    popular: true,
+    plans: [
+      { durationKey: 'planMonth', canonicalDuration: '1 mois', price: 600 },
+      { durationKey: 'plan2Months', canonicalDuration: '2 mois', price: 1100 }
+    ]
+  },
+  {
+    id: 'spotify',
+    name: 'Spotify',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+    descKey: 'descSpotify',
+    color: 'spotify',
+    popular: false,
+    plans: [
+      { durationKey: 'planMonth', canonicalDuration: '1 mois', price: 200 },
+      { durationKey: 'plan2Months', canonicalDuration: '2 mois', price: 900 }
+    ]
+  },
+  {
+    id: 'crunchyroll',
+    name: 'Crunchyroll',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png',
+    descKey: 'descCrunchyroll',
+    color: 'crunchyroll',
+    popular: false,
+    plans: [
+      { durationKey: 'planMonth', canonicalDuration: '1 mois', price: 500 },
+      { durationKey: 'planYear', canonicalDuration: '1 an', price: 3000 }
+    ]
+  }
+];
+
+const TESTIMONIALS = [
+  { name: 'Amine K.', textKey: 'testim1', stars: 5, service: 'Netflix' },
+  { name: 'Sara M.', textKey: 'testim2', stars: 5, service: 'Spotify' },
+  { name: 'Yacine B.', textKey: 'testim3', stars: 5, service: 'Crunchyroll' },
+  { name: 'Lina D.', textKey: 'testim4', stars: 4, service: 'Netflix' }
+];
+
+const translations = {
+  fr: {
+    // Header & Nav
+    navHome: "Accueil",
+    navShop: "Boutique",
+    navLogin: "Connexion",
+    navCart: "Panier",
+    navAccount: "Informations",
+    navOrders: "Commandes",
+    navLogout: "Déconnexion",
+    
+    // Top Banner
+    topBanner: "🔥 Offre limitée — Livraison instantanée sur tous les comptes !",
+    
+    // Hero
+    heroTitle1: "Tes abonnements streaming",
+    heroTitle2: "au meilleur prix",
+    heroDesc1: "Netflix • Spotify • Crunchyroll",
+    heroDesc2: "Livraison instantanée, paiement sécurisé",
+    heroCta: "Acheter maintenant",
+    trustClients: "+500 clients satisfaits",
+    trustDelivery: "Livraison en 5 min",
+    trustSecure: "Paiement sécurisé",
+    
+    // Shop
+    shopTitle: "Choisissez votre compte",
+    shopSubtitle: "Sélectionnez un service et une durée, ajoutez au panier et payez en quelques clics.",
+    popular: "Populaire",
+    addToCart: "Ajouter au panier",
+    added: "Ajouté !",
+    
+    // Stats
+    statsTitle: "Ils nous font confiance",
+    statsSubtitle: "Rejoignez des centaines de clients satisfaits",
+    statSold: "Comptes vendus",
+    statDelivery: "Livraison moyenne",
+    statSat: "Clients satisfaits",
+    
+    // Cart
+    cartEmpty: "Votre panier est vide",
+    cartEmptySub: "Ajoutez des comptes pour commencer",
+    cartTotal: "Total",
+    checkoutBtn: "Commander",
+    helpWhatsapp: "Besoin d'aide ?",
+    noProducts: "Aucun produit disponible pour le moment.",
+    errorMustLogin: "Vous devez être connecté pour commander.",
+    
+    // Auth Modal
+    loginTitle: "Connexion",
+    signupTitle: "Inscription",
+    loginSub: "Connectez-vous à votre compte",
+    signupSub: "Créez votre compte Aura Stream",
+    emailPlaceholder: "Adresse email",
+    passPlaceholder: "Mot de passe",
+    loading: "Chargement...",
+    forgotPass: "Mot de passe oublié ?",
+    forgotSub: "Entrez votre email pour recevoir un lien de réinitialisation",
+    btnForgot: "Envoyer le lien",
+    toLogin: "Déjà inscrit ? Se connecter",
+    toSignup: "Pas de compte ? S'inscrire",
+    toLoginForgot: "Retour à la connexion",
+    
+    // Checkout
+    checkoutBack: "Retour",
+    checkoutTitle: "Résumé de commande",
+    checkoutPay: "Payer par Edahabia / CIB",
+    checkoutProcessing: "Création du paiement sécurisé...",
+    checkoutProblem: "Un problème ?",
+    checkoutContact: "Contactez-nous sur WhatsApp",
+    
+    // Success
+    successTitle: "Commande confirmée !",
+    successDesc: "Merci pour votre achat. Vous recevrez votre code très rapidement par email.",
+    successCta: "Voir mes commandes",
+    
+    // Profile
+    profileTitle: "Mes Informations",
+    emailReadonly: "Adresse Email (Non modifiable)",
+    firstName: "Prénom (Optionnel)",
+    lastName: "Nom (Optionnel)",
+    phoneNum: "Numéro de téléphone (Optionnel)",
+    security: "Sécurité",
+    oldPass: "Ancien mot de passe",
+    oldPassPh: "Requis pour changer de mot de passe",
+    newPass: "Nouveau mot de passe",
+    newPassPh: "Laissez vide pour ne pas changer",
+    confirmPass: "Confirmer le nouveau",
+    saveChanges: "Enregistrer les modifications",
+    
+    // Orders
+    ordersTitle: "Mes Commandes",
+    ordersEmpty: "Vos commandes apparaîtront ici une fois confirmées. Pour toute question, contactez-nous sur WhatsApp.",
+    contactSupport: "Contacter le support WhatsApp",
+    
+    // Reset Password
+    resetTitle: "Réinitialisation du mot de passe",
+    resetSuccess: "Mot de passe réinitialisé avec succès !",
+    close: "Fermer",
+    validateNewPass: "Valider le nouveau mot de passe",
+    
+    // Footer
+    footerDesc: "Vos comptes streaming au meilleur prix en Algérie. Service rapide et sécurisé.",
+    footerNav: "Navigation",
+    footerContact: "Contact",
+    footerServices: "Services",
+    footerRights: "Tous droits réservés.",
+    
+    // Products & Testimonials
+    descNetflix: "Films, séries et documentaires sans limites",
+    descSpotify: "Musique illimitée sans publicités",
+    descCrunchyroll: "Anime en VOSTFR et simulcast",
+    planMonth: "1 mois",
+    plan2Months: "2 mois",
+    planYear: "1 an",
+    testim1: "Trop rapide ! Code reçu en 2 minutes. Je recommande à 100%.",
+    testim2: "Enfin un site fiable pour les comptes de streaming en Algérie. Merci Aura !",
+    testim3: "Prix correct et livraison instantanée. Mon 3ème achat déjà.",
+    testim4: "Le support WhatsApp est super réactif. Top service.",
+    suffixMin: " min",
+    errorGeneric: "Une erreur est survenue.",
+    errorRateLimit: "Trop de tentatives. Veuillez patienter quelques minutes.",
+    errorEmailTaken: "Cet email est déjà utilisé.",
+    errorInvalidCredentials: "Email ou mot de passe incorrect.",
+    errorPasswordTooShort: "Le mot de passe doit contenir au moins 6 caractères.",
+    errorInvalidEmail: "Adresse email invalide.",
+    errorNetwork: "Erreur réseau. Vérifiez votre connexion internet.",
+    errorPaymentProvider: "Erreur du prestataire de paiement.",
+    errorOldPasswordRequired: "Veuillez saisir votre ancien mot de passe.",
+    errorPasswordMismatch: "Les nouveaux mots de passe ne correspondent pas."
+  },
+  en: {
+    navHome: "Home",
+    navShop: "Shop",
+    navLogin: "Login",
+    navCart: "Cart",
+    navAccount: "Information",
+    navOrders: "Orders",
+    navLogout: "Logout",
+    
+    topBanner: "🔥 Limited offer — Instant delivery on all accounts!",
+    
+    heroTitle1: "Your streaming subscriptions",
+    heroTitle2: "at the best price",
+    heroDesc1: "Netflix • Spotify • Crunchyroll",
+    heroDesc2: "Instant delivery, secure payment",
+    heroCta: "Shop Now",
+    trustClients: "+500 happy clients",
+    trustDelivery: "5 min delivery",
+    trustSecure: "Secure payment",
+    
+    shopTitle: "Choose your account",
+    shopSubtitle: "Select a service and duration, add to cart and pay in a few clicks.",
+    popular: "Popular",
+    addToCart: "Add to cart",
+    added: "Added!",
+    
+    statsTitle: "They trust us",
+    statsSubtitle: "Join hundreds of satisfied customers",
+    statSold: "Accounts sold",
+    statDelivery: "Average delivery",
+    statSat: "Satisfied customers",
+    
+    cartEmpty: "Your cart is empty",
+    cartEmptySub: "Add accounts to get started",
+    cartTotal: "Total",
+    checkoutBtn: "Checkout",
+    helpWhatsapp: "Need help?",
+    noProducts: "No products available at the moment.",
+    errorMustLogin: "You must be logged in to place an order.",
+    
+    loginTitle: "Login",
+    signupTitle: "Sign Up",
+    loginSub: "Log in to your account",
+    signupSub: "Create your Aura Stream account",
+    emailPlaceholder: "Email address",
+    passPlaceholder: "Password",
+    loading: "Loading...",
+    forgotPass: "Forgot password?",
+    forgotSub: "Enter your email to receive a reset link",
+    btnForgot: "Send reset link",
+    toLogin: "Already registered? Login",
+    toSignup: "No account? Sign up",
+    toLoginForgot: "Back to login",
+    
+    checkoutBack: "Back",
+    checkoutTitle: "Order Summary",
+    checkoutPay: "Pay with SlickPay",
+    checkoutProcessing: "Processing...",
+    checkoutProblem: "Having trouble?",
+    checkoutContact: "Contact us on WhatsApp",
+    
+    successTitle: "Order confirmed!",
+    successDesc: "Thank you for your purchase. You will receive your code very shortly by email.",
+    successCta: "View my orders",
+    
+    profileTitle: "My Information",
+    emailReadonly: "Email Address (Read-only)",
+    firstName: "First Name (Optional)",
+    lastName: "Last Name (Optional)",
+    phoneNum: "Phone Number (Optional)",
+    security: "Security",
+    oldPass: "Old password",
+    oldPassPh: "Required to change password",
+    newPass: "New password",
+    newPassPh: "Leave empty to keep current",
+    confirmPass: "Confirm new password",
+    saveChanges: "Save changes",
+    
+    ordersTitle: "My Orders",
+    ordersEmpty: "Your orders will appear here once confirmed. For any questions, contact us on WhatsApp.",
+    contactSupport: "Contact WhatsApp Support",
+    
+    resetTitle: "Password Reset",
+    resetSuccess: "Password reset successfully!",
+    close: "Close",
+    validateNewPass: "Confirm new password",
+    
+    footerDesc: "Your streaming accounts at the best price in Algeria. Fast and secure service.",
+    footerNav: "Navigation",
+    footerContact: "Contact",
+    footerServices: "Services",
+    footerRights: "All rights reserved.",
+    
+    // Products & Testimonials
+    descNetflix: "Unlimited movies, TV shows, and documentaries",
+    descSpotify: "Ad-free unlimited music",
+    descCrunchyroll: "Anime in sub/dub and simulcast",
+    planMonth: "1 month",
+    plan2Months: "2 months",
+    planYear: "1 year",
+    testim1: "Too fast! Code received in 2 minutes. I recommend 100%.",
+    testim2: "Finally a reliable site for streaming accounts in Algeria. Thanks Aura!",
+    testim3: "Fair price and instant delivery. Already my 3rd purchase.",
+    testim4: "WhatsApp support is super responsive. Top service.",
+    suffixMin: " min",
+    errorGeneric: "An error occurred.",
+    errorRateLimit: "Too many attempts. Please wait a few minutes.",
+    errorEmailTaken: "This email is already in use.",
+    errorInvalidCredentials: "Incorrect email or password.",
+    errorPasswordTooShort: "Password must be at least 6 characters.",
+    errorInvalidEmail: "Invalid email address.",
+    errorNetwork: "Network error. Check your internet connection.",
+    errorPaymentProvider: "Payment provider error.",
+    errorOldPasswordRequired: "Please enter your old password.",
+    errorPasswordMismatch: "New passwords do not match."
+  },
+  ar: {
+    navHome: "الرئيسية",
+    navShop: "المتجر",
+    navLogin: "دخول",
+    navCart: "السلة",
+    navAccount: "معلوماتي",
+    navOrders: "طلباتي",
+    navLogout: "تسجيل الخروج",
+    
+    topBanner: "🔥 عرض محدود — تسليم فوري لجميع الحسابات!",
+    
+    heroTitle1: "اشتراكات البث الخاصة بك",
+    heroTitle2: "بأفضل الأسعار",
+    heroDesc1: "Netflix • Spotify • Crunchyroll",
+    heroDesc2: "تسليم فوري، دفع آمن",
+    heroCta: "تسوق الآن",
+    trustClients: "+500 عميل راضٍ",
+    trustDelivery: "تسليم في 5 دقائق",
+    trustSecure: "دفع آمن",
+    
+    shopTitle: "اختر حسابك",
+    shopSubtitle: "حدد الخدمة والمدة، أضف إلى السلة وادفع بنقرات قليلة.",
+    popular: "شائع",
+    addToCart: "أضف إلى السلة",
+    added: "تمت الإضافة!",
+    
+    statsTitle: "يثقون بنا",
+    statsSubtitle: "انضم إلى مئات العملاء الراضين",
+    statSold: "حسابات مباعة",
+    statDelivery: "متوسط وقت التسليم",
+    statSat: "عملاء راضون",
+    
+    cartEmpty: "سلة التسوق فارغة",
+    cartEmptySub: "أضف حسابات للبدء",
+    cartTotal: "المجموع",
+    checkoutBtn: "إتمام الطلب",
+    noProducts: "لا توجد منتجات متاحة حالياً.",
+    errorMustLogin: "يجب عليك تسجيل الدخول لإتمام الطلب.",
+    helpWhatsapp: "تحتاج مساعدة؟",
+    
+    loginTitle: "تسجيل الدخول",
+    signupTitle: "إنشاء حساب",
+    loginSub: "قم بتسجيل الدخول إلى حسابك",
+    signupSub: "قم بإنشاء حساب Aura Stream الخاص بك",
+    emailPlaceholder: "البريد الإلكتروني",
+    passPlaceholder: "كلمة المرور",
+    loading: "جاري التحميل...",
+    forgotPass: "هل نسيت كلمة المرور؟",
+    forgotSub: "أدخل بريدك الإلكتروني لتلقي رابط إعادة التعيين",
+    btnForgot: "إرسال الرابط",
+    toLogin: "مسجل مسبقاً؟ تسجيل الدخول",
+    toSignup: "ليس لديك حساب؟ إنشاء حساب",
+    toLoginForgot: "العودة لتسجيل الدخول",
+    
+    checkoutBack: "رجوع",
+    checkoutTitle: "ملخص الطلب",
+    checkoutPay: "الدفع عبر SlickPay",
+    checkoutProcessing: "جاري المعالجة...",
+    checkoutProblem: "هل تواجه مشكلة؟",
+    checkoutContact: "تواصل معنا عبر WhatsApp",
+    
+    successTitle: "تم تأكيد الطلب!",
+    successDesc: "شكراً لشرائك. ستتلقى الرمز الخاص بك قريباً جداً عبر البريد الإلكتروني.",
+    successCta: "عرض طلباتي",
+    
+    profileTitle: "معلوماتي",
+    emailReadonly: "البريد الإلكتروني (للقراءة فقط)",
+    firstName: "الاسم (اختياري)",
+    lastName: "اللقب (اختياري)",
+    phoneNum: "رقم الهاتف (اختياري)",
+    security: "الأمان",
+    oldPass: "كلمة المرور القديمة",
+    oldPassPh: "مطلوب لتغيير كلمة المرور",
+    newPass: "كلمة المرور الجديدة",
+    newPassPh: "اتركه فارغاً لعدم التغيير",
+    confirmPass: "تأكيد كلمة المرور الجديدة",
+    saveChanges: "حفظ التغييرات",
+    saving: "جاري الحفظ...",
+    profileUpdated: "تم تحديث الملف الشخصي بنجاح!",
+    
+    resetTitle: "إعادة تعيين كلمة المرور",
+    resetSub: "أدخل كلمة المرور الجديدة أدناه.",
+    validateNewPass: "تأكيد كلمة المرور الجديدة",
+    resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
+    close: "إغلاق",
+    
+    footerDesc: "حسابات البث الخاصة بك بأفضل سعر في الجزائر. خدمة سريعة وآمنة.",
+    footerNav: "التنقل",
+    footerContact: "اتصل بنا",
+    footerServices: "الخدمات",
+    footerRights: "جميع الحقوق محفوظة.",
+    
+    descNetflix: "أفلام، مسلسلات، وأفلام وثائقية بلا حدود",
+    descSpotify: "موسيقى غير محدودة بدون إعلانات",
+    descCrunchyroll: "أنمي مترجم ومدبلج بالتزامن مع اليابان",
+    planMonth: "شهر واحد",
+    plan2Months: "شهران",
+    planYear: "سنة واحدة",
+    testim1: "سريع جداً! استلمت الرمز في دقيقتين. أوصي به 100%.",
+    testim2: "أخيراً موقع موثوق لحسابات البث في الجزائر. شكراً Aura!",
+    testim3: "سعر مناسب وتسليم فوري. هذه عملية الشراء الثالثة لي بالفعل.",
+    testim4: "دعم WhatsApp متجاوب جداً. خدمة ممتازة.",
+    suffixMin: " دقائق",
+    errorGeneric: "حدث خطأ ما.",
+    errorRateLimit: "محاولات كثيرة جدًا. يرجى الانتظار بضع دقائق.",
+    errorEmailTaken: "هذا البريد الإلكتروني مستخدم بالفعل.",
+    errorInvalidCredentials: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    errorPasswordTooShort: "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+    errorInvalidEmail: "عنوان البريد الإلكتروني غير صالح.",
+    errorNetwork: "خطأ في الشبكة. تحقق من اتصالك بالإنترنت.",
+    errorPaymentProvider: "خطأ في مزود الدفع.",
+    errorOldPasswordRequired: "يرجى إدخال كلمة المرور القديمة.",
+    errorPasswordMismatch: "كلمتا المرور الجديدتان غير متطابقتين."
+  }
+};
+
+/* ---- Language Context ---- */
+const LanguageContext = React.createContext();
+
+const LanguageProvider = ({ children }) => {
+  const [lang, setLang] = React.useState(localStorage.getItem('lang') || 'fr');
+
+  React.useEffect(() => {
+    localStorage.setItem('lang', lang);
+    if (lang === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'ar';
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = lang;
+    }
+  }, [lang]);
+
+  const t = (key) => translations[lang][key] || key;
+
+  return (
+    <LanguageContext.Provider value={{ lang, setLang, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+const useLanguage = () => React.useContext(LanguageContext);
+
+/* ---- Auth Context ---- */
+const AuthContext = React.createContext();
+
+const useScrollReveal = (deps = []) => {
+  React.useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('active');
+      });
+    }, { threshold: 0.1 });
+    
+    // Slight delay to ensure React has painted the DOM
+    const timer = setTimeout(() => {
+      document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+    }, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, deps);
+};
+
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = React.useState(null);
+  const [token, setToken] = React.useState(localStorage.getItem('token'));
+  const [authLoading, setAuthLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        try {
+          const res = await fetch(API_BASE + '/me', {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            setUser(data.user);
+            setToken(storedToken);
+          } else {
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+          }
+        } catch (err) {
+          console.error('Auth check error:', err);
+        }
+      }
+      setAuthLoading(false);
+    };
+    initAuth();
+  }, []);
+
+  const translateError = (msg) => {
+    if (!msg) return 'errorGeneric';
+    const m = msg.toLowerCase();
+    if (m.includes('rate limit')) return 'errorRateLimit';
+    if (m.includes('already registered') || m.includes('already exists')) return 'errorEmailTaken';
+    if (m.includes('invalid login') || m.includes('invalid email or password')) return 'errorInvalidCredentials';
+    if (m.includes('password') && m.includes('short')) return 'errorPasswordTooShort';
+    if (m.includes('invalid email')) return 'errorInvalidEmail';
+    if (m.includes('network') || m.includes('fetch')) return 'errorNetwork';
+    return 'errorGeneric';
+  };
+
+  const login = async (email, password) => {
+    try {
+      const res = await fetch(API_BASE + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.session) {
+        setToken(data.session.access_token);
+        setUser({ email });
+        localStorage.setItem('token', data.session.access_token);
+        return { success: true };
+      }
+      return { success: false, error: translateError(data.error || data.message) };
+    } catch (err) {
+      console.error('Login error:', err);
+      return { success: false, error: translateError(err.message) };
+    }
+  };
+
+  const register = async (email, password) => {
+    try {
+      const res = await fetch(API_BASE + '/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.user) {
+        const loginResult = await login(email, password);
+        return loginResult;
+      }
+      return { success: false, error: translateError(data.error || data.message) };
+    } catch (err) {
+      console.error('Register error:', err);
+      return { success: false, error: translateError(err.message) };
+    }
+  };
+
+  const updateProfile = async (first_name, last_name, phone, old_password, password) => {
+    try {
+      const res = await fetch(API_BASE + '/update-profile', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ first_name, last_name, phone, old_password, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.user) {
+        setUser({ ...user, user_metadata: data.user.user_metadata });
+        return { success: true };
+      }
+      return { success: false, error: translateError(data.error || data.message) };
+    } catch (err) {
+      console.error('Update profile error:', err);
+      return { success: false, error: translateError(err.message) };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      const res = await fetch(API_BASE + '/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) return { success: true, message: data.message };
+      return { success: false, error: translateError(data.error || data.message) };
+    } catch (err) {
+      return { success: false, error: translateError(err.message) };
+    }
+  };
+
+  const resetPassword = async (recoveryToken, password) => {
+    try {
+      const res = await fetch(API_BASE + '/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: recoveryToken, password })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) return { success: true };
+      return { success: false, error: translateError(data.error || data.message) };
+    } catch (err) {
+      return { success: false, error: translateError(err.message) };
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, token, authLoading, login, register, logout, updateProfile, forgotPassword, resetPassword }}>
+      {!authLoading && children}
+    </AuthContext.Provider>
+  );
+};
+
+const useAuth = () => React.useContext(AuthContext);
+
+/* ---- Components ---- */
+
+function LanguageSwitcher() {
+  const { lang, setLang } = useLanguage();
+  const labels = { fr: 'FR', en: 'EN', ar: 'AR' };
+  const langs = ['fr', 'en', 'ar'];
+  const [open, setOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={dropdownRef} style={{position: 'relative', display: 'inline-block'}}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="nav-btn lang-btn"
+      >
+        <span className="nav-icon">&#x1F310;</span>
+        <span className="nav-text" style={{color: 'var(--gold)'}}>{labels[lang]}</span>
+      </button>
+      {open && (
+        <div className="animate-fadeIn" style={{
+          position: 'absolute', top: '110%', right: 0, 
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)', 
+          borderRadius: 'var(--radius-xs)', overflow: 'hidden', zIndex: 100,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        }}>
+          {langs.map(l => (
+            <button
+              key={l}
+              onClick={() => { setLang(l); setOpen(false); }}
+              style={{
+                display: 'block', width: '100%', padding: '0.8rem 1rem', background: 'none', border: 'none',
+                color: lang === l ? 'var(--gold)' : 'var(--text-primary)',
+                textAlign: 'left', fontWeight: lang === l ? 700 : 500,
+                borderBottom: '1px solid rgba(255,255,255,0.02)'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.target.style.background = 'none'}
+            >
+              {labels[l]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TopBanner() {
+  const { t } = useLanguage();
+  return (
+    <div className="top-banner">
+      <span>{t('topBanner')}</span>
+    </div>
+  );
+}
+
+function UserDropdown({ auth, onNavigate }) {
+  const [open, setOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
+  const { t } = useLanguage();
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="user-dropdown-container" ref={dropdownRef}>
+      <button className="nav-btn user-btn" onClick={() => setOpen(!open)}>
+        &#x1F464;
+      </button>
+      {open && (
+        <div className="user-dropdown-menu animate-fadeIn">
+          <div className="dropdown-header">{auth.user.email}</div>
+          {auth.user.email === 'nassym.yak@gmail.com' && (
+            <button onClick={() => { setOpen(false); onNavigate('admin'); }} style={{color: 'var(--gold)'}}>&#x1F451; Administration</button>
+          )}
+          <button onClick={() => { setOpen(false); onNavigate('profile'); }}>&#x1F464; {t('navAccount')}</button>
+          <button onClick={() => { setOpen(false); onNavigate('orders'); }}>&#x1F4E6; {t('navOrders')}</button>
+          <hr/>
+          <button style={{color: 'var(--red)'}} onClick={() => { setOpen(false); auth.logout(); }}>&#x1F6AA; {t('navLogout')}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ThemeToggle() {
+  const [isDark, setIsDark] = React.useState(() => {
+    return localStorage.getItem('aura_theme') !== 'light';
+  });
+
+  React.useEffect(() => {
+    if (isDark) {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('aura_theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('aura_theme', 'light');
+    }
+  }, [isDark]);
+
+  return (
+    <button className="theme-toggle nav-btn" onClick={() => setIsDark(!isDark)} title={isDark ? '☀️' : '🌙'} style={{fontSize: '1.2rem', padding: '0.4rem', minWidth: 'auto', border: 'none', background: 'none'}}>
+      {isDark ? '☀️' : '🌙'}
+    </button>
+  );
+}
+
+function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBump }) {
+  const { t } = useLanguage();
+  return (
+    <header className="header">
+      <div className="header-inner">
+        <div className="logo" onClick={() => onNavigate('home')}>
+          <img src="logo.png" alt="Aura Stream" style={{ height: '45px', display: 'block', cursor: 'pointer' }} />
+        </div>
+        <nav className="nav-links">
+          <button className="nav-btn" onClick={() => onNavigate('home')}>
+            <span className="nav-icon">&#x1F3E0;</span>
+            <span className="nav-text">{t('navHome')}</span>
+          </button>
+          <button className="nav-btn" onClick={() => onNavigate('shop')}>
+            <span className="nav-icon">&#x1F6CD;&#xFE0F;</span>
+            <span className="nav-text">{t('navShop')}</span>
+          </button>
+          {auth.user ? (
+            <UserDropdown auth={auth} onNavigate={onNavigate} />
+          ) : (
+            <button className="login-btn" onClick={onLoginClick}>
+              <span className="nav-icon">&#x1F464;</span>
+              <span className="nav-text">{t('navLogin')}</span>
+            </button>
+          )}
+          <LanguageSwitcher />
+          <ThemeToggle />
+          <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} onClick={onCartClick}>
+            &#x1F6D2;
+            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          </button>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function HeroSection({ onShopClick }) {
+  const { t } = useLanguage();
+  return (
+    <section className="hero">
+      <div className="hero-bg">
+        <div className="hero-orb hero-orb-1"></div>
+        <div className="hero-orb hero-orb-2"></div>
+        <div className="hero-orb hero-orb-3"></div>
+      </div>
+      <div className="hero-content">
+        <h1 className="animate-fadeInUp">
+          <span className="gradient-text">{t('heroTitle1')}</span>
+          <br />{t('heroTitle2')} &#x1F1E9;&#x1F1FF;
+        </h1>
+        <p className="hero-subtitle animate-fadeInUp delay-1">
+          <span className="services-list">{t('heroDesc1')}</span>
+          <br />{t('heroDesc2')}
+        </p>
+        <button className="hero-cta animate-fadeInUp delay-2" onClick={onShopClick}>
+          {t('heroCta')}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '0.5rem', transform: document.documentElement.dir === 'rtl' ? 'scaleX(-1)' : 'none'}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div className="trust-badges animate-fadeInUp delay-3">
+          <div className="trust-badge">
+            <span>&#x2705;</span> {t('trustClients')}
+          </div>
+          <div className="trust-badge">
+            <span>&#x26A1;</span> {t('trustDelivery')}
+          </div>
+          <div className="trust-badge">
+            <span>&#x1F512;</span> {t('trustSecure')}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductCard({ product, onAddToCart, className, style }) {
+  const { t, lang } = useLanguage();
+  const [selectedPlan, setSelectedPlan] = React.useState(0);
+  const [added, setAdded] = React.useState(false);
+
+  // Fallback translated description just for demo (or use product.desc)
+  const productDesc = product.desc; 
+
+  const handleAdd = () => {
+    const plan = product.plans[selectedPlan];
+    const canonicalName = product.name + ' ' + (plan.canonicalDuration || '1 mois');
+    onAddToCart({
+      id: product.id,
+      type: product.name,
+      name: canonicalName,
+      logo: product.logo,
+      color: product.color,
+      duration: t(plan.durationKey),
+      price: plan.price
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+
+  return (
+    <div className={`product-card ${product.color} ${className || ''}`} style={style}>
+      {product.popular && <div className="popular-badge">{t('popular')}</div>}
+      <div className={'product-icon ' + product.color} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <img src={product.logo} alt={product.name} style={{width: '55%', height: '55%', objectFit: 'contain'}} />
+      </div>
+      <div className="product-name">{product.name}</div>
+      <div className="product-desc">{t(product.descKey)}</div>
+      <div className="duration-selector">
+        {product.plans.map((plan, idx) => (
+          <button
+            key={idx}
+            className={'duration-btn' + (selectedPlan === idx ? ' active' : '')}
+            onClick={() => setSelectedPlan(idx)}
+          >
+            {t(plan.durationKey)}
+          </button>
+        ))}
+      </div>
+      <div className="product-price">
+        <span className="price-current">{product.plans[selectedPlan].price}</span>
+        <span className="price-currency">DA</span>
+      </div>
+      <button className={'add-to-cart-btn ' + product.color + (added ? ' added' : '')} onClick={handleAdd}>
+        <span className="cart-icon">&#x1F6D2; {t('addToCart')}</span>
+        <span className="check-icon">&#x2714; {t('added')}</span>
+      </button>
+    </div>
+  );
+}
+
+function ProductsSection({ onAddToCart }) {
+  const { t } = useLanguage();
+  return (
+    <section className="section" id="shop">
+      <div className="section-header reveal">
+        <h2 className="section-title">{t('shopTitle')}</h2>
+        <p className="section-subtitle">{t('shopSubtitle')}</p>
+      </div>
+      <div className="products-grid">
+        {PRODUCTS.map((product, idx) => (
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onAddToCart={onAddToCart} 
+            className="reveal" 
+            style={{transitionDelay: `${idx * 0.1}s`}}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AnimatedCounter({ target, suffix }) {
+  const [count, setCount] = React.useState(0);
+  const ref = React.useRef(null);
+  const started = React.useRef(false);
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          let start = 0;
+          const duration = 2000;
+          const step = (ts) => {
+            if (!start) start = ts;
+            const progress = Math.min((ts - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.floor(eased * target));
+            if (progress < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return <div className="stat-number" ref={ref} dir="ltr" style={{unicodeBidi: 'bidi-override', direction: 'ltr'}}>{count}{suffix}</div>;
+}
+
+function FAQSection() {
+  const [openIndex, setOpenIndex] = React.useState(null);
+  
+  const faqs = [
+    {
+      icon: "📦",
+      q: "Comment vais-je recevoir mon compte ?",
+      a: "Dès que le paiement est validé, vous recevrez vos identifiants par email et ils seront également affichés sur votre tableau de bord (Mes Commandes) instantanément. Pour Spotify et Crunchyroll, vous nous fournirez vos propres identifiants et nous activerons l'abonnement directement sur votre compte."
+    },
+    {
+      icon: "🎬",
+      q: "Comment fonctionne Netflix ?",
+      a: "Vous recevez un accès à un profil privé sur un compte Netflix Premium. Vous ne devez jamais changer le mot de passe ni accéder aux autres profils. Le compte est sous garantie pendant toute la durée de votre abonnement."
+    },
+    {
+      icon: "🎵",
+      q: "Comment fonctionne Spotify ?",
+      a: "Nous activons un abonnement Spotify Premium (Family) directement sur votre propre compte Spotify. Après le paiement, vous nous fournissez vos identifiants et nous nous occupons de tout en quelques minutes."
+    },
+    {
+      icon: "🥋",
+      q: "Comment fonctionne Crunchyroll ?",
+      a: "Comme pour Spotify, nous activons l'abonnement Crunchyroll directement sur votre propre compte. Vous nous fournissez vos identifiants après le paiement et nous faisons l'activation pour vous."
+    },
+    {
+      icon: "🔒",
+      q: "Puis-je changer le mot de passe ?",
+      a: "Pour Netflix : Non, strictement interdit. Tout changement de mot de passe ou d'email annulera immédiatement votre garantie. Pour Spotify et Crunchyroll : c'est votre propre compte, mais ne modifiez pas les paramètres de l'abonnement."
+    },
+    {
+      icon: "🛡️",
+      q: "Que faire si le mot de passe ne marche plus ?",
+      a: "Pas d'inquiétude ! Tous nos comptes Netflix sont sous garantie. Il suffit de nous contacter sur WhatsApp avec votre numéro de commande et nous vous fournirons un compte de remplacement immédiatement et gratuitement."
+    },
+    {
+      icon: "💳",
+      q: "Quels moyens de paiement acceptez-vous ?",
+      a: "Nous acceptons les paiements par carte CIB/Edahabia via notre partenaire de paiement sécurisé SlickPay. Le processus est 100% sécurisé et automatisé."
+    },
+    {
+      icon: "⏱️",
+      q: "Combien de temps prend la livraison ?",
+      a: "Pour Netflix : la livraison est instantanée et automatique après validation du paiement. Pour Spotify et Crunchyroll : l'activation est faite manuellement dans un délai de quelques minutes à quelques heures maximum."
+    }
+  ];
+
+  return (
+    <section className="section animate-fadeInUp">
+      <div className="section-header">
+        <h2 style={{fontSize: '2rem'}}>Questions Fréquentes</h2>
+        <p>Tout ce que vous devez savoir sur notre service.</p>
+      </div>
+      <div style={{maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+        {faqs.map((faq, index) => {
+          const isOpen = openIndex === index;
+          return (
+            <div key={index} className="dashboard-card" style={{cursor: 'pointer', padding: '1.2rem 1.5rem', border: isOpen ? '1px solid var(--gold)' : '1px solid transparent', transition: 'all 0.3s ease'}} onClick={() => setOpenIndex(isOpen ? null : index)}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                <h3 style={{fontSize: '1.1rem', fontWeight: 600, color: isOpen ? 'var(--gold)' : 'var(--text-primary)'}}>{faq.q}</h3>
+                <span style={{fontSize: '1.5rem', color: 'var(--gold)', transform: isOpen ? 'rotate(45deg)' : 'none', transition: '0.3s', display: 'inline-block'}}>{isOpen ? '×' : '+'}</span>
+              </div>
+              {isOpen && (
+                <div style={{marginTop: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)'}}>
+                  {faq.a}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+
+function SocialProofSection() {
+  const { t } = useLanguage();
+  return (
+    <section className="social-proof">
+      <div className="section" style={{paddingTop: '3rem', paddingBottom: '3rem'}}>
+        <div className="section-header reveal">
+          <h2 className="section-title">{t('statsTitle')}</h2>
+          <p className="section-subtitle">{t('statsSubtitle')}</p>
+        </div>
+        <div className="stats-grid">
+          <div className="reveal" style={{transitionDelay: '0.1s'}}>
+            <AnimatedCounter target={500} suffix="+" />
+            <div className="stat-label">{t('statSold')}</div>
+          </div>
+          <div className="reveal" style={{transitionDelay: '0.2s'}}>
+            <AnimatedCounter target={5} suffix={t('suffixMin')} />
+            <div className="stat-label">{t('statDelivery')}</div>
+          </div>
+          <div className="reveal" style={{transitionDelay: '0.3s'}}>
+            <AnimatedCounter target={98} suffix="%" />
+            <div className="stat-label">{t('statSat')}</div>
+          </div>
+        </div>
+        <div className="testimonials-grid">
+          {TESTIMONIALS.map((testim, idx) => (
+            <div key={idx} className="testimonial reveal" style={{transitionDelay: `${idx * 0.1}s`}}>
+              <div className="testimonial-stars">{'\u2605'.repeat(testim.stars)}{'\u2606'.repeat(5 - testim.stars)}</div>
+              <p className="testimonial-text">&ldquo;{t(testim.textKey)}&rdquo;</p>
+              <div className="testimonial-author">{testim.name}</div>
+              <div className="testimonial-service">{testim.service}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
+  const { t } = useLanguage();
+  const total = displayCartTotal(cart);
+
+  return (
+    <React.Fragment>
+      <div className="cart-overlay" onClick={onClose}></div>
+      <div className="cart-sidebar">
+        <div className="cart-header">
+          <h2>{t('navCart')} ({cart.length})</h2>
+          <button className="cart-close" onClick={onClose}>&times;</button>
+        </div>
+        <div className="cart-items">
+          {cart.length === 0 ? (
+            <div className="cart-empty">
+              <div className="cart-empty-icon">&#x1F6D2;</div>
+              <p>{t('cartEmpty')}</p>
+              <p style={{fontSize: '0.82rem'}}>{t('cartEmptySub')}</p>
+            </div>
+          ) : (
+            cart.map((item, idx) => (
+              <div key={idx} className="cart-item">
+                <div className="cart-item-info">
+                  <div className={'cart-item-icon ' + item.color} style={{
+                    background: item.color === 'netflix' ? 'rgba(229,9,20,0.12)' :
+                                item.color === 'spotify' ? 'rgba(29,185,84,0.12)' :
+                                'rgba(244,117,33,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <img src={item.logo} alt={item.type} style={{width: '60%', height: '60%', objectFit: 'contain'}} />
+                  </div>
+                  <div>
+                    <div className="cart-item-name">{item.type}</div>
+                    <div className="cart-item-duration">{item.duration}</div>
+                  </div>
+                </div>
+                <div className="cart-item-right">
+                  <span className="cart-item-price">{formatDA(unitPrice(item))}</span>
+                  <button className="cart-item-remove" onClick={() => onRemove(idx)}>&times;</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="cart-footer">
+            <div className="cart-total">
+              <span>{t('cartTotal')}</span>
+              <span className="cart-total-amount">{total} DA</span>
+            </div>
+            <button className="checkout-btn" onClick={onCheckout}>
+              {t('checkoutBtn')} &rarr;
+            </button>
+            <div className="cart-whatsapp-help">
+              {t('helpWhatsapp')}&nbsp;
+              <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            </div>
+          </div>
+        )}
+      </div>
+    </React.Fragment>
+  );
+}
+
+function LoginModal({ auth, onClose, onSuccess }) {
+  const { t } = useLanguage();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isSignup, setIsSignup] = React.useState(false);
+  const [isForgot, setIsForgot] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [successMsg, setSuccessMsg] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccessMsg('');
+    
+    if (isForgot) {
+      const result = await auth.forgotPassword(email);
+      if (result.success) {
+        setSuccessMsg(result.message);
+      } else {
+        setError(t(result.error));
+      }
+    } else {
+      const result = isSignup ? await auth.register(email, password) : await auth.login(email, password);
+      if (result.success) {
+        onSuccess();
+      } else {
+        setError(t(result.error));
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal">
+        <button className="modal-close" onClick={onClose}>&times;</button>
+        <h2>{isForgot ? t('forgotPass') : (isSignup ? t('signupTitle') : t('loginTitle'))}</h2>
+        <p className="modal-subtitle">
+          {isForgot ? t('forgotSub') : (isSignup ? t('signupSub') : t('loginSub'))}
+        </p>
+        <form onSubmit={handleSubmit}>
+          <input
+            className="form-input"
+            type="email"
+            placeholder={t('emailPlaceholder')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          {!isForgot && (
+            <input
+              className="form-input"
+              type="password"
+              placeholder={t('passPlaceholder')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          )}
+
+
+          
+          {error && <p className="form-error">{error}</p>}
+          {successMsg && <p style={{color: 'var(--green-whatsapp)', fontSize: '0.9rem', marginBottom: '1rem', textAlign: 'center'}}>{successMsg}</p>}
+          
+          <button className="form-submit" type="submit" disabled={loading}>
+            {loading ? t('loading') : (isForgot ? t('btnForgot') : (isSignup ? t('signupTitle') : t('loginTitle')))}
+          </button>
+          
+          {!isForgot && !isSignup && (
+            <div style={{textAlign: 'center', marginTop: '1rem'}}>
+              <button type="button" style={{background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setIsForgot(true); setError(''); }}>
+                {t('forgotPass')}
+              </button>
+            </div>
+          )}
+          
+          <button className="form-toggle" type="button" onClick={() => { 
+            if (isForgot) { setIsForgot(false); setIsSignup(false); }
+            else { setIsSignup(!isSignup); }
+            setError('');
+            setSuccessMsg('');
+          }}>
+            {isForgot ? t('toLoginForgot') : (isSignup ? t('toLogin') : t('toSignup'))}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function CheckoutPage({ cart, email, onSuccess, onBack }) {
+  const { t } = useLanguage();
+  const auth = useAuth();
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [cgvAccepted, setCgvAccepted] = React.useState(false);
+  const total = displayCartTotal(cart);
+
+  const handleCheckout = async () => {
+    if (!auth.token) {
+      setError("Vous devez etre connecte pour commander.");
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const itemsPayload = cart.map(item => ({ name: item.name || (item.type + ' ' + (item.canonicalDuration || '1 mois')), quantity: 1 }));
+      
+      // 1. Create order
+      const orderRes = await fetch(API_BASE + '/create-order', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({ items: itemsPayload })
+      });
+      const orderData = await orderRes.json();
+      
+      if (!orderRes.ok || !orderData.order_id) {
+        setError(orderData.error || t('errorGeneric'));
+        setLoading(false);
+        return;
+      }
+
+      const serverAmount = orderData.amount;
+      // Save info for the success page (Spotify/Crunchyroll credentials form)
+      localStorage.setItem('has_spotify', cart.some(i => i.id === 'spotify') ? 'true' : 'false');
+      localStorage.setItem('has_crunchyroll', cart.some(i => i.id === 'crunchyroll') ? 'true' : 'false');
+      localStorage.setItem('last_order_id', orderData.order_id);
+
+      // 2. Create invoice
+      const invoiceRes = await fetch(API_BASE + '/create-invoice', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`
+        },
+        body: JSON.stringify({
+          order_id: orderData.order_id
+        })
+      });
+      const data = await invoiceRes.json();
+      
+      if (data.url || data.payment_url) {
+        window.location.href = data.url || data.payment_url;
+      } else {
+        setError(data.error || 'Erreur lors de la creation de la facture');
+      }
+    } catch (err) {
+      setError('Erreur serveur: ' + err.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="checkout-page animate-fadeInUp">
+      <button className="nav-btn" onClick={onBack} style={{marginBottom: '1.5rem', color: 'var(--text-secondary)'}}>
+        &larr; {t('checkoutBack')}
+      </button>
+      <div className="checkout-card">
+        <h2 style={{fontSize: '1.4rem', fontWeight: 700, marginBottom: '1.5rem'}}>{t('checkoutTitle')}</h2>
+        {cart.map((item, idx) => (
+          <div key={idx} className="checkout-item">
+            <span style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+              <img src={item.logo} alt={item.type} style={{width: '24px', height: '24px', objectFit: 'contain'}} />
+              {item.type} &mdash; {item.duration}
+            </span>
+            <span style={{fontWeight: 600}}>{item.price} DA</span>
+          </div>
+        ))}
+        <hr className="checkout-divider" />
+        <div className="checkout-total">
+          <span>{t('cartTotal')}</span>
+          <span style={{color: 'var(--gold)'}}>{formatDA(total)}</span>
+        </div>
+
+        {error && <p className="form-error" style={{marginTop: '1.5rem'}}>{error}</p>}
+        <button className="checkout-pay-btn" onClick={handleCheckout} disabled={loading}>
+          {loading ? t('checkoutProcessing') : t('checkoutPay')}
+        </button>
+      </div>
+      <div className="cart-whatsapp-help" style={{marginTop: '1.5rem'}}>
+        {t('checkoutProblem')}&nbsp;
+        <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" style={{color: 'var(--green-whatsapp)', fontWeight: 600}}>{t('checkoutContact')}</a>
+      </div>
+    </div>
+  );
+}
+const CredentialsForm = ({ service, color, icon, creds, setCreds, onSubmit, sent }) => {
+  if (sent) return (
+    <div style={{color: color, marginBottom: '2rem', padding: '1rem', background: `${color}15`, borderRadius: '8px', border: `1px solid ${color}`}}>
+      &#x2705; Vos identifiants {service} ont été envoyés avec succès ! Nous activerons votre compte d'ici quelques minutes.
+    </div>
+  );
+  return (
+    <div className="dashboard-card" style={{marginBottom: '2rem', textAlign: 'left', padding: '1.5rem', border: `1px solid ${color}`}}>
+      <h3 style={{color: color, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem'}}>
+        <span style={{fontSize: '1.3rem'}}>{icon}</span>
+        Activation {service} Requise
+      </h3>
+      <p style={{fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem'}}>
+        Afin que nous puissions activer l'abonnement sur votre compte {service}, veuillez nous fournir vos identifiants. (Si vous n'avez pas de compte, créez-en un gratuit d'abord).
+      </p>
+      <form onSubmit={onSubmit}>
+        <input type="email" placeholder={`Email ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.email} onChange={e => setCreds({...creds, email: e.target.value})} />
+        <input type="password" placeholder={`Mot de passe ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.password} onChange={e => setCreds({...creds, password: e.target.value})} />
+        <input type="tel" placeholder="Votre numéro WhatsApp" className="form-input" required value={creds.whatsapp} onChange={e => setCreds({...creds, whatsapp: e.target.value})} />
+        <button type="submit" className="form-submit" style={{background: color, color: '#000'}}>
+          Envoyer mes identifiants {service}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => {
+  const [items, setItems] = React.useState([]);
+  React.useEffect(() => {
+    try { setItems(typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || [])); } catch(e) {}
+  }, [order.items]);
+
+  const itemWithCreds = items.find(i => i.name && i.name.toLowerCase().includes(service.toLowerCase()));
+  const savedCreds = itemWithCreds?.client_credentials;
+
+  const [creds, setCreds] = React.useState(savedCreds || { email: '', password: '', whatsapp: '' });
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (savedCreds) {
+      setCreds(savedCreds);
+      setIsEditing(false);
+    } else {
+      setIsEditing(true);
+    }
+  }, [savedCreds]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!creds.email || !creds.password || !creds.whatsapp) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        await fetch(`${API_BASE}/client-credentials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ order_id: order.order_id, service, email: creds.email, password: creds.password, whatsapp: creds.whatsapp })
+        });
+      }
+
+      // Notification Discord gérée par le serveur
+      setIsEditing(false);
+      if (typeof onUpdated === 'function') {
+        onUpdated();
+      }
+    } catch (err) { console.error('Error', err); }
+    setLoading(false);
+  };
+
+  if (!isEditing && savedCreds) {
+    return (
+      <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: `1px solid ${color}40`}}>
+         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+           <h4 style={{color, margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem'}}>{icon} Identifiants {service} transmis</h4>
+           <button onClick={() => setIsEditing(true)} style={{background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem'}} title="Modifier">✏️</button>
+         </div>
+         <div style={{marginTop: '0.8rem', fontSize: '0.9rem', color: 'var(--text-secondary)'}}>
+           <div style={{fontFamily: 'monospace'}}><strong>Email :</strong> {savedCreds.email}</div>
+           <div style={{fontFamily: 'monospace', marginTop: '0.3rem'}}><strong>Mot de passe :</strong> {savedCreds.password}</div>
+           <div style={{fontFamily: 'monospace', marginTop: '0.3rem'}}><strong>WhatsApp :</strong> {savedCreds.whatsapp}</div>
+         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{marginTop: '1rem', padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: `1px solid ${color}40`}}>
+      <h4 style={{marginBottom: '1rem', color, display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+        {icon} Activation {service} Requise
+      </h4>
+      <p style={{fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1.5rem'}}>
+        Afin que nous puissions activer l'abonnement sur votre compte {service}, veuillez nous fournir vos identifiants.
+      </p>
+      <form onSubmit={handleSubmit}>
+        <input type="email" placeholder={`Email ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.email} onChange={e => setCreds({...creds, email: e.target.value})} />
+        <input type="text" placeholder={`Mot de passe ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.password} onChange={e => setCreds({...creds, password: e.target.value})} />
+        <input type="tel" placeholder="Votre numéro WhatsApp" className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.whatsapp} onChange={e => setCreds({...creds, whatsapp: e.target.value})} />
+        <button type="submit" className="form-submit" style={{background: color, color: '#000'}} disabled={loading}>
+          {loading ? 'Enregistrement...' : `Envoyer mes identifiants ${service}`}
+        </button>
+        {savedCreds && <button type="button" onClick={() => setIsEditing(false)} style={{marginTop: '0.8rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', width: '100%', cursor: 'pointer'}}>Annuler</button>}
+      </form>
+    </div>
+  );
+};
+
+function SuccessPage({ onNavigate }) {
+  const { t } = useLanguage();
+  const [credentials, setCredentials] = React.useState({ email: '', password: '', whatsapp: '' });
+  const [crunchCreds, setCrunchCreds] = React.useState({ email: '', password: '', whatsapp: '' });
+  const [sentSpotify, setSentSpotify] = React.useState(false);
+  const [sentCrunchyroll, setSentCrunchyroll] = React.useState(false);
+  
+  const hasSpotify = localStorage.getItem('has_spotify') === 'true';
+  const hasCrunchyroll = localStorage.getItem('has_crunchyroll') === 'true';
+  const orderId = localStorage.getItem('last_order_id') || 'Inconnue';
+
+  const handleSpotifySubmit = async (e) => {
+    e.preventDefault();
+    if (!credentials.email || !credentials.password || !credentials.whatsapp) return;
+    try {
+      const token = localStorage.getItem('token');
+      if (token && orderId !== 'Inconnue') {
+        await fetch(`${API_BASE}/client-credentials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ order_id: orderId, service: 'Spotify', email: credentials.email, password: credentials.password, whatsapp: credentials.whatsapp })
+        });
+      }
+    } catch (err) { console.error('Error', err); }
+    setSentSpotify(true);
+    localStorage.removeItem('has_spotify');
+  };
+
+  const handleCrunchyrollSubmit = async (e) => {
+    e.preventDefault();
+    if (!crunchCreds.email || !crunchCreds.password || !crunchCreds.whatsapp) return;
+    try {
+      const token = localStorage.getItem('token');
+      if (token && orderId !== 'Inconnue') {
+        const res = await fetch(`${API_BASE}/client-credentials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ order_id: orderId, service: 'Crunchyroll', email: crunchCreds.email, password: crunchCreds.password, whatsapp: crunchCreds.whatsapp })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          console.error('Erreur envoi identifiants Crunchyroll', data.error);
+        }
+      }
+
+      /*
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `🥋 **Nouveau compte Crunchyroll à activer !**\n**Commande :** ${orderId}\n**Email :** ${crunchCreds.email}\n**Mot de passe :** ${crunchCreds.password}\n**Numéro WhatsApp :** ${crunchCreds.whatsapp}\n\n[&#x1F464;  Valider et activer la commande](${validationLink})`
+        })
+      */
+    } catch (err) { console.error('Error', err); }
+    setSentCrunchyroll(true);
+    localStorage.removeItem('has_crunchyroll');
+  };
+
+
+
+  return (
+    <div className="success-page animate-fadeInUp">
+      <div className="success-icon">&#x2714;</div>
+      <h2 style={{fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem'}}>{t('successTitle')}</h2>
+      <p style={{color: 'var(--text-secondary)', marginBottom: '2rem', lineHeight: 1.6}}>
+        {t('successDesc')}
+      </p>
+      
+      {hasSpotify && (
+        <CredentialsForm service="Spotify" color="#1DB954" icon="🎵" creds={credentials} setCreds={setCredentials} onSubmit={handleSpotifySubmit} sent={sentSpotify} />
+      )}
+
+      {hasCrunchyroll && (
+        <CredentialsForm service="Crunchyroll" color="#F47521" icon="🍥" creds={crunchCreds} setCreds={setCrunchCreds} onSubmit={handleCrunchyrollSubmit} sent={sentCrunchyroll} />
+      )}
+
+      <button className="hero-cta" style={{animation: 'none'}} onClick={() => onNavigate('orders')}>
+        {t('successCta')}
+      </button>
+    </div>
+  );
+}
+
+function ProfilePage({ auth }) {
+  const { t } = useLanguage();
+  const meta = auth.user.user_metadata || {};
+  const [firstName, setFirstName] = React.useState(meta.first_name || '');
+  const [lastName, setLastName] = React.useState(meta.last_name || '');
+  const [phone, setPhone] = React.useState(meta.phone || '');
+  const [oldPassword, setOldPassword] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [message, setMessage] = React.useState({ type: '', text: '' });
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setMessage({ type: '', text: '' });
+    
+    if (password) {
+      if (!oldPassword) {
+        setMessage({ type: 'error', text: t('errorOldPasswordRequired') });
+        return;
+      }
+      if (password !== confirmPassword) {
+        setMessage({ type: 'error', text: t('errorPasswordMismatch') });
+        return;
+      }
+    }
+    
+    setLoading(true);
+    const res = await auth.updateProfile(firstName, lastName, phone, oldPassword, password);
+    if (res.success) {
+      setMessage({ type: 'success', text: 'Profil mis à jour avec succès !' });
+      setOldPassword('');
+      setPassword('');
+      setConfirmPassword('');
+    } else {
+      setMessage({ type: 'error', text: t(res.error) });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="animate-fadeInUp reveal active" style={{maxWidth: '600px', margin: '0 auto'}}>
+      <h2 style={{fontSize: '1.8rem', fontWeight: 800, marginBottom: '2rem'}}>{t('profileTitle')}</h2>
+      <div className="dashboard-card">
+        <form onSubmit={handleUpdate}>
+          <div style={{marginBottom: '1.5rem'}}>
+            <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('emailReadonly')}</label>
+            <input type="text" className="form-input" value={auth.user.email} disabled style={{opacity: 0.6}} />
+          </div>
+          
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem'}}>
+            <div>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('firstName')}</label>
+              <input type="text" className="form-input" placeholder={t('firstName')} value={firstName} onChange={e => setFirstName(e.target.value)} />
+            </div>
+            <div>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('lastName')}</label>
+              <input type="text" className="form-input" placeholder={t('lastName')} value={lastName} onChange={e => setLastName(e.target.value)} />
+            </div>
+          </div>
+
+          <div style={{marginBottom: '1.5rem'}}>
+            <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('phoneNum')}</label>
+            <input type="text" className="form-input" placeholder="Ex: 0557... ou +213..." value={phone} onChange={e => setPhone(e.target.value)} />
+          </div>
+
+          <hr style={{border: 'none', borderTop: '1px solid var(--border)', margin: '2rem 0'}} />
+          <h3 style={{fontSize: '1.2rem', marginBottom: '1rem', fontWeight: 600}}>{t('security')}</h3>
+
+          <div style={{marginBottom: '1rem'}}>
+            <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('oldPass')}</label>
+            <input type="password" className="form-input" placeholder={t('oldPassPh')} value={oldPassword} onChange={e => setOldPassword(e.target.value)} />
+          </div>
+
+          <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem'}}>
+            <div>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('newPass')}</label>
+              <input type="password" className="form-input" placeholder={t('newPassPh')} value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div>
+              <label style={{display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>{t('confirmPass')}</label>
+              <input type="password" className="form-input" placeholder={t('confirmPass')} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            </div>
+          </div>
+
+          {message.text && (
+            <div style={{marginBottom: '1rem', color: message.type === 'success' ? 'var(--green-whatsapp)' : 'var(--red)', fontSize: '0.9rem', textAlign: 'center'}}>
+              {message.text}
+            </div>
+          )}
+
+          <button type="submit" className="form-submit" disabled={loading}>
+            {loading ? t('loading') : t('saveChanges')}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+function CustomSelect({ value, onChange, options, style = {} }) {
+  const [open, setOpen] = React.useState(false);
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div ref={dropdownRef} style={{position: 'relative', display: 'inline-block', minWidth: '240px', textAlign: 'left', marginBottom: '0.85rem', ...style}}>
+      <button 
+        type="button"
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%', padding: '0.85rem 1rem', background: 'var(--bg-card)', 
+          color: 'white', border: `1px solid ${open ? 'var(--gold)' : 'var(--border)'}`, 
+          borderRadius: 'var(--radius-xs)', display: 'flex', justifyContent: 'space-between', 
+          alignItems: 'center', transition: 'var(--transition)',
+          fontSize: '0.95rem'
+        }}>
+        <span>{selectedOption.label}</span>
+        <span style={{transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s', fontSize: '0.8rem', color: 'var(--gold)'}}>&#x25BC;</span>
+      </button>
+
+      {open && (
+        <div className="animate-fadeIn" style={{
+          position: 'absolute', top: 'calc(100% + 5px)', left: 0, right: 0, 
+          background: 'var(--bg-secondary)', border: '1px solid var(--border)', 
+          borderRadius: 'var(--radius-xs)', overflow: 'hidden', zIndex: 100,
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+        }}>
+          {options.map((opt) => (
+            <button 
+              key={opt.value}
+              onClick={() => { onChange(opt.value); setOpen(false); }}
+              style={{
+                width: '100%', padding: '0.8rem 1rem', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.02)',
+                color: value === opt.value ? 'var(--gold)' : 'var(--text-primary)', 
+                textAlign: 'left', fontWeight: value === opt.value ? 600 : 400
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={(e) => e.target.style.background = 'none'}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminInventory({ auth }) {
+  const [inventory, setInventory] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [form, setForm] = React.useState({ service: 'netflix', account_email: '', account_password: '', profiles: [{name: '', pin: ''}] });
+  const [msg, setMsg] = React.useState('');
+  const [editingId, setEditingId] = React.useState(null);
+  const [editForm, setEditForm] = React.useState({});
+
+  const fetchInv = async () => {
+    try {
+      const res = await fetch(API_BASE + '/admin/inventory', { headers: { 'Authorization': `Bearer ${auth.token}` } });
+      const data = await res.json();
+      if (res.ok && data.inventory) setInventory(data.inventory);
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
+
+  React.useEffect(() => { fetchInv(); }, [auth.token]);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      let payload;
+      if (form.service === 'netflix') {
+        payload = form.profiles.map(p => ({
+          service: 'netflix',
+          account_email: form.account_email,
+          account_password: form.account_password,
+          profile_name: p.name,
+          profile_pin: p.pin
+        }));
+      } else {
+        payload = {
+          service: form.service,
+          account_email: form.account_email,
+          account_password: form.account_password
+        };
+      }
+
+      const res = await fetch(API_BASE + '/admin/inventory', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setMsg('Compte(s) ajouté(s) au stock avec succès !');
+        setForm({ ...form, account_email: '', account_password: '', profiles: [{name: '', pin: ''}] });
+        fetchInv();
+        setTimeout(() => setMsg(''), 3000);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer ce compte du stock ?")) return;
+    try {
+      const res = await fetch(API_BASE + '/admin/inventory/' + id, {
+        method: 'DELETE', headers: { 'Authorization': `Bearer ${auth.token}` }
+      });
+      if (res.ok) fetchInv();
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSaveEdit = async (id) => {
+    try {
+      const res = await fetch(API_BASE + '/admin/inventory/' + id, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.token}` },
+        body: JSON.stringify(editForm)
+      });
+      if (res.ok) {
+        setEditingId(null);
+        fetchInv();
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  if (loading) return <div className="skeleton" style={{height: '200px'}}></div>;
+
+  return (
+    <div className="animate-fadeInUp">
+      <div className="dashboard-card" style={{marginBottom: '2rem'}}>
+        <h3 style={{marginBottom: '1rem', color: 'var(--gold)'}}>➕ Ajouter au Stock</h3>
+        <form onSubmit={handleAdd} style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end'}}>
+          <div style={{flex: 1, minWidth: '200px'}}>
+            <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Service</label>
+            <div style={{width: '100%'}}>
+              <CustomSelect
+                value={form.service}
+                onChange={(val) => setForm({...form, service: val})}
+                options={[
+                  {value: 'netflix', label: 'Netflix'},
+                  {value: 'spotify', label: 'Spotify'},
+                  {value: 'crunchyroll', label: 'Crunchyroll'}
+                ]}
+                style={{display: 'block', minWidth: 'unset', width: '100%'}}
+              />
+            </div>
+          </div>
+          <div style={{flex: 1, minWidth: '200px'}}>
+            <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Email</label>
+            <input required type="email" className="form-input" value={form.account_email} onChange={e => setForm({...form, account_email: e.target.value})} />
+          </div>
+          <div style={{flex: 1, minWidth: '200px'}}>
+            <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
+            <input required type="text" className="form-input" value={form.account_password} onChange={e => setForm({...form, account_password: e.target.value})} />
+          </div>
+          {form.service === 'netflix' && (
+            <div style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem'}}>
+              {form.profiles.map((p, index) => (
+                <div key={index} style={{display: 'flex', gap: '1rem', alignItems: 'flex-end', flexWrap: 'wrap'}}>
+                  <div style={{flex: 1, minWidth: '150px'}}>
+                    <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Nom Profil {index + 1} (Opt)</label>
+                    <input type="text" className="form-input" value={p.name} onChange={e => {
+                      const newProfiles = [...form.profiles];
+                      newProfiles[index].name = e.target.value;
+                      setForm({...form, profiles: newProfiles});
+                    }} placeholder={`Ex: Profil ${index + 1}`} />
+                  </div>
+                  <div style={{flex: 1, minWidth: '150px'}}>
+                    <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Code PIN {index + 1} (Opt)</label>
+                    <input type="text" className="form-input" value={p.pin} onChange={e => {
+                      const newProfiles = [...form.profiles];
+                      newProfiles[index].pin = e.target.value;
+                      setForm({...form, profiles: newProfiles});
+                    }} placeholder="Ex: 1234" />
+                  </div>
+                  {index > 0 ? (
+                    <button type="button" onClick={() => {
+                      const newProfiles = form.profiles.filter((_, i) => i !== index);
+                      setForm({...form, profiles: newProfiles});
+                    }} style={{background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', padding: '0.8rem', fontSize: '1.2rem', minWidth: '40px', marginBottom: '0.85rem'}}>&times;</button>
+                  ) : (
+                    <div style={{minWidth: '40px', marginBottom: '0.85rem'}}></div>
+                  )}
+                </div>
+              ))}
+              <button type="button" onClick={() => setForm({...form, profiles: [...form.profiles, {name: '', pin: ''}]})} style={{background: 'none', border: '1px dashed var(--border)', color: 'var(--text-secondary)', padding: '0.5rem', borderRadius: '4px', cursor: 'pointer', alignSelf: 'flex-start'}}>+ Ajouter un profil</button>
+            </div>
+          )}
+          <button type="submit" className="form-submit" style={{width: '100%', padding: '0.8rem 1.5rem', marginTop: '1rem'}}>Ajouter au Stock</button>
+        </form>
+        {msg && <p style={{color: 'var(--green-whatsapp)', marginTop: '1rem', fontSize: '0.9rem'}}>{msg}</p>}
+      </div>
+
+      <h3 style={{marginBottom: '1rem'}}>Stock Actuel ({inventory.length} comptes)</h3>
+      <div style={{display: 'grid', gap: '1rem'}}>
+        {inventory.length === 0 && <p style={{color: 'var(--text-secondary)'}}>Aucun compte en stock.</p>}
+        {inventory.map(item => (
+          <div key={item.id} className="dashboard-card" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', opacity: item.is_used ? 0.5 : 1}}>
+            {editingId === item.id ? (
+              <div style={{flex: 1, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', marginRight: '1rem'}}>
+                <input type="text" className="form-input" value={editForm.account_email} onChange={e => setEditForm({...editForm, account_email: e.target.value})} style={{padding: '0.4rem'}} placeholder="Email" />
+                <input type="text" className="form-input" value={editForm.account_password} onChange={e => setEditForm({...editForm, account_password: e.target.value})} style={{padding: '0.4rem'}} placeholder="Mot de passe" />
+                {item.service.toLowerCase().includes('netflix') && (
+                  <>
+                    <input type="text" className="form-input" value={editForm.profile_name || ''} onChange={e => setEditForm({...editForm, profile_name: e.target.value})} style={{padding: '0.4rem', width: '120px'}} placeholder="Profil" />
+                    <input type="text" className="form-input" value={editForm.profile_pin || ''} onChange={e => setEditForm({...editForm, profile_pin: e.target.value})} style={{padding: '0.4rem', width: '80px'}} placeholder="PIN" />
+                  </>
+                )}
+                <button onClick={() => handleSaveEdit(item.id)} className="form-submit" style={{padding: '0.4rem 1rem', width: 'auto'}}>Enregistrer</button>
+                <button onClick={() => setEditingId(null)} style={{background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer'}}>Annuler</button>
+              </div>
+            ) : (
+              <div style={{flex: 1}}>
+                <span style={{fontWeight: 'bold', color: 'var(--gold)', textTransform: 'capitalize', marginRight: '1rem', display: 'inline-block', width: '90px'}}>{item.service}</span>
+                <span style={{marginRight: '1rem'}}>{item.account_email}</span>
+                <span style={{color: 'var(--text-secondary)'}}>{item.account_password}</span>
+                {item.profile_name && (
+                  <span style={{color: 'var(--netflix)', marginLeft: '1rem'}}>
+                    &#x1F464; {item.profile_name} {item.profile_pin ? `(&#x1F512; ${item.profile_pin})` : ''}
+                  </span>
+                )}
+                {item.is_used && <span style={{marginLeft: '1rem', fontSize: '0.8rem', color: 'var(--red)'}}>● Assigné (CMD: {item.assigned_order_id})</span>}
+                {!item.is_used && <span style={{marginLeft: '1rem', fontSize: '0.8rem', color: 'var(--green-whatsapp)'}}>● Disponible</span>}
+              </div>
+            )}
+            {!item.is_used && editingId !== item.id && (
+              <button onClick={() => { setEditingId(item.id); setEditForm({...item}); }} style={{background: 'none', border: 'none', color: 'var(--gold)', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem', marginRight: '0.5rem'}}>✏️</button>
+            )}
+            {editingId !== item.id && (
+              <button onClick={() => handleDelete(item.id)} style={{background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '1.5rem', padding: '0 0.5rem'}}>&times;</button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AdminStats({ orders, auth }) {
+  const [inventory, setInventory] = React.useState([]);
+
+  React.useEffect(() => {
+    const fetchInv = async () => {
+      try {
+        const res = await fetch(API_BASE + '/admin/inventory', { headers: { 'Authorization': `Bearer ${auth.token}` } });
+        const data = await res.json();
+        if (res.ok && data.inventory) setInventory(data.inventory);
+      } catch (e) {}
+    };
+    fetchInv();
+  }, [auth.token]);
+
+  const activeOrders = orders.filter(o => o.status === 'active');
+  const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.amount) || 0), 0);
+  const availableStock = inventory.filter(i => !i.is_used).length;
+  const usedStock = inventory.filter(i => i.is_used).length;
+
+  // Orders per day (last 7 days)
+  const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d; };
+  const last7 = Array.from({length: 7}, (_, i) => {
+    const day = daysAgo(6 - i);
+    const dayStr = day.toLocaleDateString('fr-FR', { weekday: 'short' });
+    const count = orders.filter(o => {
+      const d = new Date(o.created_at);
+      return d.toDateString() === day.toDateString();
+    }).length;
+    return { label: dayStr, count };
+  });
+  const maxCount = Math.max(...last7.map(d => d.count), 1);
+
+  // Service distribution
+  const countService = (name) => orders.filter(o => JSON.stringify(o.items || []).toLowerCase().includes(name)).length;
+  const services = [
+    { name: 'Netflix', count: countService('netflix'), color: 'var(--netflix)' },
+    { name: 'Spotify', count: countService('spotify'), color: 'var(--spotify)' },
+    { name: 'Crunchyroll', count: countService('crunchyroll'), color: 'var(--crunchyroll)' },
+  ];
+  const maxService = Math.max(...services.map(s => s.count), 1);
+
+  const KpiCard = ({ icon, label, value, color }) => (
+    <div className="dashboard-card" style={{padding: '1.5rem', textAlign: 'center', flex: 1, minWidth: '150px'}}>
+      <div style={{fontSize: '2rem', marginBottom: '0.5rem'}}>{icon}</div>
+      <div style={{fontSize: '2rem', fontWeight: 800, color: color || 'var(--gold)', marginBottom: '0.3rem'}}>{value}</div>
+      <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{label}</div>
+    </div>
+  );
+
+  return (
+    <div className="animate-fadeInUp">
+      <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem'}}>
+        <KpiCard icon="💰" label="Revenu Total" value={`${totalRevenue.toLocaleString()} DA`} />
+        <KpiCard icon="📦" label="Total Commandes" value={orders.length} color="var(--text-primary)" />
+        <KpiCard icon="✅" label="Actives" value={activeOrders.length} color="var(--spotify)" />
+        <KpiCard icon="📦" label="Stock Dispo" value={availableStock} color={availableStock === 0 ? 'var(--red)' : 'var(--spotify)'} />
+      </div>
+
+      <div className="dashboard-card" style={{padding: '1.5rem', marginBottom: '2rem'}}>
+        <h3 style={{marginBottom: '1.5rem', color: 'var(--gold)'}}>Commandes (7 derniers jours)</h3>
+        <div style={{display: 'flex', alignItems: 'flex-end', gap: '0.5rem', height: '120px'}}>
+          {last7.map((d, i) => (
+            <div key={i} style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem'}}>
+              <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>{d.count}</span>
+              <div style={{width: '100%', maxWidth: '40px', height: `${Math.max((d.count / maxCount) * 100, 5)}%`, background: 'linear-gradient(to top, var(--gold), var(--gold-light))', borderRadius: '4px 4px 0 0', transition: 'height 0.5s ease'}} />
+              <span style={{fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize'}}>{d.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="dashboard-card" style={{padding: '1.5rem'}}>
+        <h3 style={{marginBottom: '1.5rem', color: 'var(--gold)'}}>Répartition par service</h3>
+        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+          {services.map((s, i) => (
+            <div key={i}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem'}}>
+                <span style={{fontWeight: 600}}>{s.name}</span>
+                <span style={{color: 'var(--text-secondary)'}}>{s.count} commande(s)</span>
+              </div>
+              <div style={{height: '8px', background: 'var(--bg-card)', borderRadius: '4px', overflow: 'hidden'}}>
+                <div style={{height: '100%', width: `${(s.count / maxService) * 100}%`, background: s.color, borderRadius: '4px', transition: 'width 0.5s ease'}} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminDashboard({ auth }) {
+  const [orders, setOrders] = React.useState([]);
+  const [inventory, setInventory] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [filterService, setFilterService] = React.useState('all');
+  const [filterDays, setFilterDays] = React.useState('');
+  const [filterStatus, setFilterStatus] = React.useState('all');
+  const [sortDate, setSortDate] = React.useState('desc');
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [adminTab, setAdminTab] = React.useState('orders');
+  const ordersPerPage = 10;
+  React.useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(API_BASE + '/admin/all-orders?t=' + Date.now(), {
+          headers: { 'Authorization': `Bearer ${auth.token}` },
+          cache: 'no-store'
+        });
+        const data = await res.json();
+        
+        try {
+          const invRes = await fetch(API_BASE + '/admin/inventory', { headers: { 'Authorization': `Bearer ${auth.token}` } });
+          const invData = await invRes.json();
+          if (invRes.ok && invData.inventory) setInventory(invData.inventory);
+        } catch(e) {}
+
+        if (res.ok && data.orders) {
+          setOrders(data.orders);
+        } else {
+          setError(data.error || 'Erreur lors du chargement des commandes');
+        }
+      } catch (err) {
+        setError('Erreur réseau : ' + err.message);
+      }
+      setLoading(false);
+    };
+    fetchOrders();
+  }, [auth.token]);
+
+  if (loading) return (
+    <div className="orders-container animate-fadeInUp">
+      <div className="section-header">
+        <h2 style={{color: 'var(--gold)'}}>&#x1F451; Panel Administration</h2>
+        <p>Chargement en cours...</p>
+      </div>
+      <div className="orders-list">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="dashboard-card skeleton" style={{height: '150px', marginBottom: '1rem'}}></div>
+        ))}
+      </div>
+    </div>
+  );
+  if (error) return <div className="error" style={{color: 'var(--red)', padding: '2rem', textAlign: 'center'}}>{error}</div>;
+
+  const filteredOrders = orders.filter(order => {
+    let matchService = true;
+    let matchDays = true;
+
+    // Filter by service
+    if (filterService !== 'all') {
+      const itemsStr = typeof order.items === 'string' ? order.items : JSON.stringify(order.items || []);
+      matchService = itemsStr.toLowerCase().includes(filterService);
+    }
+
+    // Filter by days left
+    if (filterDays !== '') {
+      const targetDays = parseInt(filterDays, 10);
+      if (order.status === 'active' && order.expires_at) {
+        const diffMs = new Date(order.expires_at) - new Date();
+        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        matchDays = daysLeft >= 0 && daysLeft <= targetDays;
+      } else {
+        matchDays = false;
+      }
+    }
+
+    let matchStatus = true;
+    if (filterStatus !== 'all') {
+      matchStatus = order.status === filterStatus;
+    }
+
+    return matchService && matchDays && matchStatus;
+  });
+
+  filteredOrders.sort((a, b) => {
+    const da = new Date(a.created_at).getTime();
+    const db = new Date(b.created_at).getTime();
+    return sortDate === 'desc' ? db - da : da - db;
+  });
+
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage) || 1;
+  const startIndex = (currentPage - 1) * ordersPerPage;
+  const currentOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
+
+  return (
+    <div className="orders-container animate-fadeInUp">
+      <div className="section-header">
+        <h2 style={{color: 'var(--gold)'}}>&#x1F451; Panel Administration</h2>
+        <div style={{display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
+          <button className={`nav-btn ${adminTab === 'orders' ? 'active' : ''}`} style={adminTab === 'orders' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('orders')}>&#x1F4E6; Commandes</button>
+          <button className={`nav-btn ${adminTab === 'inventory' ? 'active' : ''}`} style={adminTab === 'inventory' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('inventory')}>&#x1F4E6; Stocks</button>
+          <button className={`nav-btn ${adminTab === 'stats' ? 'active' : ''}`} style={adminTab === 'stats' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('stats')}>&#x1F4CA; Stats</button>
+        </div>
+      </div>
+
+      {adminTab === 'stats' ? (
+        <AdminStats orders={orders} auth={auth} />
+      ) : adminTab === 'inventory' ? (
+        <AdminInventory auth={auth} />
+      ) : (
+        <React.Fragment>
+
+      <div style={{display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.5rem', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)'}}>
+        <button onClick={() => {setFilterStatus('all'); setCurrentPage(1);}} style={{padding: '0.6rem 1.2rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s', background: filterStatus === 'all' ? 'var(--gold)' : 'transparent', color: filterStatus === 'all' ? '#000' : 'var(--text-secondary)'}}>Toutes</button>
+        <button onClick={() => {setFilterStatus('pending'); setCurrentPage(1);}} style={{padding: '0.6rem 1.2rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s', background: filterStatus === 'pending' ? 'var(--gold)' : 'transparent', color: filterStatus === 'pending' ? '#000' : 'var(--text-secondary)'}}>En attente</button>
+        <button onClick={() => {setFilterStatus('active'); setCurrentPage(1);}} style={{padding: '0.6rem 1.2rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s', background: filterStatus === 'active' ? 'var(--spotify)' : 'transparent', color: filterStatus === 'active' ? '#000' : 'var(--text-secondary)'}}>Confirmées</button>
+        <button onClick={() => {setFilterStatus('cancelled'); setCurrentPage(1);}} style={{padding: '0.6rem 1.2rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s', background: filterStatus === 'cancelled' ? 'var(--red)' : 'transparent', color: filterStatus === 'cancelled' ? '#fff' : 'var(--text-secondary)'}}>Annulées</button>
+      </div>
+
+      <div style={{display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center'}}>
+        <CustomSelect 
+          value={filterService} 
+          onChange={(val) => {setFilterService(val); setCurrentPage(1);}} 
+          options={[
+            { value: 'all', label: 'Tous les services' },
+            { value: 'netflix', label: 'Netflix' },
+            { value: 'spotify', label: 'Spotify' },
+            { value: 'crunchyroll', label: 'Crunchyroll' }
+          ]} 
+        />
+        <CustomSelect 
+          value={filterDays} 
+          onChange={(val) => {setFilterDays(val); setCurrentPage(1);}} 
+          options={[
+            { value: '', label: 'Expiration : Toutes' },
+            { value: '3', label: 'Expire dans ≤ 3 jours' },
+            { value: '7', label: 'Expire dans ≤ 7 jours' },
+            { value: '15', label: 'Expire dans ≤ 15 jours' },
+            { value: '30', label: 'Expire dans ≤ 30 jours' }
+          ]} 
+        />
+        <button onClick={() => setSortDate(sortDate === 'desc' ? 'asc' : 'desc')} style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, transition: 'all 0.3s', height: '42px'}}>
+          {sortDate === 'desc' ? '⬇️ Plus récentes' : '⬆️ Plus anciennes'}
+        </button>
+      </div>
+
+      <div className="orders-list">
+        {currentOrders.length === 0 ? (
+          <div className="dashboard-card" style={{textAlign: 'center', padding: '3rem'}}>
+            <p>Aucune commande ne correspond aux critères.</p>
+          </div>
+        ) : (
+          currentOrders.map((order) => {
+            const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+            const date = new Date(order.created_at).toLocaleString('fr-DZ');
+            let statusColor = 'var(--text-secondary)';
+            if (order.status === 'active') statusColor = 'var(--spotify)';
+            if (order.status === 'cancelled') statusColor = 'var(--red)';
+            if (order.status === 'pending') statusColor = 'var(--gold)';
+            
+            let daysLeftText = '';
+            if (order.status === 'active' && order.expires_at) {
+              const diffMs = new Date(order.expires_at) - new Date();
+              const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+              daysLeftText = daysLeft > 0 ? ` (Expire dans ${daysLeft} jours)` : ' (Expiré)';
+              if (daysLeft <= 3 && daysLeft > 0) statusColor = 'var(--red)'; // Alerte expiration proche
+            }
+
+            return (
+              <div key={order.order_id} className="dashboard-card" style={{marginBottom: '1rem', borderLeft: `4px solid ${statusColor}`}}>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem'}}>
+                  <div>
+                    <h3 style={{fontSize: '1.2rem', marginBottom: '0.5rem'}}>{order.order_id}</h3>
+                    <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>Client : <span style={{color: 'var(--text-primary)'}}>{order.assigned_email}</span></p>
+                    <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>Date : {date}</p>
+                    <div style={{marginTop: '1rem'}}>
+                      {items.map((item, i) => {
+                        const orderInvItems = inventory.filter(inv => inv.assigned_order_id === order.order_id);
+                        const cred = orderInvItems.find(inv => item?.name?.toLowerCase().includes(inv?.service?.toLowerCase() || ''));
+                        return (
+                          <div key={i} style={{background: 'var(--bg-card)', padding: '0.5rem 1rem', borderRadius: 'var(--radius-xs)', marginBottom: '0.5rem', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap'}}>
+                            <span>{item.name} (x{item.quantity})</span>
+                            <span style={{fontWeight: 600, color: 'var(--gold)'}}>{item.price} DA</span>
+                            {cred && (
+                              <div style={{width: '100%', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', border: '1px dashed rgba(255,255,255,0.1)'}}>
+                                &#x1F4E7; <strong style={{color: '#fff'}}>{cred.account_email}</strong> | &#x1F511; <strong style={{color: '#fff'}}>{cred.account_password}</strong>
+                              </div>
+                            )}
+                            {item.client_credentials && (
+                              <div style={{width: '100%', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', border: '1px dashed rgba(255,255,255,0.1)'}}>
+                                &#x1F4E7; <strong style={{color: '#fff'}}>{item.client_credentials.email}</strong> | &#x1F511; <strong style={{color: '#fff'}}>{item.client_credentials.password}</strong> | &#x1F4AC; <strong style={{color: '#fff'}}>{item.client_credentials.whatsapp}</strong>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div style={{textAlign: 'right'}}>
+                    <div style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                      <div style={{position: 'relative', display: 'inline-flex', alignItems: 'center'}}>
+                        <CustomSelect 
+                          value={order.status}
+                          onChange={async (val) => {
+                            const newStatus = val;
+                            const t = localStorage.getItem('token');
+                            if (!t) return;
+                            
+                            // Optimistic update
+                            setOrders(prev => prev.map(o => o.order_id === order.order_id ? {...o, status: newStatus} : o));
+                            
+                            try {
+                              const res = await fetch(API_BASE+'/admin/update-order-status', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer '+t},
+                                body: JSON.stringify({ order_id: order.order_id, status: newStatus })
+                              });
+                              if (!res.ok) {
+                                 alert("Erreur lors de la mise à jour");
+                                 window.location.reload();
+                              }
+                            } catch (err) {
+                              alert("Erreur réseau");
+                            }
+                          }}
+                          options={[
+                            { value: 'pending', label: '⏳ EN ATTENTE' },
+                            { value: 'active', label: '✅ CONFIRMÉ' },
+                            { value: 'cancelled', label: '❌ ANNULÉ' }
+                          ]}
+                          style={{ minWidth: '160px' }}
+                        />
+                      </div>
+                    </div>
+                    {daysLeftText && <div style={{fontSize: '0.85rem', color: statusColor, fontWeight: 600, marginBottom: '0.5rem'}}>{daysLeftText}</div>}
+                    <div style={{fontSize: '1.4rem', fontWeight: 700, marginTop: '0.5rem'}}>
+                      Total: {order.amount} DA
+                    </div>
+                    <div style={{marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end'}}>
+                      <a href="#" onClick={(e) => {
+                        e.preventDefault();
+                        const phone = prompt('Entrez le numéro de téléphone (WhatsApp) du client pour le relancer :');
+                        if (phone) window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}`, '_blank');
+                      }} className="btn btn-secondary" style={{padding: '0.5rem 1rem', fontSize: '0.85rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}>&#x1F4AC; WhatsApp</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div style={{display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '3rem'}}>
+          <button 
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: currentPage === 1 ? 'transparent' : 'rgba(255,255,255,0.1)', color: currentPage === 1 ? 'rgba(255,255,255,0.2)' : 'var(--text-primary)', cursor: currentPage === 1 ? 'default' : 'pointer', transition: 'all 0.3s', fontWeight: 600 }}
+          >
+            Précédent
+          </button>
+          
+          {[...Array(totalPages)].map((_, i) => (
+            <button 
+              key={i} 
+              onClick={() => setCurrentPage(i + 1)}
+              style={{
+                width: '40px', height: '40px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s',
+                background: currentPage === i + 1 ? 'var(--gold)' : 'transparent',
+                color: currentPage === i + 1 ? '#000' : 'var(--text-secondary)',
+                boxShadow: currentPage === i + 1 ? '0 4px 12px rgba(212,175,55,0.3)' : 'none'
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button 
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: currentPage === totalPages ? 'transparent' : 'rgba(255,255,255,0.1)', color: currentPage === totalPages ? 'rgba(255,255,255,0.2)' : 'var(--text-primary)', cursor: currentPage === totalPages ? 'default' : 'pointer', transition: 'all 0.3s', fontWeight: 600 }}
+          >
+            Suivant
+          </button>
+        </div>
+      )}
+        </React.Fragment>
+      )}
+    </div>
+  );
+}
+
+const NetflixOTPButton = ({ orderId, auth }) => {
+  const [loading, setLoading] = React.useState(false);
+  const [code, setCode] = React.useState(null);
+  
+  const getOTP = async () => {
+    setLoading(true);
+    setCode(null);
+    try {
+      const res = await fetch(API_BASE + '/get-netflix-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.token}` },
+        body: JSON.stringify({ order_id: orderId })
+      });
+      const data = await res.json();
+      if (res.ok && data.code) {
+        setCode(data.code);
+      } else {
+        alert(data.error || "Impossible de récupérer le code.");
+      }
+    } catch(err) {
+      alert("Erreur réseau. Impossible de contacter le serveur.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(229,9,20,0.1)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(229,9,20,0.3)', marginTop: '1rem'}}>
+      <h5 style={{color: '#E50914', margin: 0}}>&#x1F512; Code de connexion Netflix</h5>
+      <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0}}>
+        Allez sur Netflix, entrez l'email ci-dessus, et quand Netflix vous demande un code, cliquez sur le bouton ci-dessous.
+      </p>
+      {code ? (
+        <div style={{fontSize: '1.5rem', letterSpacing: '4px', fontWeight: 'bold', color: '#E50914', padding: '0.5rem 0'}}>
+          {code}
+        </div>
+      ) : (
+        <button className="btn" onClick={getOTP} disabled={loading} style={{background: '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: loading ? 'wait' : 'pointer'}}>
+          {loading ? 'Recherche du code en cours...' : '&#x1F4E5; Obtenir le code Netflix'}
+        </button>
+      )}
+    </div>
+  );
+};
+
+
+function OrdersPage({ auth }) {
+  const { t } = useLanguage();
+  const [orders, setOrders] = React.useState([]);
+  const [credentials, setCredentials] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState('');
+  const [expandedOrders, setExpandedOrders] = React.useState({});
+  
+  const toggleExpanded = (id) => setExpandedOrders(prev => ({...prev, [id]: !prev[id]}));
+
+  const fetchOrders = React.useCallback(async () => {
+    try {
+      const res = await fetch(API_BASE + '/my-orders?t=' + Date.now(), {
+        headers: { 'Authorization': `Bearer ${auth.token}` },
+        cache: 'no-store'
+      });
+      const data = await res.json();
+      if (res.ok && data.orders) {
+        setOrders(data.orders);
+        try {
+          const credRes = await fetch(API_BASE + '/my-credentials', { headers: { 'Authorization': `Bearer ${auth.token}` } });
+          const credData = await credRes.json();
+          if (credRes.ok && credData.credentials) setCredentials(credData.credentials);
+        } catch(e) {}
+      } else {
+        setError(data.error || 'Erreur lors du chargement des commandes');
+      }
+    } catch (err) {
+      setError('Erreur reseau.');
+    }
+    setLoading(false);
+  }, [auth.token]);
+
+  React.useEffect(() => {
+    if (auth.token) fetchOrders();
+    const handleRefresh = () => { if (auth.token) fetchOrders(); };
+    window.addEventListener('refresh_orders', handleRefresh);
+    return () => window.removeEventListener('refresh_orders', handleRefresh);
+  }, [auth.token, fetchOrders]);
+
+  if (loading) return (
+    <div className="orders-container animate-fadeInUp">
+      <div className="section-header">
+        <h2>&#x1F4E6; {t('navOrders')}</h2>
+        <p>Chargement de vos commandes...</p>
+      </div>
+      <div className="orders-list">
+        {[1, 2].map(i => (
+          <div key={i} className="dashboard-card skeleton" style={{height: '150px', marginBottom: '1rem'}}></div>
+        ))}
+      </div>
+    </div>
+  );
+  if (error) return <div className="error" style={{color: 'var(--red)', padding: '2rem', textAlign: 'center'}}>{error}</div>;
+
+  return (
+    <div className="animate-fadeInUp reveal active" style={{maxWidth: '800px', margin: '0 auto'}}>
+      <h2 style={{fontSize: '1.8rem', fontWeight: 800, marginBottom: '2rem'}}>{t('ordersTitle')}</h2>
+      
+      {orders.length === 0 ? (
+        <div className="dashboard-card" style={{textAlign: 'center'}}>
+          <div style={{fontSize: '3rem', marginBottom: '1rem'}}>&#x1F4E6;</div>
+          <p style={{color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem'}}>{t('ordersEmpty')}</p>
+          <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer"
+            style={{display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.75rem 1.5rem', background: 'var(--green-whatsapp)', color: '#fff',
+              borderRadius: 'var(--radius-sm)', fontWeight: 600, fontSize: '0.92rem'}}>
+            {t('contactSupport')}
+          </a>
+        </div>
+      ) : (
+        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+          {orders.map(order => {
+            const creds = credentials.find(c => c.assigned_order_id === order.order_id);
+            const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+            const date = new Date(order.created_at).toLocaleDateString('fr-DZ');
+            let daysLeft = null;
+            if (order.status === 'active' && order.expires_at) {
+              const diffMs = new Date(order.expires_at) - new Date();
+              daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            }
+            
+            return (
+            <div key={order.order_id} className="dashboard-card" style={{display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: order.status === 'active' ? '4px solid var(--spotify)' : 'none'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem'}}>
+                <div>
+                  <div style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>{date}</div>
+                  <div style={{fontWeight: 600}}>Commande #{order.order_id} {order.amount ? <span style={{color: 'var(--gold)', marginLeft: '0.5rem'}}>({formatDA(order.amount)})</span> : null}</div>
+                  <div style={{marginTop: '0.5rem'}}>
+                    {items.map((item, i) => <span key={i} style={{fontSize: '0.85rem', color: 'var(--text-secondary)', marginRight: '0.5rem'}}>{item.name} {unitPrice(item) ? `(${formatDA(unitPrice(item))})` : ''}</span>)}
+                  </div>
+                </div>
+                <div style={{display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end'}}>
+                  <span style={{
+                    padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600,
+                    background: order.status === 'active' ? 'rgba(29,185,84,0.1)' : order.status === 'pending' ? 'rgba(255,193,7,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: order.status === 'active' ? 'var(--spotify)' : order.status === 'pending' ? 'var(--gold)' : 'var(--text-secondary)'
+                  }}>
+                    {order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? 'En traitement' : 'Terminée'}
+                  </span>
+                  {order.status === 'active' && order.expires_at && (
+                    <div style={{width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', textAlign: 'right'}}>
+                      Expire le : {new Date(order.expires_at).toLocaleDateString('fr-DZ')}
+                    </div>
+                  )}
+                  {daysLeft !== null && daysLeft <= 7 && daysLeft > 0 && (
+                    <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => {
+                       const message = `Bonjour Aura Stream ! Mon abonnement se termine dans ${daysLeft} jours et je souhaite le renouveler pour ne pas perdre l'accès. (Commande #${order.order_id})`;
+                       window.open(`https://wa.me/213557828812?text=${encodeURIComponent(message)}`, '_blank');
+                    }}>Renouveler</button>
+                  )}
+                  {daysLeft !== null && daysLeft <= 0 && (
+                    <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => {
+                       const message = `Bonjour Aura Stream ! Mon abonnement est expiré et je souhaite le renouveler. (Commande #${order.order_id})`;
+                       window.open(`https://wa.me/213557828812?text=${encodeURIComponent(message)}`, '_blank');
+                    }}>Renouveler</button>
+                  )}
+                </div>
+              </div>
+              
+              {items.length > 1 && (
+                <div style={{textAlign: 'center', marginTop: '0.5rem', marginBottom: expandedOrders[order.order_id] ? '0' : '0.5rem'}}>
+                  <button onClick={() => toggleExpanded(order.order_id)} style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, padding: '0.4rem 1rem', borderRadius: '20px'}}>
+                    {expandedOrders[order.order_id] ? '&#x25B2; Masquer les détails' : `&#x25BC; Gérer mes services (${items.length})`}
+                  </button>
+                </div>
+              )}
+
+              {(items.length <= 1 || expandedOrders[order.order_id]) && (
+                  <div style={{marginTop: '1rem', borderTop: items.length > 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingTop: items.length > 1 ? '1rem' : '0'}}>
+                    {items.some(i => i.name.toLowerCase().includes('spotify')) && (
+                      <OrderCredentialsUpdater order={order} service="Spotify" color="#1DB954" icon="🎵" onUpdated={fetchOrders} />
+                    )}
+                    {items.some(i => i.name.toLowerCase().includes('crunchyroll')) && (
+                      <OrderCredentialsUpdater order={order} service="Crunchyroll" color="#F47521" icon="🍘" onUpdated={fetchOrders} />
+                    )}
+
+                    {order.status === 'active' && (
+                      <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.1)'}}>
+                        {creds ? (
+                          <>
+                            <h4 style={{marginBottom: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                              <span style={{fontSize: '1.2rem'}}>&#x1F511;</span> Vos Identifiants ({creds.service})
+                            </h4>
+                            <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem'}}>
+                              <div style={{flex: 1, minWidth: '200px'}}>
+                                <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Email / Identifiant</label>
+                                <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                  <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_email}</span>
+                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_email); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>&#x1F4CB;</button>
+                                </div>
+                              </div>
+                              <div style={{flex: 1, minWidth: '200px'}}>
+                                <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
+                                <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                  <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_password}</span>
+                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_password); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>&#x1F4CB;</button>
+                                </div>
+                              </div>
+                            </div>
+                            {creds.profile_name && (
+                              <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem'}}>
+                                <div style={{flex: 1, minWidth: '200px'}}>
+                                  <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>&#x1F464; Profil attribué</label>
+                                  <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                    <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)'}}>{creds.profile_name}</span>
+                                  </div>
+                                </div>
+                                {creds.profile_pin && (
+                                  <div style={{flex: 1, minWidth: '200px'}}>
+                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>&#x1F512; Code PIN</label>
+                                    <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                      <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)', letterSpacing: '2px'}}>{creds.profile_pin}</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', fontStyle: 'italic'}}>⚠️ Ne partagez pas ces identifiants. Tout changement de mot de passe annulera votre garantie.</p>
+                          </>
+                        ) : (
+                          <div style={{padding: '1rem 0'}}>
+                            <p style={{color: 'orange', fontSize: '0.9rem', textAlign: 'center', margin: 0}}>⏳ En cours d'assignation de votre compte Netflix...</p>
+                          </div>
+                        )}
+                        
+                        {items.some(i => i.name.toLowerCase().includes('netflix')) && (
+                          <div style={{marginTop: creds ? '1rem' : '0'}}>
+                            <NetflixOTPButton orderId={order.order_id} auth={auth} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+            </div>
+
+          )})}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WhatsAppFloat() {
+  const { t } = useLanguage();
+  return (
+    <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" className="whatsapp-float">
+      <span className="whatsapp-tooltip">{t('helpWhatsapp')}</span>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+    </a>
+  );
+}
+
+function LegalPage() {
+  const { t, lang } = useLanguage();
+  // Simplified translation approach for legal text - ideally should be in translations object, 
+  // but we can put it here for now to avoid bloating the translations object too much.
+  const isAr = lang === 'ar';
+  
+  return (
+    <div className="animate-fadeInUp reveal active" style={{maxWidth: '800px', margin: '0 auto', textAlign: isAr ? 'right' : 'left'}}>
+      <h2 style={{fontSize: '2rem', fontWeight: 800, marginBottom: '2rem', color: 'var(--gold)'}}>Mentions Légales & CGV</h2>
+      
+      <div className="dashboard-card" style={{marginBottom: '2rem'}}>
+        <h3 style={{fontSize: '1.3rem', marginBottom: '1rem', fontWeight: 700}}>Conditions Générales de Vente (CGV)</h3>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          <strong>1. Objet :</strong> Les présentes conditions régissent les ventes par Aura Stream de comptes d'abonnement de streaming (Netflix, Spotify, Crunchyroll, etc.).
+        </p>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          <strong>2. Livraison :</strong> La livraison des identifiants (email et mot de passe) se fait de manière numérique, directement via le tableau de bord "Mes Commandes" ou par email/WhatsApp, immédiatement ou dans un délai maximum de 24h après validation du paiement.
+        </p>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          <strong>3. Responsabilité de l'utilisateur :</strong> L'acheteur s'engage à ne pas modifier les mots de passe, les emails ou les profils des comptes fournis (sauf autorisation explicite de notre part). Toute modification entraînera l'annulation immédiate de la garantie sans remboursement.
+        </p>
+      </div>
+
+      <div className="dashboard-card" style={{marginBottom: '2rem'}}>
+        <h3 style={{fontSize: '1.3rem', marginBottom: '1rem', fontWeight: 700}}>Politique de Remboursement et Garantie</h3>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          <strong>Garantie :</strong> Tous nos comptes sont garantis pour la durée de l'abonnement acheté. En cas de dysfonctionnement (compte désactivé, mot de passe incorrect), Aura Stream s'engage à fournir un compte de remplacement dans les plus brefs délais.
+        </p>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          <strong>Remboursement :</strong> En raison de la nature numérique de nos services, aucun remboursement n'est effectué une fois que les identifiants ont été livrés à l'acheteur. Si nous sommes dans l'incapacité de fournir un compte de remplacement valide sous 48h, un remboursement partiel proportionnel à la durée d'abonnement restante pourra être envisagé.
+        </p>
+      </div>
+
+      <div className="dashboard-card">
+        <h3 style={{fontSize: '1.3rem', marginBottom: '1rem', fontWeight: 700}}>Politique de Confidentialité</h3>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          Aura Stream s'engage à protéger vos données personnelles. Les informations collectées (Nom, Prénom, Email, Téléphone) sont utilisées uniquement dans le cadre du traitement de vos commandes et pour assurer le service client. Nous ne partageons et ne vendons aucune de vos données à des tiers. Les paiements sont sécurisés et traités par notre partenaire de paiement externe (SlickPay).
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Footer({ onNavigate }) {
+  const { t } = useLanguage();
+  return (
+    <footer className="footer">
+      <div className="footer-inner">
+        <div className="footer-brand">
+          <div className="logo" style={{cursor: 'pointer'}} onClick={() => onNavigate('home')}>
+            <img src="logo.png" alt="Aura Stream" style={{ height: '60px', display: 'block', marginBottom: '1rem' }} />
+          </div>
+          <p>{t('footerDesc')}</p>
+        </div>
+        <div className="footer-section">
+          <h4>{t('footerNav')}</h4>
+          <ul>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('home'); }}>{t('navHome')}</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('shop'); }}>{t('navShop')}</a></li>
+            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate('legal'); }}>CGV & Légal</a></li>
+          </ul>
+        </div>
+        <div className="footer-section">
+          <h4>{t('footerServices')}</h4>
+          <ul>
+            <li>Netflix</li>
+            <li>Spotify</li>
+            <li>Crunchyroll</li>
+          </ul>
+        </div>
+        <div className="footer-section">
+          <h4>{t('footerContact')}</h4>
+          <ul>
+            <li><a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" style={{unicodeBidi: 'plaintext'}}>WhatsApp: +213 557 828 812</a></li>
+            <li><a href="https://www.instagram.com/aurastreamdz/" target="_blank" rel="noopener noreferrer" className="instagram-link">Instagram</a></li>
+            <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+          </ul>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        &copy; 2024 Aura Stream. {t('footerRights')}
+      </div>
+    </footer>
+  );
+}
+
+
+function SocialProofPopup() {
+  const [visible, setVisible] = React.useState(false);
+  const [data, setData] = React.useState(null);
+
+  const names = ['Amine', 'Yanis', 'Nabil', 'Sarah', 'Ines', 'Karim', 'Walid', 'Meriem', 'Mohamed', 'Aymen'];
+  const cities = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Blida', 'Tizi Ouzou', 'Béjaïa', 'Tlemcen', 'Sétif'];
+  const products = ['Netflix Premium 1 Mois', 'Spotify Duo 3 Mois', 'Crunchyroll 1 An', 'Netflix Premium 3 Mois', 'Spotify Personnel 1 Mois', 'Crunchyroll 1 Mois'];
+
+  React.useEffect(() => {
+    // Show a popup every 15 to 45 seconds
+    const triggerPopup = () => {
+      const name = names[Math.floor(Math.random() * names.length)];
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const product = products[Math.floor(Math.random() * products.length)];
+      const time = Math.floor(Math.random() * 59) + 1;
+      
+      setData({ name, city, product, time });
+      setVisible(true);
+
+      setTimeout(() => setVisible(false), 5000); // Hide after 5 seconds
+      
+      const nextDelay = Math.floor(Math.random() * 30000) + 15000;
+      setTimeout(triggerPopup, nextDelay);
+    };
+
+    const initialDelay = Math.floor(Math.random() * 10000) + 5000;
+    setTimeout(triggerPopup, initialDelay);
+  }, []);
+
+  if (!visible || !data) return null;
+
+  return (
+    <div className="social-popup animate-fadeInUp" style={{
+      position: 'fixed', bottom: '20px', left: '20px', zIndex: 9998,
+      background: 'rgba(6,6,11,0.95)', backdropFilter: 'blur(10px)',
+      border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+      padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.5)', maxWidth: '320px'
+    }}>
+      <div style={{background: 'rgba(212,165,116,0.1)', color: 'var(--gold)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem'}}>
+        &#x1F6CD;&#xFE0F;
+      </div>
+      <div>
+        <p style={{margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+          <strong style={{color: 'var(--text-primary)'}}>{data.name}</strong> ({data.city}) a acheté
+        </p>
+        <p style={{margin: '0.2rem 0', fontSize: '0.9rem', fontWeight: 600, color: 'var(--gold)'}}>
+          {data.product}
+        </p>
+        <p style={{margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)'}}>
+          Il y a {data.time} minute{data.time > 1 ? 's' : ''}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Main App ---- */
+function AuraGiftCards() {
+  const [page, setPage] = React.useState('home');
+  const [cart, setCart] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('aura_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+  const [showCart, setShowCart] = React.useState(false);
+  const [showLogin, setShowLogin] = React.useState(false);
+  const [recoveryToken, setRecoveryToken] = React.useState(null);
+  const [cartBump, setCartBump] = React.useState(false);
+  const auth = useAuth();
+  
+  React.useEffect(() => {
+    // Detect Supabase recovery hash
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get('access_token');
+      if (token) {
+        setRecoveryToken(token);
+        window.location.hash = ''; // Clear hash from URL
+      }
+    }
+
+    // Detect payment success (hash or search params)
+    const hashParams = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    let oid = null;
+    if (hashParams.startsWith('#success_')) {
+      oid = hashParams.replace('#success_', '');
+    } else if (searchParams.get('payment') === 'success') {
+      oid = searchParams.get('order_id') || searchParams.get('amp;order_id');
+    }
+
+    if (oid) {
+      localStorage.setItem('last_order_id', oid);
+      
+      // Auto-validate order (Netflix accounts will be instantly assigned from stock)
+      fetch(API_BASE + '/validate-order?id=' + oid).catch(e => console.error(e));
+
+      setPage('orders');
+      window.dispatchEvent(new Event('refresh_orders'));
+      setTimeout(() => window.dispatchEvent(new Event('refresh_orders')), 3500);
+      
+      // Show payment success toast
+      setTimeout(() => {
+        window.showToast('Paiement confirmé ! Merci pour votre achat. Vos identifiants sont disponibles ci-dessous.', 'success');
+      }, 500);
+      
+      try {
+        const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
+        if (window.fbq) window.fbq('track', 'Purchase', { value: cartTotal, currency: 'DZD' });
+      } catch(e) {}
+      setCart([]);
+      
+      // Clean up URL
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+      window.history.replaceState({path:newUrl},'',newUrl);
+    }
+  }, []);
+
+  const initialMount = React.useRef(true);
+
+  // Sync cart from Supabase on login if local cart is empty
+  React.useEffect(() => {
+    if (auth.user && auth.user.user_metadata?.cart && cart.length === 0) {
+      setCart(auth.user.user_metadata.cart);
+    }
+  }, [auth.user]);
+
+  // Sync cart to local storage on changes
+  React.useEffect(() => {
+    localStorage.setItem('aura_cart', JSON.stringify(cart));
+    initialMount.current = false;
+  }, [cart]);
+
+  // Re-run scroll animations every time the page changes
+  useScrollReveal([page]);
+
+  const addToCart = (card) => {
+    setCart([...cart, card]);
+    try {
+      if (window.fbq) window.fbq('track', 'AddToCart', { content_name: card.type + ' ' + card.duration, value: card.price, currency: 'DZD' });
+    } catch(e) {}
+    setCartBump(true);
+    setTimeout(() => setCartBump(false), 400);
+  };
+
+  const removeFromCart = (index) => {
+    setCart(cart.filter((_, i) => i !== index));
+  };
+
+  const handleNavigate = (p) => {
+    setPage(p);
+    if (p === 'orders') window.dispatchEvent(new Event('refresh_orders'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCheckout = () => {
+    setShowCart(false);
+    if (!auth.user) {
+      setShowLogin(true);
+    } else {
+      setPage('checkout');
+    }
+  };
+
+  const handleLoginSuccess = () => {
+    setShowLogin(false);
+    if (cart.length > 0) {
+      setPage('checkout');
+    }
+  };
+
+  return (
+    <div>
+      {auth.user && ["nassym.yak@gmail.com", "admin@aura-stream.com", "vompiroman@gmail.com"].includes(auth.user.email) && (
+        <button onClick={async () => {
+          try {
+            const t = auth.token || localStorage.getItem('token');
+            if(!t) { alert("Token manquant !"); return; }
+            alert("Génération de la commande en cours...");
+            const res = await fetch(API_BASE+'/create-order', {
+               method: 'POST',
+               headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer '+t},
+               body: JSON.stringify({
+                  amount: 1500,
+                  items: [
+                    {name: 'Netflix 1 mois', price: 1500, quantity: 1}
+                  ]
+               })
+            });
+            if(res.ok) {
+              const data = await res.json();
+              // Auto-validate for testing
+              await fetch(API_BASE + '/validate-order?id=' + data.order_id);
+              
+              setPage('orders'); window.dispatchEvent(new Event('refresh_orders'));
+            } else {
+              const data = await res.json();
+              alert("❌ Erreur serveur : " + (data.error || "Inconnue"));
+            }
+          } catch(e) { alert("❌ Erreur: "+e.message); }
+        }} style={{position:'fixed', bottom:'80px', left:'20px', zIndex:9999, background:'var(--spotify)', color:'#000', padding:'12px 24px', borderRadius:'8px', fontWeight:700, cursor:'pointer', border:'none', boxShadow:'0 4px 12px rgba(29,185,84,0.3)'}}>
+          &#x1FA84; Générer une commande Test (Admin)
+        </button>
+      )}
+
+      <TopBanner />
+      <Header
+        cartCount={cart.length}
+        cartBump={cartBump}
+        onCartClick={() => setShowCart(true)}
+        onNavigate={handleNavigate}
+        auth={auth}
+        onLoginClick={() => setShowLogin(true)}
+      />
+
+      <main>
+        {page === 'home' && (
+          <>
+            <HeroSection onShopClick={() => handleNavigate('shop')} />
+            <ProductsSection onAddToCart={addToCart} />
+            <FAQSection />
+            <SocialProofSection />
+          </>
+        )}
+
+        {page === 'shop' && (
+          <ProductsSection onAddToCart={addToCart} />
+        )}
+
+        {page === 'checkout' && auth.user && (
+          <div className="section">
+            <CheckoutPage
+              cart={cart}
+              email={auth.user.email}
+              onSuccess={() => { setCart([]); handleNavigate('success'); }}
+              onBack={() => handleNavigate('shop')}
+            />
+          </div>
+        )}
+
+        {page === 'success' && (
+          <div className="section">
+            <SuccessPage onNavigate={handleNavigate} />
+          </div>
+        )}
+
+        {page === 'profile' && auth.user && (
+          <div className="section">
+            <ProfilePage auth={auth} />
+          </div>
+        )}
+
+        {page === 'orders' && auth.user && (
+          <div className="section">
+            <OrdersPage auth={auth} />
+          </div>
+        )}
+
+        {page === 'legal' && (
+          <div className="section">
+            <LegalPage />
+          </div>
+        )}
+
+        {page === 'admin' && auth.user && (
+          <div className="section">
+            <AdminDashboard auth={auth} />
+          </div>
+        )}
+      </main>
+
+      <Footer onNavigate={handleNavigate} />
+      <WhatsAppFloat />
+
+      {showCart && (
+        <CartSidebar
+          cart={cart}
+          onRemove={removeFromCart}
+          onClose={() => setShowCart(false)}
+          onCheckout={handleCheckout}
+        />
+      )}
+
+      {showLogin && (
+        <LoginModal
+          auth={auth}
+          onClose={() => setShowLogin(false)}
+          onSuccess={handleLoginSuccess}
+        />
+      )}
+
+      {recoveryToken && (
+        <ResetPasswordModal
+          auth={auth}
+          recoveryToken={recoveryToken}
+          onClose={() => setRecoveryToken(null)}
+        />
+      )}
+
+
+
+      <ToastContainer />
+    </div>
+  );
+}
+
+function ResetPasswordModal({ auth, recoveryToken, onClose }) {
+  const { t } = useLanguage();
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
+  const [success, setSuccess] = React.useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    const res = await auth.resetPassword(recoveryToken, password);
+    if (res.success) {
+      setSuccess(true);
+    } else {
+      setError(t(res.error));
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        {!success && <button className="modal-close" onClick={onClose}>&times;</button>}
+        <h2>{t('resetTitle')}</h2>
+        {success ? (
+          <div style={{textAlign: 'center'}}>
+            <p style={{color: 'var(--green-whatsapp)', marginBottom: '1.5rem'}}>{t('resetSuccess')}</p>
+            <button className="form-submit" onClick={onClose}>{t('close')}</button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <input className="form-input" type="password" placeholder={t('newPass')} value={password} onChange={e => setPassword(e.target.value)} required />
+            <input className="form-input" type="password" placeholder={t('confirmPass')} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+            {error && <p className="form-error">{error}</p>}
+            <button className="form-submit" type="submit" disabled={loading}>
+              {loading ? t('loading') : t('validateNewPass')}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <AuraGiftCards />
+        <SocialProofPopup />
+      </AuthProvider>
+    </LanguageProvider>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+  </script>
+</body>
+</html>
+
