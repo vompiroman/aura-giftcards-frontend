@@ -3398,10 +3398,19 @@ function AdminDashboard({ auth }) {
   );
 }
 
-const NetflixOTPButton = ({ orderId, auth }) => {
+const NetflixOTPButton = ({ orderId, auth, account }) => {
   const [loading, setLoading] = React.useState(false);
   const [code, setCode] = React.useState(null);
+  const [copied, setCopied] = React.useState(false);
   
+  const copyEmail = () => {
+    if (!account?.email) return;
+    navigator.clipboard.writeText(account.email).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   const getOTP = async () => {
     setLoading(true);
     setCode(null);
@@ -3424,20 +3433,79 @@ const NetflixOTPButton = ({ orderId, auth }) => {
   };
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(229,9,20,0.1)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(229,9,20,0.3)', marginTop: '1rem'}}>
-      <h5 style={{color: '#E50914', margin: 0}}>🔒 Code de connexion Netflix</h5>
-      <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0}}>
-        Allez sur Netflix, entrez l'email ci-dessus, et quand Netflix vous demande un code, cliquez sur le bouton ci-dessous.
-      </p>
-      {code ? (
-        <div style={{fontSize: '1.5rem', letterSpacing: '4px', fontWeight: 'bold', color: '#E50914', padding: '0.5rem 0'}}>
-          {code}
+    <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem'}}>
+      {/* Encadré Compte assigné */}
+      {account?.email ? (
+        <div style={{
+          background: 'linear-gradient(160deg, rgba(229, 9, 20, 0.15), rgba(255, 255, 255, 0.03))',
+          border: '1px solid rgba(229, 9, 20, 0.4)',
+          borderRadius: '14px',
+          padding: '1.25rem',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.25)'
+        }}>
+          <div style={{display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9aa3b2', marginBottom: '8px'}}>
+            <span style={{display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#35d07f', boxShadow: '0 0 8px #35d07f'}}></span>
+            Email de connexion Netflix assigné
+          </div>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap', marginBottom: '12px'}}>
+            <span style={{fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', wordBreak: 'break-all'}}>{account.email}</span>
+            <button onClick={copyEmail} type="button" style={{
+              background: copied ? 'rgba(53, 208, 127, 0.2)' : 'rgba(255,255,255,0.1)',
+              border: copied ? '1px solid #35d07f' : '1px solid rgba(255,255,255,0.2)',
+              color: copied ? '#35d07f' : '#fff',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '0.85rem'
+            }}>
+              {copied ? 'Copié ✓' : '📋 Copier l\'email'}
+            </button>
+          </div>
+          {(account.profile_name || account.profile_pin) && (
+            <div style={{display: 'flex', gap: '20px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px', marginBottom: '12px'}}>
+              {account.profile_name && (
+                <div>
+                  <div style={{fontSize: '0.72rem', textTransform: 'uppercase', color: '#9aa3b2'}}>Profil</div>
+                  <div style={{fontSize: '0.95rem', fontWeight: 'bold'}}>{account.profile_name}</div>
+                </div>
+              )}
+              {account.profile_pin && (
+                <div>
+                  <div style={{fontSize: '0.72rem', textTransform: 'uppercase', color: '#9aa3b2'}}>Code PIN</div>
+                  <div style={{fontSize: '0.95rem', fontWeight: 'bold', color: '#E50914'}}>{account.profile_pin}</div>
+                </div>
+              )}
+            </div>
+          )}
+          <ol style={{margin: 0, paddingLeft: '18px', fontSize: '0.85rem', color: '#9aa3b2', lineHeight: '1.5'}}>
+            <li>Connectez-vous sur Netflix avec <strong style={{color: '#fff'}}>cet email</strong>.</li>
+            <li>Cliquez sur <strong style={{color: '#fff'}}>« Obtenir le code Netflix »</strong> ci-dessous lorsque Netflix vous demande le code par email.</li>
+          </ol>
         </div>
       ) : (
-        <button className="btn" onClick={getOTP} disabled={loading} style={{background: '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: loading ? 'wait' : 'pointer'}}>
-          {loading ? 'Recherche du code en cours...' : '📥 Obtenir le code Netflix'}
-        </button>
+        <div style={{background: 'rgba(255,165,0,0.1)', border: '1px solid rgba(255,165,0,0.3)', padding: '1rem', borderRadius: '10px', color: 'orange', fontSize: '0.9rem'}}>
+          ⏳ Attribution automatique de votre compte Netflix en cours...
+        </div>
       )}
+
+      {/* Section Bouton OTP */}
+      <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(229,9,20,0.1)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(229,9,20,0.3)'}}>
+        <h5 style={{color: '#E50914', margin: 0}}>🔒 Code de connexion Netflix</h5>
+        <p style={{fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0}}>
+          Une fois la demande de code déclenchée sur Netflix, cliquez sur le bouton ci-dessous pour l'afficher instantanément.
+        </p>
+        {code ? (
+          <div style={{fontSize: '1.5rem', letterSpacing: '4px', fontWeight: 'bold', color: '#E50914', padding: '0.5rem 0'}}>
+            {code}
+          </div>
+        ) : (
+          <button className="btn" onClick={getOTP} disabled={loading} style={{background: '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: loading ? 'wait' : 'pointer'}}>
+            {loading ? 'Recherche du code en cours...' : '📥 Obtenir le code Netflix'}
+          </button>
+        )}
+      </div>
     </div>
   );
 };
@@ -3631,7 +3699,7 @@ function OrdersPage({ auth }) {
                         
                         {items.some(i => i.name.toLowerCase().includes('netflix')) && (
                           <div style={{marginTop: creds ? '1rem' : '0'}}>
-                            <NetflixOTPButton orderId={order.order_id} auth={auth} />
+                            <NetflixOTPButton orderId={order.order_id} auth={auth} account={order.account} />
                           </div>
                         )}
                       </div>
