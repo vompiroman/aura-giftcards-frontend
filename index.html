@@ -2927,8 +2927,8 @@ function AdminInventory({ auth }) {
             <input required type="email" className="form-input" value={form.account_email} onChange={e => setForm({...form, account_email: e.target.value})} />
           </div>
           <div style={{flex: 1, minWidth: '200px'}}>
-            <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
-            <input required type="text" className="form-input" value={form.account_password} onChange={e => setForm({...form, account_password: e.target.value})} />
+            <label style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>{form.service === 'netflix' ? 'Mot de passe (Optionnel)' : 'Mot de passe'}</label>
+            <input type="text" className="form-input" value={form.account_password} onChange={e => setForm({...form, account_password: e.target.value})} placeholder={form.service === 'netflix' ? 'Optionnel pour Netflix' : ''} />
           </div>
           {form.service === 'netflix' && (
             <div style={{width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem'}}>
