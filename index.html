@@ -3685,57 +3685,57 @@ function OrdersPage({ auth }) {
 
                     {order.status === 'active' && (
                       <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.1)'}}>
-                        {creds ? (
+                        {items.some(i => i.name.toLowerCase().includes('netflix')) ? (
+                          <NetflixOTPButton orderId={order.order_id} auth={auth} account={order.account} />
+                        ) : (
                           <>
-                            <h4 style={{marginBottom: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                              <span style={{fontSize: '1.2rem'}}>🔑</span> Vos Identifiants ({creds.service})
-                            </h4>
-                            <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem'}}>
-                              <div style={{flex: 1, minWidth: '200px'}}>
-                                <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Email / Identifiant</label>
-                                <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
-                                  <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_email}</span>
-                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_email); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
-                                </div>
-                              </div>
-                              <div style={{flex: 1, minWidth: '200px'}}>
-                                <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
-                                <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
-                                  <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_password}</span>
-                                  <button onClick={() => { navigator.clipboard.writeText(creds.account_password); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
-                                </div>
-                              </div>
-                            </div>
-                            {creds.profile_name && (
-                              <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem'}}>
-                                <div style={{flex: 1, minWidth: '200px'}}>
-                                  <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>👤 Profil attribué</label>
-                                  <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
-                                    <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)'}}>{creds.profile_name}</span>
-                                  </div>
-                                </div>
-                                {creds.profile_pin && (
+                            {creds ? (
+                              <>
+                                <h4 style={{marginBottom: '0.8rem', color: 'var(--gold)', display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                  <span style={{fontSize: '1.2rem'}}>🔑</span> Vos Identifiants ({creds.service})
+                                </h4>
+                                <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem'}}>
                                   <div style={{flex: 1, minWidth: '200px'}}>
-                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>🔒 Code PIN</label>
+                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Email / Identifiant</label>
                                     <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
-                                      <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)', letterSpacing: '2px'}}>{creds.profile_pin}</span>
+                                      <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_email}</span>
+                                      <button onClick={() => { navigator.clipboard.writeText(creds.account_email); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
                                     </div>
                                   </div>
+                                  <div style={{flex: 1, minWidth: '200px'}}>
+                                    <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>Mot de passe</label>
+                                    <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                      <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem'}}>{creds.account_password}</span>
+                                      <button onClick={() => { navigator.clipboard.writeText(creds.account_password); window.showToast("Copié !"); }} style={{background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer'}}>📋</button>
+                                    </div>
+                                  </div>
+                                </div>
+                                {creds.profile_name && (
+                                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem'}}>
+                                    <div style={{flex: 1, minWidth: '200px'}}>
+                                      <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>👤 Profil attribué</label>
+                                      <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                        <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)'}}>{creds.profile_name}</span>
+                                      </div>
+                                    </div>
+                                    {creds.profile_pin && (
+                                      <div style={{flex: 1, minWidth: '200px'}}>
+                                        <label style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>🔒 Code PIN</label>
+                                        <div style={{display: 'flex', alignItems: 'center', background: 'var(--bg)', padding: '0.5rem 1rem', borderRadius: '4px', marginTop: '0.2rem'}}>
+                                          <span style={{flex: 1, fontFamily: 'monospace', fontSize: '0.95rem', color: 'var(--gold)', letterSpacing: '2px'}}>{creds.profile_pin}</span>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
                                 )}
+                                <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', fontStyle: 'italic'}}>⚠️ Ne partagez pas ces identifiants. Tout changement de mot de passe annulera votre garantie.</p>
+                              </>
+                            ) : (
+                              <div style={{padding: '1rem 0'}}>
+                                <p style={{color: 'orange', fontSize: '0.9rem', textAlign: 'center', margin: 0}}>⏳ En cours d'assignation de vos identifiants...</p>
                               </div>
                             )}
-                            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', fontStyle: 'italic'}}>⚠️ Ne partagez pas ces identifiants. Tout changement de mot de passe annulera votre garantie.</p>
                           </>
-                        ) : (
-                          <div style={{padding: '1rem 0'}}>
-                            <p style={{color: 'orange', fontSize: '0.9rem', textAlign: 'center', margin: 0}}>⏳ En cours d'assignation de votre compte Netflix...</p>
-                          </div>
-                        )}
-                        
-                        {items.some(i => i.name.toLowerCase().includes('netflix')) && (
-                          <div style={{marginTop: creds ? '1rem' : '0'}}>
-                            <NetflixOTPButton orderId={order.order_id} auth={auth} account={order.account} />
-                          </div>
                         )}
                       </div>
                     )}
