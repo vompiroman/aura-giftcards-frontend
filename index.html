@@ -3402,7 +3402,16 @@ const NetflixOTPButton = ({ orderId, auth, account }) => {
   const [loading, setLoading] = React.useState(false);
   const [code, setCode] = React.useState(null);
   const [copied, setCopied] = React.useState(false);
-  
+  const [cooldown, setCooldown] = React.useState(0);
+
+  React.useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown(c => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
+
   const copyEmail = () => {
     if (!account?.email) return;
     navigator.clipboard.writeText(account.email).then(() => {
@@ -3412,6 +3421,7 @@ const NetflixOTPButton = ({ orderId, auth, account }) => {
   };
 
   const getOTP = async () => {
+    if (loading || cooldown > 0) return;
     setLoading(true);
     setCode(null);
     try {
@@ -3420,11 +3430,17 @@ const NetflixOTPButton = ({ orderId, auth, account }) => {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.token}` },
         body: JSON.stringify({ order_id: orderId })
       });
-      const data = await res.json();
-      if (res.ok && data.code) {
-        setCode(data.code);
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 429) {
+        const retryAfter = Number(res.headers.get("Retry-After")) || 12;
+        alert(`Trop de tentatives. Réessayez dans ${retryAfter}s.`);
+        setCooldown(retryAfter);
+      } else if (res.ok && (data.code || data.link)) {
+        setCode(data.code || data.link);
+        setCooldown(12);
       } else {
-        alert(data.error || "Impossible de récupérer le code.");
+        alert(data.error || "Aucun code trouvé pour l'instant. Demandez le code sur Netflix puis réessayez.");
+        setCooldown(12);
       }
     } catch(err) {
       alert("Erreur réseau. Impossible de contacter le serveur.");
@@ -3501,8 +3517,8 @@ const NetflixOTPButton = ({ orderId, auth, account }) => {
             {code}
           </div>
         ) : (
-          <button className="btn" onClick={getOTP} disabled={loading} style={{background: '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: loading ? 'wait' : 'pointer'}}>
-            {loading ? 'Recherche du code en cours...' : '📥 Obtenir le code Netflix'}
+          <button className="btn" onClick={getOTP} disabled={loading || cooldown > 0} style={{background: (loading || cooldown > 0) ? 'rgba(229,9,20,0.5)' : '#E50914', color: '#fff', width: 'fit-content', fontWeight: 'bold', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: (loading || cooldown > 0) ? 'not-allowed' : 'pointer'}}>
+            {loading ? 'Recherche du code en cours...' : cooldown > 0 ? `⏳ Réessayer dans ${cooldown}s...` : '📥 Obtenir le code Netflix'}
           </button>
         )}
       </div>
