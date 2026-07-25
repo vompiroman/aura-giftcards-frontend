@@ -3,31 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="theme-color" content="#06060b">
   <title>Aura Stream — Comptes Streaming | Netflix, Spotify, Crunchyroll</title>
   <meta name="description" content="Achetez vos comptes Netflix, Spotify et Crunchyroll au meilleur prix en Algérie. Livraison instantanée, paiement sécurisé.">
   <meta property="og:title" content="Aura Stream — Comptes Streaming">
   <meta property="og:description" content="Netflix, Spotify, Crunchyroll au meilleur prix en Algérie. Livraison instantanée.">
-  <meta property="og:image" content="logo.png">
+  <meta property="og:image" content="https://aura-stream.netlify.app/logo.png">
+  <meta property="og:image:alt" content="Aura Stream — abonnements streaming en Algérie">
+  <link rel="canonical" href="https://aura-stream.netlify.app/">
+  <meta property="og:url" content="https://aura-stream.netlify.app/">
+  <meta property="og:site_name" content="Aura Stream">
+  <meta property="og:locale" content="fr_DZ">
   <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Aura Stream — Netflix, Spotify et Crunchyroll en Algérie">
+  <meta name="twitter:description" content="Abonnements streaming, paiement sécurisé et activation rapide en Algérie.">
+  <meta name="twitter:image" content="https://aura-stream.netlify.app/logo.png">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <!-- Meta Pixel Code -->
+  <!-- Meta Pixel: delayed on password-recovery URLs until auth tokens are removed. -->
   <script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '1048802778090797');
-  fbq('track', 'PageView');
+  (function () {
+    var pixelId = '1048802778090797';
+    var hasSensitiveAuthFragment = function () {
+      return /(?:^|[&#])(access_token|refresh_token|provider_token|type=recovery)=/i.test(window.location.hash || '');
+    };
+
+    window.initializeMetaPixel = function () {
+      if (window.__metaPixelInitialized || hasSensitiveAuthFragment()) return;
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      window.__metaPixelInitialized = true;
+      fbq('init', pixelId);
+      fbq('track', 'PageView');
+    };
+
+    window.initializeMetaPixel();
+  })();
   </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1048802778090797&ev=PageView&noscript=1"/></noscript>
-  <!-- End Meta Pixel Code -->
+  <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1048802778090797&amp;ev=PageView&amp;noscript=1"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://aura-stream.netlify.app/#organization",
+        "name": "Aura Stream",
+        "url": "https://aura-stream.netlify.app/",
+        "logo": "https://aura-stream.netlify.app/logo.png",
+        "contactPoint": { "@type": "ContactPoint", "telephone": "+213557828812", "contactType": "customer service", "availableLanguage": ["fr", "ar", "en"] }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://aura-stream.netlify.app/#website",
+        "url": "https://aura-stream.netlify.app/",
+        "name": "Aura Stream",
+        "publisher": { "@id": "https://aura-stream.netlify.app/#organization" },
+        "inLanguage": "fr-DZ"
+      },
+      {
+        "@type": "ItemList",
+        "name": "Abonnements streaming Aura Stream",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "item": { "@type": "Product", "name": "Netflix 1 mois", "offers": { "@type": "Offer", "price": "600", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } },
+          { "@type": "ListItem", "position": 2, "item": { "@type": "Product", "name": "Spotify 1 mois", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } },
+          { "@type": "ListItem", "position": 3, "item": { "@type": "Product", "name": "Crunchyroll 1 mois", "offers": { "@type": "Offer", "price": "500", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "Comment recevoir mon abonnement ?", "acceptedAnswer": { "@type": "Answer", "text": "Après confirmation du paiement, l'activation et les informations de livraison sont disponibles dans Mes commandes." } },
+          { "@type": "Question", "name": "Quels moyens de paiement sont acceptés ?", "acceptedAnswer": { "@type": "Answer", "text": "Le paiement sécurisé est proposé par Edahabia et CIB via SlickPay." } },
+          { "@type": "Question", "name": "Que faire en cas de problème ?", "acceptedAnswer": { "@type": "Answer", "text": "Le support Aura Stream est disponible sur WhatsApp avec votre numéro de commande." } }
+        ]
+      }
+    ]
+  }
+  </script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -681,7 +744,7 @@
 
     /* Success */
     .success-page {
-      max-width: 500px; margin: 0 auto; text-align: center;
+      max-width: 760px; margin: 0 auto; text-align: center;
     }
     .success-icon {
       width: 80px; height: 80px; border-radius: 50%;
@@ -690,6 +753,23 @@
       margin: 0 auto 1.5rem; font-size: 2.2rem;
       animation: countUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    .confirmation-card {
+      margin: 1.5rem 0; padding: 1.5rem; text-align: left;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .confirmation-meta {
+      display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+      padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border);
+    }
+    .confirmation-steps { display: grid; gap: 0.85rem; }
+    .confirmation-step { display: grid; grid-template-columns: 32px 1fr; gap: 0.8rem; align-items: center; }
+    .confirmation-step-icon {
+      width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-muted); font-weight: 800;
+    }
+    .confirmation-step.done .confirmation-step-icon { background: rgba(29,185,84,0.14); border-color: rgba(29,185,84,0.45); color: var(--spotify); }
+    .confirmation-step.current .confirmation-step-icon { background: rgba(212,165,116,0.14); border-color: var(--gold); color: var(--gold); }
+    .confirmation-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
 
     /* Dashboard */
     .dashboard-card {
@@ -1115,8 +1195,7 @@
       if (root && root.querySelector('.loading-screen')) {
         root.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;">'
           + '<p style="color:#e63946;font-size:1.3rem;margin-bottom:1rem;">Erreur de chargement</p>'
-          + '<p style="color:#8a8690;">Veuillez verifier votre connexion internet et recharger la page.</p>'
-          + '<p style="color:#5a5660;font-size:0.8rem;margin-top:1rem;">' + e.message + '</p></div>';
+          + '<p style="color:#8a8690;">Veuillez verifier votre connexion internet et recharger la page.</p></div>';
       }
     });
   </script>
@@ -1131,6 +1210,45 @@
 
   <script type="text/babel">
 const API_BASE = 'https://aura-giftcards-api.onrender.com/api';
+const TOKEN_STORAGE_KEY = 'aura_access_token';
+const META_PIXEL_ID = '1048802778090797';
+
+const metaContents = (items) => (Array.isArray(items) ? items : []).map(item => ({
+  id: item.name || item.type || item.id,
+  quantity: Number(item.quantity || 1)
+})).filter(item => item.id);
+
+const trackMeta = (eventName, data = {}, eventId = null) => {
+  try {
+    if (window.initializeMetaPixel) window.initializeMetaPixel();
+    if (!window.fbq) return;
+    if (eventId) {
+      window.fbq('trackSingle', META_PIXEL_ID, eventName, data, { eventID: eventId });
+    } else {
+      window.fbq('trackSingle', META_PIXEL_ID, eventName, data);
+    }
+  } catch (_) {}
+};
+
+const getAccessToken = () => sessionStorage.getItem(TOKEN_STORAGE_KEY);
+const storeAccessToken = (token) => {
+  sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+  localStorage.removeItem('token');
+};
+const clearAccessToken = () => {
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+  localStorage.removeItem('token');
+};
+const parseOrderItems = (value) => {
+  if (Array.isArray(value)) return value;
+  if (typeof value !== 'string') return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
 
 const CATALOG = {
   "Netflix 1 mois": 600,
@@ -1654,12 +1772,12 @@ const useScrollReveal = (deps = []) => {
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = React.useState(null);
-  const [token, setToken] = React.useState(localStorage.getItem('token'));
+  const [token, setToken] = React.useState(getAccessToken());
   const [authLoading, setAuthLoading] = React.useState(true);
 
   React.useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('token');
+      const storedToken = getAccessToken();
       if (storedToken) {
         try {
           const res = await fetch(API_BASE + '/me', {
@@ -1670,7 +1788,7 @@ const AuthProvider = ({ children }) => {
             setUser(data.user);
             setToken(storedToken);
           } else {
-            localStorage.removeItem('token');
+            clearAccessToken();
             setToken(null);
             setUser(null);
           }
@@ -1703,10 +1821,11 @@ const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.session) {
-        setToken(data.session.access_token);
-        setUser({ email });
-        localStorage.setItem('token', data.session.access_token);
+      const accessToken = data.access_token || data.session?.access_token;
+      if (res.ok && accessToken && data.user) {
+        setToken(accessToken);
+        setUser({...data.user, is_admin: Boolean(data.user.is_admin ?? data.is_admin)});
+        storeAccessToken(accessToken);
         return { success: true };
       }
       return { success: false, error: translateError(data.error || data.message) };
@@ -1790,7 +1909,7 @@ const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
+    clearAccessToken();
   };
 
   return (
@@ -1889,7 +2008,7 @@ function UserDropdown({ auth, onNavigate }) {
       {open && (
         <div className="user-dropdown-menu animate-fadeIn">
           <div className="dropdown-header">{auth.user.email}</div>
-          {auth.user.email === 'nassym.yak@gmail.com' && (
+          {auth.user.is_admin && (
             <button onClick={() => { setOpen(false); onNavigate('admin'); }} style={{color: 'var(--gold)'}}>👑 Administration</button>
           )}
           <button onClick={() => { setOpen(false); onNavigate('profile'); }}>👤 {t('navAccount')}</button>
@@ -2418,6 +2537,8 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
       localStorage.setItem('has_spotify', cart.some(i => i.id === 'spotify') ? 'true' : 'false');
       localStorage.setItem('has_crunchyroll', cart.some(i => i.id === 'crunchyroll') ? 'true' : 'false');
       localStorage.setItem('last_order_id', orderData.order_id);
+      localStorage.setItem('last_order_amount', String(serverAmount));
+      localStorage.setItem('last_order_items', JSON.stringify(itemsPayload));
 
       // 2. Create invoice
       const invoiceRes = await fetch(API_BASE + '/create-invoice', {
@@ -2507,37 +2628,39 @@ const CredentialsForm = ({ service, color, icon, creds, setCreds, onSubmit, sent
 const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => {
   const [items, setItems] = React.useState([]);
   React.useEffect(() => {
-    try { setItems(typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || [])); } catch(e) {}
+    setItems(parseOrderItems(order.items));
   }, [order.items]);
 
   const itemWithCreds = items.find(i => i.name && i.name.toLowerCase().includes(service.toLowerCase()));
   const savedCreds = itemWithCreds?.client_credentials;
+  const credentialsSubmitted = Boolean(itemWithCreds?.client_credentials_submitted || savedCreds);
 
   const [creds, setCreds] = React.useState(savedCreds || { email: '', password: '', whatsapp: '' });
   const [isEditing, setIsEditing] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (savedCreds) {
-      setCreds(savedCreds);
+    if (credentialsSubmitted) {
+      if (savedCreds) setCreds(savedCreds);
       setIsEditing(false);
     } else {
       setIsEditing(true);
     }
-  }, [savedCreds]);
+  }, [savedCreds, credentialsSubmitted]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!creds.email || !creds.password || !creds.whatsapp) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getAccessToken();
       if (token) {
-        await fetch(`${API_BASE}/client-credentials`, {
+        const response = await fetch(`${API_BASE}/client-credentials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ order_id: order.order_id, service, email: creds.email, password: creds.password, whatsapp: creds.whatsapp })
         });
+        if (!response.ok) throw new Error('Enregistrement refusé');
       }
 
       // Notification Discord gérée par le serveur
@@ -2549,7 +2672,7 @@ const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => 
     setLoading(false);
   };
 
-  if (!isEditing && savedCreds) {
+  if (!isEditing && credentialsSubmitted) {
     return (
       <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: `1px solid ${color}40`}}>
          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
@@ -2557,9 +2680,7 @@ const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => 
            <button onClick={() => setIsEditing(true)} style={{background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem'}} title="Modifier">✏️</button>
          </div>
          <div style={{marginTop: '0.8rem', fontSize: '0.9rem', color: 'var(--text-secondary)'}}>
-           <div style={{fontFamily: 'monospace'}}><strong>Email :</strong> {savedCreds.email}</div>
-           <div style={{fontFamily: 'monospace', marginTop: '0.3rem'}}><strong>Mot de passe :</strong> {savedCreds.password}</div>
-           <div style={{fontFamily: 'monospace', marginTop: '0.3rem'}}><strong>WhatsApp :</strong> {savedCreds.whatsapp}</div>
+           Identifiants enregistrés de manière sécurisée. Ils ne sont pas réaffichés.
          </div>
       </div>
     );
@@ -2575,7 +2696,7 @@ const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => 
       </p>
       <form onSubmit={handleSubmit}>
         <input type="email" placeholder={`Email ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.email} onChange={e => setCreds({...creds, email: e.target.value})} />
-        <input type="text" placeholder={`Mot de passe ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.password} onChange={e => setCreds({...creds, password: e.target.value})} />
+        <input type="password" placeholder={`Mot de passe ${service}`} className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.password} onChange={e => setCreds({...creds, password: e.target.value})} />
         <input type="tel" placeholder="Votre numéro WhatsApp" className="form-input" style={{marginBottom: '0.75rem'}} required value={creds.whatsapp} onChange={e => setCreds({...creds, whatsapp: e.target.value})} />
         <button type="submit" className="form-submit" style={{background: color, color: '#000'}} disabled={loading}>
           {loading ? 'Enregistrement...' : `Envoyer mes identifiants ${service}`}
@@ -2586,7 +2707,7 @@ const OrderCredentialsUpdater = ({ order, service, color, icon, onUpdated }) => 
   );
 };
 
-function SuccessPage({ onNavigate }) {
+function LegacySuccessPage({ onNavigate }) {
   const { t } = useLanguage();
   const [credentials, setCredentials] = React.useState({ email: '', password: '', whatsapp: '' });
   const [crunchCreds, setCrunchCreds] = React.useState({ email: '', password: '', whatsapp: '' });
@@ -2601,24 +2722,27 @@ function SuccessPage({ onNavigate }) {
     e.preventDefault();
     if (!credentials.email || !credentials.password || !credentials.whatsapp) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = getAccessToken();
       if (token && orderId !== 'Inconnue') {
-        await fetch(`${API_BASE}/client-credentials`, {
+        const response = await fetch(`${API_BASE}/client-credentials`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ order_id: orderId, service: 'Spotify', email: credentials.email, password: credentials.password, whatsapp: credentials.whatsapp })
         });
+        if (!response.ok) throw new Error('Enregistrement refusé');
       }
-    } catch (err) { console.error('Error', err); }
-    setSentSpotify(true);
-    localStorage.removeItem('has_spotify');
+      setSentSpotify(true);
+      localStorage.removeItem('has_spotify');
+    } catch (err) {
+      window.showToast("Impossible d'enregistrer les identifiants. Réessayez.", 'warning');
+    }
   };
 
   const handleCrunchyrollSubmit = async (e) => {
     e.preventDefault();
     if (!crunchCreds.email || !crunchCreds.password || !crunchCreds.whatsapp) return;
     try {
-      const token = localStorage.getItem('token');
+      const token = getAccessToken();
       if (token && orderId !== 'Inconnue') {
         const res = await fetch(`${API_BASE}/client-credentials`, {
           method: 'POST',
@@ -2627,20 +2751,15 @@ function SuccessPage({ onNavigate }) {
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          console.error('Erreur envoi identifiants Crunchyroll', data.error);
+          throw new Error(data.error || 'Enregistrement refusé');
         }
       }
 
-      /*
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: `🥋 **Nouveau compte Crunchyroll à activer !**\n**Commande :** ${orderId}\n**Email :** ${crunchCreds.email}\n**Mot de passe :** ${crunchCreds.password}\n**Numéro WhatsApp :** ${crunchCreds.whatsapp}\n\n[👤  Valider et activer la commande](${validationLink})`
-        })
-      */
-    } catch (err) { console.error('Error', err); }
-    setSentCrunchyroll(true);
-    localStorage.removeItem('has_crunchyroll');
+      setSentCrunchyroll(true);
+      localStorage.removeItem('has_crunchyroll');
+    } catch (err) {
+      window.showToast("Impossible d'enregistrer les identifiants. Réessayez.", 'warning');
+    }
   };
 
 
@@ -2664,6 +2783,163 @@ function SuccessPage({ onNavigate }) {
       <button className="hero-cta" style={{animation: 'none'}} onClick={() => onNavigate('orders')}>
         {t('successCta')}
       </button>
+    </div>
+  );
+}
+
+function SuccessPage({ onNavigate, auth, onConfirmed }) {
+  const [payment, setPayment] = React.useState(null);
+  const [checking, setChecking] = React.useState(true);
+  const [sent, setSent] = React.useState({ Spotify: false, Crunchyroll: false });
+  const [spotifyCreds, setSpotifyCreds] = React.useState({ email: '', password: '', whatsapp: '' });
+  const [crunchCreds, setCrunchCreds] = React.useState({ email: '', password: '', whatsapp: '' });
+  const confirmedRef = React.useRef(false);
+  const orderId = localStorage.getItem('last_order_id') || '';
+  const amount = Number(localStorage.getItem('last_order_amount') || 0);
+  const savedItems = parseOrderItems(localStorage.getItem('last_order_items'));
+  const hasSpotify = localStorage.getItem('has_spotify') === 'true';
+  const hasCrunchyroll = localStorage.getItem('has_crunchyroll') === 'true';
+
+  const checkStatus = React.useCallback(async () => {
+    const token = auth?.token || getAccessToken();
+    if (!orderId || !token) {
+      setChecking(false);
+      return null;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/validate-order?id=${encodeURIComponent(orderId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store'
+      });
+      if (!response.ok) throw new Error('Statut indisponible');
+      const next = await response.json();
+      setPayment(next);
+      return next;
+    } catch (_) {
+      return null;
+    }
+  }, [auth?.token, orderId]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      setChecking(true);
+      for (let attempt = 0; attempt < 8 && !cancelled; attempt++) {
+        const next = await checkStatus();
+        const terminal = next && (
+          next.payment_status === 'paid' || next.payment_status === 'failed' ||
+          next.status === 'active' || next.status === 'completed' || next.status === 'cancelled'
+        );
+        if (terminal) break;
+        if (attempt < 7) await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      if (!cancelled) setChecking(false);
+    };
+    poll();
+    return () => { cancelled = true; };
+  }, [checkStatus]);
+
+  const isPaid = Boolean(payment && (
+    payment.payment_status === 'paid' || payment.status === 'active' || payment.status === 'completed'
+  ));
+  const isFailed = Boolean(payment && (
+    payment.payment_status === 'failed' || payment.status === 'cancelled'
+  ));
+  const isActivated = Boolean(payment && ['active', 'completed'].includes(payment.status));
+
+  React.useEffect(() => {
+    if (!isPaid || !orderId || confirmedRef.current) return;
+    confirmedRef.current = true;
+    const eventId = `purchase_${orderId}`;
+    if (!sessionStorage.getItem(`meta_${eventId}`)) {
+      trackMeta('Purchase', {
+        value: amount,
+        currency: 'DZD',
+        content_type: 'product',
+        content_ids: savedItems.map(item => item.name).filter(Boolean),
+        contents: metaContents(savedItems),
+        num_items: savedItems.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
+      }, eventId);
+      sessionStorage.setItem(`meta_${eventId}`, '1');
+    }
+    if (typeof onConfirmed === 'function') onConfirmed();
+    window.dispatchEvent(new Event('refresh_orders'));
+  }, [isPaid, orderId, amount]);
+
+  const submitCredentials = async (service, creds, setter) => {
+    const token = auth?.token || getAccessToken();
+    if (!token || !isPaid || !creds.email || !creds.password || !creds.whatsapp) return;
+    try {
+      const response = await fetch(`${API_BASE}/client-credentials`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ order_id: orderId, service, ...creds })
+      });
+      if (!response.ok) throw new Error('Enregistrement refusé');
+      setSent(current => ({ ...current, [service]: true }));
+      setter({ email: '', password: '', whatsapp: '' });
+      localStorage.removeItem(service === 'Spotify' ? 'has_spotify' : 'has_crunchyroll');
+    } catch (_) {
+      window.showToast("Impossible d'enregistrer les identifiants. Réessayez.", 'warning');
+    }
+  };
+
+  const supportMessage = encodeURIComponent(`Bonjour Aura Stream, j'ai besoin d'aide pour la commande ${orderId || 'inconnue'}.`);
+  const steps = [
+    { label: 'Commande créée', done: Boolean(orderId), current: false },
+    { label: isFailed ? 'Paiement annulé ou refusé' : 'Paiement confirmé', done: isPaid, current: !isPaid && !isFailed },
+    { label: isActivated ? 'Activation terminée' : 'Activation en cours', done: isActivated, current: isPaid && !isActivated },
+    { label: isActivated ? 'Abonnement disponible dans Mes commandes' : 'Livraison', done: isActivated, current: false }
+  ];
+
+  return (
+    <div className="success-page animate-fadeInUp">
+      <div className="success-icon" style={isFailed ? {borderColor: 'rgba(230,57,70,.5)', background: 'rgba(230,57,70,.12)'} : {}}>
+        {isFailed ? '!' : isPaid ? '✓' : '…'}
+      </div>
+      <h2 style={{fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.75rem'}}>
+        {isFailed ? 'Paiement non confirmé' : isPaid ? 'Paiement confirmé' : 'Vérification du paiement'}
+      </h2>
+      <p style={{color: 'var(--text-secondary)', lineHeight: 1.6}}>
+        {isFailed
+          ? 'Votre commande n’a pas été validée et votre panier a été conservé.'
+          : isPaid
+            ? (isActivated ? 'Votre abonnement est prêt.' : 'Votre paiement est reçu. Nous terminons maintenant l’activation.')
+            : 'Nous interrogeons le serveur de paiement. Cette vérification peut prendre quelques secondes.'}
+      </p>
+
+      <div className="confirmation-card">
+        <div className="confirmation-meta">
+          <div><small style={{color: 'var(--text-muted)'}}>Commande</small><div style={{fontWeight: 700}}>{orderId || 'Indisponible'}</div></div>
+          {amount > 0 && <div><small style={{color: 'var(--text-muted)'}}>Montant</small><div style={{fontWeight: 700, color: 'var(--gold)'}}>{formatDA(amount)}</div></div>}
+        </div>
+        <div className="confirmation-steps">
+          {steps.map((step, index) => (
+            <div key={step.label} className={`confirmation-step ${step.done ? 'done' : ''} ${step.current ? 'current' : ''}`}>
+              <div className="confirmation-step-icon">{step.done ? '✓' : index + 1}</div>
+              <div style={{fontWeight: step.current || step.done ? 700 : 500, color: step.current ? 'var(--gold)' : 'var(--text-primary)'}}>{step.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!isPaid && !isFailed && (
+        <button className="btn btn-secondary" disabled={checking} onClick={async () => { setChecking(true); await checkStatus(); setChecking(false); }}>
+          {checking ? 'Vérification en cours…' : 'Vérifier à nouveau'}
+        </button>
+      )}
+
+      {isPaid && hasSpotify && !sent.Spotify && (
+        <CredentialsForm service="Spotify" color="#1DB954" icon="🎵" creds={spotifyCreds} setCreds={setSpotifyCreds} onSubmit={(event) => { event.preventDefault(); submitCredentials('Spotify', spotifyCreds, setSpotifyCreds); }} sent={sent.Spotify} />
+      )}
+      {isPaid && hasCrunchyroll && !sent.Crunchyroll && (
+        <CredentialsForm service="Crunchyroll" color="#F47521" icon="🍥" creds={crunchCreds} setCreds={setCrunchCreds} onSubmit={(event) => { event.preventDefault(); submitCredentials('Crunchyroll', crunchCreds, setCrunchCreds); }} sent={sent.Crunchyroll} />
+      )}
+
+      <div className="confirmation-actions">
+        <button className="hero-cta" style={{animation: 'none'}} onClick={() => onNavigate('orders')}>Voir mes commandes</button>
+        <a className="btn btn-secondary" href={`https://wa.me/213557828812?text=${supportMessage}`} target="_blank" rel="noopener noreferrer">Aide WhatsApp</a>
+      </div>
     </div>
   );
 }
@@ -3258,7 +3534,7 @@ function AdminDashboard({ auth }) {
           </div>
         ) : (
           currentOrders.map((order) => {
-            const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+            const items = parseOrderItems(order.items);
             const date = new Date(order.created_at).toLocaleString('fr-DZ');
             let statusColor = 'var(--text-secondary)';
             if (order.status === 'active') statusColor = 'var(--spotify)';
@@ -3310,7 +3586,7 @@ function AdminDashboard({ auth }) {
                           value={order.status}
                           onChange={async (val) => {
                             const newStatus = val;
-                            const t = localStorage.getItem('token');
+                            const t = getAccessToken();
                             if (!t) return;
                             
                             // Optimistic update
@@ -3564,7 +3840,7 @@ function OrdersPage({ auth }) {
       });
       const data = await res.json();
       if (res.ok && data.orders) {
-        setOrders(data.orders);
+        setOrders(data.orders.filter(order => order.payment_status === 'paid'));
         try {
           const credRes = await fetch(API_BASE + '/my-credentials', { headers: { 'Authorization': `Bearer ${auth.token}` } });
           const credData = await credRes.json();
@@ -3620,8 +3896,15 @@ function OrdersPage({ auth }) {
         <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
           {orders.map(order => {
             const creds = credentials.find(c => c.assigned_order_id === order.order_id);
-            const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+            const items = parseOrderItems(order.items);
             const date = new Date(order.created_at).toLocaleDateString('fr-DZ');
+            const hasNetflix = items.some(item => String(item.name || '').toLowerCase().includes('netflix'));
+            const isNetflixWaitingForStock = order.status === 'pending' && order.payment_status === 'paid' && hasNetflix;
+            const pendingLabel = isNetflixWaitingForStock
+              ? 'Paiement reçu — réapprovisionnement Netflix en cours. Livraison dès qu\'un compte est disponible.'
+              : order.payment_status === 'paid'
+                ? 'Paiement reçu — activation en cours'
+                : 'Paiement non confirmé';
             let daysLeft = null;
             if (order.status === 'active' && order.expires_at) {
               const diffMs = new Date(order.expires_at) - new Date();
@@ -3644,7 +3927,7 @@ function OrdersPage({ auth }) {
                     background: order.status === 'active' ? 'rgba(29,185,84,0.1)' : order.status === 'pending' ? 'rgba(255,193,7,0.1)' : 'rgba(255,255,255,0.05)',
                     color: order.status === 'active' ? 'var(--spotify)' : order.status === 'pending' ? 'var(--gold)' : 'var(--text-secondary)'
                   }}>
-                    {order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? 'En traitement' : 'Terminée'}
+                    {order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? pendingLabel : order.status === 'cancelled' ? 'Annulée' : 'Terminée'}
                   </span>
                   {order.status === 'active' && order.expires_at && (
                     <div style={{width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', textAlign: 'right'}}>
@@ -3929,49 +4212,102 @@ function AuraGiftCards() {
       const token = params.get('access_token');
       if (token) {
         setRecoveryToken(token);
-        window.location.hash = ''; // Clear hash from URL
+        window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+        if (window.initializeMetaPixel) window.initializeMetaPixel();
       }
     }
 
-    // Detect payment success (hash or search params)
+    // Detect a payment-provider return. The URL itself is not proof of payment:
+    // SlickPay can use the same return URL after a cancellation.
     const hashParams = window.location.hash;
     const searchParams = new URLSearchParams(window.location.search);
     
     let oid = null;
     if (hashParams.startsWith('#success_')) {
       oid = hashParams.replace('#success_', '');
-    } else if (searchParams.get('payment') === 'success') {
+    } else if (['return', 'success'].includes(searchParams.get('payment'))) {
       oid = searchParams.get('order_id') || searchParams.get('amp;order_id');
     }
 
     if (oid) {
       localStorage.setItem('last_order_id', oid);
-      
-      // Auto-validate order (Netflix accounts will be instantly assigned from stock)
-      fetch(API_BASE + '/validate-order?id=' + oid).catch(e => console.error(e));
+      setPage('success');
 
-      setPage('orders');
-      window.dispatchEvent(new Event('refresh_orders'));
-      setTimeout(() => window.dispatchEvent(new Event('refresh_orders')), 3500);
-      
-      // Show payment success toast
-      setTimeout(() => {
-        window.showToast('Paiement confirmé ! Merci pour votre achat. Vos identifiants sont disponibles ci-dessous.', 'success');
-      }, 500);
-      
-      try {
-        const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
-        if (window.fbq) window.fbq('track', 'Purchase', { value: cartTotal, currency: 'DZD' });
-      } catch(e) {}
-      setCart([]);
-      
       // Clean up URL
       const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
       window.history.replaceState({path:newUrl},'',newUrl);
+
+      // SuccessPage owns the authenticated payment polling and only reports a
+      // conversion after the API confirms that the order is paid.
+      return;
+
+      const verifyPaymentReturn = async () => {
+        let payment = null;
+        for (let attempt = 0; attempt < 6; attempt++) {
+          try {
+            const res = await fetch(API_BASE + '/validate-order?id=' + encodeURIComponent(oid), {
+              headers: { 'Authorization': `Bearer ${auth.token}` }
+            });
+            if (res.ok) {
+              payment = await res.json();
+              if (payment.status === 'active' || payment.status === 'completed' || payment.status === 'cancelled' || payment.payment_status === 'paid' || payment.payment_status === 'failed') break;
+            }
+          } catch (e) {
+            console.error('Payment verification error:', e);
+          }
+          if (attempt < 5) await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+
+        const isConfirmed = payment && (payment.payment_status === 'paid' || payment.status === 'active' || payment.status === 'completed');
+        if (isConfirmed) {
+          const waitingForStock = payment.payment_status === 'paid' && payment.status === 'pending';
+          window.showToast(
+            waitingForStock
+              ? 'Paiement confirmé. Réapprovisionnement Netflix en cours : livraison dès qu\'un compte est disponible.'
+              : 'Paiement confirmé ! Merci pour votre achat. Vos identifiants sont disponibles ci-dessous.',
+            'success'
+          );
+          try {
+            const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
+            if (window.fbq) window.fbq('track', 'Purchase', { value: cartTotal, currency: 'DZD' });
+          } catch(e) {}
+          setCart([]);
+        } else if (payment && (payment.status === 'cancelled' || payment.payment_status === 'failed')) {
+          window.showToast('Paiement annulé. Votre commande n\'a pas été validée et votre panier a été conservé.', 'warning');
+        } else {
+          window.showToast('Paiement non confirmé pour le moment. Si vous avez annulé, aucune commande n\'est validée.', 'warning');
+        }
+
+        window.dispatchEvent(new Event('refresh_orders'));
+      };
+
+      verifyPaymentReturn();
     }
   }, []);
 
   const initialMount = React.useRef(true);
+
+  React.useEffect(() => {
+    const pageSeo = {
+      home: ['Aura Stream — Netflix, Spotify et Crunchyroll en Algérie', 'Abonnements streaming avec paiement sécurisé et activation rapide en Algérie.'],
+      shop: ['Abonnements streaming — Aura Stream', 'Choisissez votre abonnement Netflix, Spotify ou Crunchyroll en dinars algériens.'],
+      checkout: ['Paiement sécurisé — Aura Stream', 'Vérifiez votre commande avant de poursuivre vers le paiement sécurisé.'],
+      success: ['Suivi de commande — Aura Stream', 'Suivez la confirmation du paiement et l’activation de votre abonnement.'],
+      orders: ['Mes commandes — Aura Stream', 'Consultez vos abonnements et leur statut d’activation.']
+    };
+    const [title, description] = pageSeo[page] || pageSeo.home;
+    document.title = title;
+    const descriptionTag = document.querySelector('meta[name="description"]');
+    if (descriptionTag) descriptionTag.setAttribute('content', description);
+
+    if (page === 'home' || page === 'shop') {
+      trackMeta('ViewContent', {
+        content_name: page === 'shop' ? 'Catalogue Aura Stream' : 'Accueil Aura Stream',
+        content_type: 'product',
+        content_ids: PRODUCTS.map(product => product.name)
+      });
+    }
+  }, [page]);
 
   // Sync cart from Supabase on login if local cart is empty
   React.useEffect(() => {
@@ -3991,9 +4327,14 @@ function AuraGiftCards() {
 
   const addToCart = (card) => {
     setCart([...cart, card]);
-    try {
-      if (window.fbq) window.fbq('track', 'AddToCart', { content_name: card.type + ' ' + card.duration, value: card.price, currency: 'DZD' });
-    } catch(e) {}
+    trackMeta('AddToCart', {
+      content_name: card.type + ' ' + card.duration,
+      content_ids: [card.name || card.id],
+      content_type: 'product',
+      contents: metaContents([card]),
+      value: card.price,
+      currency: 'DZD'
+    });
     setCartBump(true);
     setTimeout(() => setCartBump(false), 400);
   };
@@ -4010,6 +4351,14 @@ function AuraGiftCards() {
 
   const handleCheckout = () => {
     setShowCart(false);
+    trackMeta('InitiateCheckout', {
+      content_ids: cart.map(item => item.name || item.id).filter(Boolean),
+      content_type: 'product',
+      contents: metaContents(cart),
+      num_items: cart.length,
+      value: displayCartTotal(cart),
+      currency: 'DZD'
+    });
     if (!auth.user) {
       setShowLogin(true);
     } else {
@@ -4026,10 +4375,10 @@ function AuraGiftCards() {
 
   return (
     <div>
-      {auth.user && ["nassym.yak@gmail.com", "admin@aura-stream.com", "vompiroman@gmail.com"].includes(auth.user.email) && (
+      {false && auth.user?.is_admin && (
         <button onClick={async () => {
           try {
-            const t = auth.token || localStorage.getItem('token');
+            const t = auth.token || getAccessToken();
             if(!t) { alert("Token manquant !"); return; }
             alert("Génération de la commande en cours...");
             const res = await fetch(API_BASE+'/create-order', {
@@ -4095,7 +4444,7 @@ function AuraGiftCards() {
 
         {page === 'success' && (
           <div className="section">
-            <SuccessPage onNavigate={handleNavigate} />
+            <SuccessPage auth={auth} onNavigate={handleNavigate} onConfirmed={() => setCart([])} />
           </div>
         )}
 
@@ -4117,7 +4466,7 @@ function AuraGiftCards() {
           </div>
         )}
 
-        {page === 'admin' && auth.user && (
+        {page === 'admin' && auth.user?.is_admin && (
           <div className="section">
             <AdminDashboard auth={auth} />
           </div>
@@ -4225,4 +4574,3 @@ root.render(<App />);
   </script>
 </body>
 </html>
-
