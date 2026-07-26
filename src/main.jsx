@@ -3522,7 +3522,6 @@ function AuraGiftCards() {
         {page === 'home' && (
           <>
             <HeroSection onShopClick={() => handleNavigate('shop')} />
-            <ProductsSection onAddToCart={addToCart} />
             <FAQSection />
             <SocialProofSection />
           </>

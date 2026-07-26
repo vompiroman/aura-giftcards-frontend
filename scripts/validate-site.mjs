@@ -29,6 +29,18 @@ for (const marker of [
   if (!app.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
 
+const homeSection = app.match(/\{page === 'home' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
+const shopSection = app.match(/\{page === 'shop' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
+if (homeSection.includes("<ProductsSection")) {
+  throw new Error("La page d'accueil ne doit pas afficher les cartes produits");
+}
+if (!shopSection.includes("<ProductsSection")) {
+  throw new Error("La page boutique doit conserver les cartes produits");
+}
+if (!app.includes("HeroSection onShopClick={() => handleNavigate('shop')}")) {
+  throw new Error("Le CTA Hero ne navigue plus vers la boutique");
+}
+
 for (const forbidden of [
   "text/babel",
   "babel-standalone",
