@@ -1311,11 +1311,51 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
   const [cgvAccepted, setCgvAccepted] = React.useState(false);
-  const total = displayCartTotal(cart);
+  const [promoCode, setPromoCode] = React.useState('');
+  const [promo, setPromo] = React.useState(null);
+  const [promoLoading, setPromoLoading] = React.useState(false);
+  const [promoMessage, setPromoMessage] = React.useState('');
+  const subtotal = displayCartTotal(cart);
+  const total = promo?.total ?? subtotal;
+
+  const validatePromo = async () => {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) {
+      setPromo(null);
+      setPromoMessage('Saisissez un code promo.');
+      return;
+    }
+    setPromoLoading(true);
+    setPromoMessage('');
+    try {
+      const response = await fetch(`${API_BASE}/validate-promo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${auth.token}` },
+        body: JSON.stringify({ code, items: cart.map(item => ({ name: item.name, quantity: 1 })) }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.valid === false || !Number.isFinite(Number(data.total))) {
+        setPromo(null);
+        setPromoMessage(data.error || 'Ce code promo est invalide ou expiré.');
+      } else {
+        setPromo({
+          code,
+          discount: Number(data.discount_amount) || 0,
+          total: Math.max(0, Number(data.total)),
+        });
+        setPromoMessage(data.message || 'Code promo appliqué.');
+      }
+    } catch {
+      setPromo(null);
+      setPromoMessage('Le service des codes promo est momentanément indisponible.');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const handleCheckout = async () => {
     if (!auth.token) {
-      setError("Vous devez etre connecte pour commander.");
+      setError("Vous devez être connecté pour commander.");
       return;
     }
     setLoading(true);
@@ -1333,6 +1373,7 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
         },
         body: JSON.stringify({
           items: itemsPayload,
+          promo_code: promo?.code || null,
           marketing_consent: marketingConsent?.status === 'granted',
           marketing_consent_version: marketingConsent?.version || null,
           marketing_consent_at: marketingConsent?.updated_at || null
@@ -1367,7 +1408,7 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
       if (data.url || data.payment_url) {
         window.location.href = data.url || data.payment_url;
       } else {
-        setError(data.error || 'Erreur lors de la creation de la facture');
+        setError(data.error || 'Erreur lors de la création de la facture');
       }
     } catch (err) {
       setError('Erreur serveur: ' + err.message);
@@ -1392,8 +1433,38 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
           </div>
         ))}
         <hr className="checkout-divider" />
+        {promo && (
+          <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem'}}>
+            <span>Sous-total</span>
+            <span>{formatDA(subtotal)}</span>
+          </div>
+        )}
+        <div style={{display: 'flex', gap: '0.6rem', alignItems: 'end', marginBottom: '1rem'}}>
+          <label htmlFor="checkout-promo" style={{flex: 1, color: 'var(--text-secondary)', fontSize: '0.85rem'}}>
+            Code promo
+            <input
+              id="checkout-promo"
+              className="form-input"
+              value={promoCode}
+              onChange={(event) => { setPromoCode(event.target.value); setPromo(null); setPromoMessage(''); }}
+              placeholder="Ex. AURA10"
+              autoComplete="off"
+              style={{marginTop: '0.35rem'}}
+            />
+          </label>
+          <button type="button" className="btn btn-secondary" onClick={validatePromo} disabled={promoLoading || !promoCode.trim()}>
+            {promoLoading ? 'Vérification…' : 'Appliquer'}
+          </button>
+        </div>
+        {promoMessage && <p aria-live="polite" style={{fontSize: '0.85rem', color: promo ? 'var(--spotify)' : 'var(--text-secondary)', marginBottom: '1rem'}}>{promoMessage}</p>}
+        {promo && (
+          <div style={{display: 'flex', justifyContent: 'space-between', color: 'var(--spotify)', fontSize: '0.9rem', marginBottom: '0.5rem'}}>
+            <span>Réduction ({promo.code})</span>
+            <strong>-{formatDA(promo.discount)}</strong>
+          </div>
+        )}
         <div className="checkout-total">
-          <span>{t('cartTotal')}</span>
+          <span>{promo ? 'Total après réduction' : t('cartTotal')}</span>
           <span style={{color: 'var(--gold)'}}>{formatDA(total)}</span>
         </div>
 
@@ -2182,44 +2253,102 @@ function AdminStats({ orders, auth }) {
   );
 }
 
+const ORDER_STATUS_LABELS = {
+  pending: 'En traitement',
+  active: 'Active',
+  cancelled: 'Annulée',
+  completed: 'Terminée',
+};
+
+function orderStatusLabel(order) {
+  if (order.payment_status !== 'paid' && order.status === 'pending') return 'Paiement en attente';
+  return ORDER_STATUS_LABELS[order.status] || 'Statut indisponible';
+}
+
+function activationEtaLabel(order, items) {
+  if (order.status !== 'pending' || order.payment_status !== 'paid') return '';
+  const manual = items.some((item) => /spotify|crunchyroll/i.test(String(item?.name || '')));
+  return manual
+    ? 'Activation de vos services en cours. Le délai dépend de la disponibilité de notre équipe.'
+    : 'Paiement reçu. Attribution automatique en cours selon le stock disponible.';
+}
+
 function AdminDashboard({ auth }) {
   const [orders, setOrders] = React.useState([]);
   const [inventory, setInventory] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
+  const [search, setSearch] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
   const [filterService, setFilterService] = React.useState('all');
-  const [filterDays, setFilterDays] = React.useState('');
   const [filterStatus, setFilterStatus] = React.useState('all');
+  const [filterDateFrom, setFilterDateFrom] = React.useState('');
+  const [filterDateTo, setFilterDateTo] = React.useState('');
   const [sortDate, setSortDate] = React.useState('desc');
   const [currentPage, setCurrentPage] = React.useState(1);
   const [adminTab, setAdminTab] = React.useState('orders');
-  const ordersPerPage = 10;
+  const [pageInfo, setPageInfo] = React.useState({ total: 0, totalPages: 1 });
+  const ordersPerPage = 25;
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 350);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, filterService, filterStatus, filterDateFrom, filterDateTo, sortDate]);
+
   React.useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
+      setError('');
       try {
-        const res = await fetch(API_BASE + '/admin/all-orders?t=' + Date.now(), {
+        const query = new URLSearchParams({
+          page: String(currentPage),
+          limit: String(ordersPerPage),
+          sort: sortDate,
+        });
+        if (debouncedSearch) query.set('search', debouncedSearch);
+        if (filterService !== 'all') query.set('service', filterService);
+        if (filterStatus !== 'all') query.set('status', filterStatus);
+        if (filterDateFrom) query.set('date_from', filterDateFrom);
+        if (filterDateTo) query.set('date_to', filterDateTo);
+        const res = await fetch(`${API_BASE}/admin/all-orders?${query.toString()}`, {
           headers: { 'Authorization': `Bearer ${auth.token}` },
           cache: 'no-store'
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         
-        try {
-          const invRes = await fetch(API_BASE + '/admin/inventory', { headers: { 'Authorization': `Bearer ${auth.token}` } });
-          const invData = await invRes.json();
-          if (invRes.ok && invData.inventory) setInventory(invData.inventory);
-        } catch(e) {}
-
         if (res.ok && data.orders) {
           setOrders(data.orders);
+          setPageInfo({
+            total: Number(data.total) || data.orders.length,
+            totalPages: Math.max(1, Number(data.total_pages) || 1),
+          });
         } else {
           setError(data.error || 'Erreur lors du chargement des commandes');
         }
       } catch (err) {
-        setError('Erreur réseau : ' + err.message);
+        setError('Impossible de charger les commandes. Vérifiez votre connexion puis réessayez.');
       }
       setLoading(false);
     };
     fetchOrders();
+  }, [auth.token, currentPage, debouncedSearch, filterService, filterStatus, filterDateFrom, filterDateTo, sortDate]);
+
+  React.useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const res = await fetch(API_BASE + '/admin/inventory', {
+          headers: { 'Authorization': `Bearer ${auth.token}` },
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.inventory) setInventory(data.inventory);
+      } catch {}
+    };
+    if (auth.token) fetchInventory();
   }, [auth.token]);
 
   if (loading) return (
@@ -2237,45 +2366,11 @@ function AdminDashboard({ auth }) {
   );
   if (error) return <div className="error" style={{color: 'var(--red)', padding: '2rem', textAlign: 'center'}}>{error}</div>;
 
-  const filteredOrders = orders.filter(order => {
-    let matchService = true;
-    let matchDays = true;
-
-    // Filter by service
-    if (filterService !== 'all') {
-      const itemsStr = typeof order.items === 'string' ? order.items : JSON.stringify(order.items || []);
-      matchService = itemsStr.toLowerCase().includes(filterService);
-    }
-
-    // Filter by days left
-    if (filterDays !== '') {
-      const targetDays = parseInt(filterDays, 10);
-      if (order.status === 'active' && order.expires_at) {
-        const diffMs = new Date(order.expires_at) - new Date();
-        const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-        matchDays = daysLeft >= 0 && daysLeft <= targetDays;
-      } else {
-        matchDays = false;
-      }
-    }
-
-    let matchStatus = true;
-    if (filterStatus !== 'all') {
-      matchStatus = order.status === filterStatus;
-    }
-
-    return matchService && matchDays && matchStatus;
-  });
-
-  filteredOrders.sort((a, b) => {
-    const da = new Date(a.created_at).getTime();
-    const db = new Date(b.created_at).getTime();
-    return sortDate === 'desc' ? db - da : da - db;
-  });
-
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage) || 1;
-  const startIndex = (currentPage - 1) * ordersPerPage;
-  const currentOrders = filteredOrders.slice(startIndex, startIndex + ordersPerPage);
+  const totalPages = pageInfo.totalPages;
+  const currentOrders = orders;
+  const pageButtons = [...new Set([1, currentPage - 1, currentPage, currentPage + 1, totalPages])]
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((a, b) => a - b);
 
   return (
     <div className="orders-container animate-fadeInUp">
@@ -2302,7 +2397,19 @@ function AdminDashboard({ auth }) {
         <button onClick={() => {setFilterStatus('cancelled'); setCurrentPage(1);}} style={{padding: '0.6rem 1.2rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontWeight: 600, transition: 'all 0.3s', background: filterStatus === 'cancelled' ? 'var(--red)' : 'transparent', color: filterStatus === 'cancelled' ? '#fff' : 'var(--text-secondary)'}}>Annulées</button>
       </div>
 
-      <div style={{display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center'}}>
+      <div style={{display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap', justifyContent: 'center'}}>
+        <label style={{display: 'flex', flexDirection: 'column', gap: '0.35rem', minWidth: '240px', color: 'var(--text-secondary)', fontSize: '0.8rem'}}>
+          Rechercher une commande
+          <input
+            id="admin-order-search"
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="ID, email client…"
+            aria-label="Rechercher par identifiant ou email"
+            className="form-input"
+          />
+        </label>
         <CustomSelect 
           value={filterService} 
           onChange={(val) => {setFilterService(val); setCurrentPage(1);}} 
@@ -2313,17 +2420,14 @@ function AdminDashboard({ auth }) {
             { value: 'crunchyroll', label: 'Crunchyroll' }
           ]} 
         />
-        <CustomSelect 
-          value={filterDays} 
-          onChange={(val) => {setFilterDays(val); setCurrentPage(1);}} 
-          options={[
-            { value: '', label: 'Expiration : Toutes' },
-            { value: '3', label: 'Expire dans ≤ 3 jours' },
-            { value: '7', label: 'Expire dans ≤ 7 jours' },
-            { value: '15', label: 'Expire dans ≤ 15 jours' },
-            { value: '30', label: 'Expire dans ≤ 30 jours' }
-          ]} 
-        />
+        <label style={{display: 'flex', flexDirection: 'column', gap: '0.35rem', color: 'var(--text-secondary)', fontSize: '0.8rem'}}>
+          Du
+          <input type="date" value={filterDateFrom} onChange={(event) => setFilterDateFrom(event.target.value)} className="form-input" aria-label="Date de début" />
+        </label>
+        <label style={{display: 'flex', flexDirection: 'column', gap: '0.35rem', color: 'var(--text-secondary)', fontSize: '0.8rem'}}>
+          Au
+          <input type="date" value={filterDateTo} onChange={(event) => setFilterDateTo(event.target.value)} className="form-input" aria-label="Date de fin" />
+        </label>
         <button onClick={() => setSortDate(sortDate === 'desc' ? 'asc' : 'desc')} style={{background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)', padding: '0.6rem 1.2rem', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600, transition: 'all 0.3s', height: '42px'}}>
           {sortDate === 'desc' ? '⬇️ Plus récentes' : '⬆️ Plus anciennes'}
         </button>
@@ -2418,6 +2522,8 @@ function AdminDashboard({ auth }) {
                       </div>
                     </div>
                     {daysLeftText && <div style={{fontSize: '0.85rem', color: statusColor, fontWeight: 600, marginBottom: '0.5rem'}}>{daysLeftText}</div>}
+                    {activationEtaLabel(order, items) && <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)', maxWidth: '280px'}}>{activationEtaLabel(order, items)}</div>}
+                    <div style={{fontSize: '0.8rem', color: statusColor, marginTop: '0.35rem'}}>{orderStatusLabel(order)}</div>
                     <div style={{fontSize: '1.4rem', fontWeight: 700, marginTop: '0.5rem'}}>
                       Total: {order.amount} DA
                     </div>
@@ -2446,18 +2552,20 @@ function AdminDashboard({ auth }) {
             Précédent
           </button>
           
-          {[...Array(totalPages)].map((_, i) => (
+          {pageButtons.map((page) => (
             <button 
-              key={i} 
-              onClick={() => setCurrentPage(i + 1)}
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              aria-label={`Aller à la page ${page}`}
+              aria-current={currentPage === page ? 'page' : undefined}
               style={{
                 width: '40px', height: '40px', borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s',
-                background: currentPage === i + 1 ? 'var(--gold)' : 'transparent',
-                color: currentPage === i + 1 ? '#000' : 'var(--text-secondary)',
-                boxShadow: currentPage === i + 1 ? '0 4px 12px rgba(212,175,55,0.3)' : 'none'
-              }}
+                 background: currentPage === page ? 'var(--gold)' : 'transparent',
+                 color: currentPage === page ? '#000' : 'var(--text-secondary)',
+                 boxShadow: currentPage === page ? '0 4px 12px rgba(212,175,55,0.3)' : 'none'
+               }}
             >
-              {i + 1}
+              {page}
             </button>
           ))}
 
@@ -2652,7 +2760,7 @@ function OrdersPage({ auth }) {
         setError(data.error || 'Erreur lors du chargement des commandes');
       }
     } catch (err) {
-      setError('Erreur reseau.');
+      setError('Erreur réseau. Vérifiez votre connexion puis réessayez.');
     }
     setLoading(false);
   }, [auth.token]);
@@ -2703,7 +2811,7 @@ function OrdersPage({ auth }) {
             const hasNetflix = items.some(item => String(item.name || '').toLowerCase().includes('netflix'));
             const isNetflixWaitingForStock = order.status === 'pending' && order.payment_status === 'paid' && hasNetflix;
             const pendingLabel = isNetflixWaitingForStock
-              ? 'Paiement reçu — réapprovisionnement Netflix en cours. Livraison dès qu\'un compte est disponible.'
+              ? 'Paiement reçu — attribution Netflix en cours selon le stock disponible.'
               : order.payment_status === 'paid'
                 ? 'Paiement reçu — activation en cours'
                 : 'Paiement non confirmé';
@@ -2731,6 +2839,11 @@ function OrdersPage({ auth }) {
                   }}>
                     {order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? pendingLabel : order.status === 'cancelled' ? 'Annulée' : 'Terminée'}
                   </span>
+                  {activationEtaLabel(order, items) && (
+                    <div style={{width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right'}}>
+                      {activationEtaLabel(order, items)}
+                    </div>
+                  )}
                   {order.status === 'active' && order.expires_at && (
                     <div style={{width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', textAlign: 'right'}}>
                       Expire le : {new Date(order.expires_at).toLocaleDateString('fr-DZ')}
@@ -2892,6 +3005,9 @@ function LegalPage() {
           Votre choix publicitaire est facultatif : le refus ne bloque aucune fonctionnalité du site. Vous pouvez donner ou retirer votre accord à tout moment avec le lien « Gérer mes préférences publicitaires » en bas de page. Aura Stream ne vend pas vos données personnelles.
         </p>
       </div>
+      <p aria-live="polite" style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>
+        {pageInfo.total} commande{pageInfo.total > 1 ? 's' : ''} · Page {currentPage} sur {totalPages}
+      </p>
     </div>
   );
 }
