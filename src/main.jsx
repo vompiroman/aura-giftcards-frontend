@@ -2273,214 +2273,6 @@ function activationEtaLabel(order, items) {
     : 'Paiement reçu. Attribution automatique en cours selon le stock disponible.';
 }
 
-function AdminPromoCodes({ auth }) {
-  const emptyForm = {
-    code: '',
-    discount_type: 'percent',
-    discount_value: '',
-    starts_at: '',
-    ends_at: '',
-    max_uses: '',
-    services: [],
-    active: true,
-  };
-  const [promoCodes, setPromoCodes] = React.useState([]);
-  const [form, setForm] = React.useState(emptyForm);
-  const [createdCode, setCreatedCode] = React.useState('');
-  const [loading, setLoading] = React.useState(true);
-  const [saving, setSaving] = React.useState(false);
-  const [error, setError] = React.useState('');
-
-  const loadPromoCodes = React.useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`${API_BASE}/admin/promo-codes`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
-        cache: 'no-store',
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Chargement impossible.');
-      setPromoCodes(Array.isArray(data.promo_codes) ? data.promo_codes : []);
-    } catch (err) {
-      setError(err.message || 'Impossible de charger les codes promo.');
-    } finally {
-      setLoading(false);
-    }
-  }, [auth.token]);
-
-  React.useEffect(() => {
-    loadPromoCodes();
-  }, [loadPromoCodes]);
-
-  const toggleService = (service) => {
-    setForm((current) => ({
-      ...current,
-      services: current.services.includes(service)
-        ? current.services.filter((value) => value !== service)
-        : [...current.services, service],
-    }));
-  };
-
-  const createPromo = async (event) => {
-    event.preventDefault();
-    const code = form.code.trim().toUpperCase();
-    const value = Number(form.discount_value);
-    const maxUses = form.max_uses === '' ? null : Number(form.max_uses);
-    if (!/^[A-Z0-9_-]{4,32}$/.test(code)) {
-      setError('Le code doit contenir 4 à 32 caractères : lettres, chiffres, tiret ou underscore.');
-      return;
-    }
-    if (!Number.isFinite(value) || value <= 0 || (form.discount_type === 'percent' && value > 100)) {
-      setError('La remise doit être positive et ne peut pas dépasser 100 %.');
-      return;
-    }
-    if (maxUses !== null && (!Number.isInteger(maxUses) || maxUses <= 0)) {
-      setError('Le nombre maximal d’utilisations doit être un entier positif.');
-      return;
-    }
-    if (form.starts_at && form.ends_at && new Date(form.ends_at) <= new Date(form.starts_at)) {
-      setError('La date de fin doit être postérieure à la date de début.');
-      return;
-    }
-
-    setSaving(true);
-    setError('');
-    try {
-      const response = await fetch(`${API_BASE}/admin/promo-codes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify({
-          code,
-          discount_type: form.discount_type,
-          discount_value: value,
-          starts_at: form.starts_at || null,
-          ends_at: form.ends_at || null,
-          max_uses: maxUses,
-          services: form.services,
-          active: form.active,
-        }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Création impossible.');
-      setCreatedCode(code);
-      setForm(emptyForm);
-      await loadPromoCodes();
-    } catch (err) {
-      setError(err.message || 'Impossible de créer le code promo.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const setActive = async (promo, active) => {
-    setError('');
-    try {
-      const response = await fetch(`${API_BASE}/admin/promo-codes`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${auth.token}`,
-        },
-        body: JSON.stringify({ id: promo.id, active }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Mise à jour impossible.');
-      setPromoCodes((current) => current.map((item) => item.id === promo.id ? { ...item, active } : item));
-    } catch (err) {
-      setError(err.message || 'Impossible de modifier le code promo.');
-    }
-  };
-
-  const discountLabel = (promo) => promo.discount_type === 'percent'
-    ? `${Number(promo.discount_value)} %`
-    : formatDA(promo.discount_value);
-
-  return (
-    <div>
-      {createdCode && (
-        <div className="dashboard-card" style={{border: '1px solid var(--spotify)', marginBottom: '1.5rem'}} role="status">
-          <strong style={{color: 'var(--spotify)'}}>Code créé — copiez-le maintenant</strong>
-          <p style={{color: 'var(--text-secondary)', margin: '0.5rem 0'}}>Pour votre sécurité, l’API ne pourra pas réafficher ce code en clair.</p>
-          <div style={{display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap'}}>
-            <code style={{fontSize: '1.15rem', color: 'var(--gold)'}}>{createdCode}</code>
-            <button type="button" className="btn btn-secondary" onClick={() => navigator.clipboard.writeText(createdCode)}>Copier</button>
-            <button type="button" className="btn btn-secondary" onClick={() => setCreatedCode('')}>J’ai terminé</button>
-          </div>
-        </div>
-      )}
-
-      <form className="dashboard-card" onSubmit={createPromo} style={{marginBottom: '1.5rem'}}>
-        <h3 style={{marginBottom: '1rem'}}>Créer un code promo</h3>
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem'}}>
-          <label>Code
-            <input className="form-input" value={form.code} onChange={(event) => setForm({...form, code: event.target.value.toUpperCase()})} placeholder="AURA10" maxLength={32} required />
-          </label>
-          <label>Type de remise
-            <select className="form-input" value={form.discount_type} onChange={(event) => setForm({...form, discount_type: event.target.value})}>
-              <option value="percent">Pourcentage</option>
-              <option value="fixed">Montant fixe</option>
-            </select>
-          </label>
-          <label>Valeur
-            <input className="form-input" type="number" min="1" max={form.discount_type === 'percent' ? 100 : undefined} step="1" value={form.discount_value} onChange={(event) => setForm({...form, discount_value: event.target.value})} required />
-          </label>
-          <label>Utilisations maximales
-            <input className="form-input" type="number" min="1" step="1" value={form.max_uses} onChange={(event) => setForm({...form, max_uses: event.target.value})} placeholder="Illimité" />
-          </label>
-          <label>Début
-            <input className="form-input" type="datetime-local" value={form.starts_at} onChange={(event) => setForm({...form, starts_at: event.target.value})} />
-          </label>
-          <label>Fin
-            <input className="form-input" type="datetime-local" value={form.ends_at} onChange={(event) => setForm({...form, ends_at: event.target.value})} />
-          </label>
-        </div>
-        <fieldset style={{border: 0, margin: '1rem 0'}}>
-          <legend style={{marginBottom: '0.5rem'}}>Services concernés (aucun = tous)</legend>
-          <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap'}}>
-            {['Netflix', 'Spotify', 'Crunchyroll'].map((service) => (
-              <label key={service}><input type="checkbox" checked={form.services.includes(service)} onChange={() => toggleService(service)} /> {service}</label>
-            ))}
-          </div>
-        </fieldset>
-        <label style={{display: 'block', marginBottom: '1rem'}}><input type="checkbox" checked={form.active} onChange={(event) => setForm({...form, active: event.target.checked})} /> Activer dès la création</label>
-        {error && <p className="form-error" role="alert">{error}</p>}
-        <button type="submit" className="form-submit" disabled={saving}>{saving ? 'Création…' : 'Créer le code promo'}</button>
-      </form>
-
-      <div className="dashboard-card">
-        <h3 style={{marginBottom: '1rem'}}>Codes existants</h3>
-        {loading ? (
-          <p>Chargement des codes promo…</p>
-        ) : promoCodes.length === 0 ? (
-          <p style={{color: 'var(--text-secondary)'}}>Aucun code promo créé.</p>
-        ) : (
-          <div style={{overflowX: 'auto'}}>
-            <table style={{width: '100%', borderCollapse: 'collapse'}}>
-              <thead><tr><th>Code</th><th>Remise</th><th>Période</th><th>Usages</th><th>Services</th><th>État</th></tr></thead>
-              <tbody>
-                {promoCodes.map((promo) => (
-                  <tr key={promo.id}>
-                    <td>{promo.masked_code || `${promo.code_prefix || 'PROMO'}••••`}</td>
-                    <td>{discountLabel(promo)}</td>
-                    <td>{promo.starts_at ? new Date(promo.starts_at).toLocaleDateString('fr-DZ') : 'Immédiate'} → {promo.ends_at ? new Date(promo.ends_at).toLocaleDateString('fr-DZ') : 'Sans fin'}</td>
-                    <td>{Number(promo.usage_count) || 0} / {promo.max_uses || '∞'}</td>
-                    <td>{Array.isArray(promo.services) && promo.services.length ? promo.services.join(', ') : 'Tous'}</td>
-                    <td><button type="button" className="btn btn-secondary" aria-pressed={Boolean(promo.active)} onClick={() => setActive(promo, !promo.active)}>{promo.active ? 'Actif' : 'Inactif'}</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function AdminDashboard({ auth }) {
   const [orders, setOrders] = React.useState([]);
   const [inventory, setInventory] = React.useState([]);
@@ -2587,7 +2379,6 @@ function AdminDashboard({ auth }) {
         <div style={{display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
           <button className={`nav-btn ${adminTab === 'orders' ? 'active' : ''}`} style={adminTab === 'orders' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('orders')}>📦 Commandes</button>
           <button className={`nav-btn ${adminTab === 'inventory' ? 'active' : ''}`} style={adminTab === 'inventory' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('inventory')}>📦 Stocks</button>
-          <button className={`nav-btn ${adminTab === 'promos' ? 'active' : ''}`} style={adminTab === 'promos' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('promos')}>🏷️ Codes promo</button>
           <button className={`nav-btn ${adminTab === 'stats' ? 'active' : ''}`} style={adminTab === 'stats' ? {color: 'var(--gold)', borderBottom: '2px solid var(--gold)', borderRadius: 0} : {borderRadius: 0}} onClick={() => setAdminTab('stats')}>📊 Stats</button>
         </div>
       </div>
@@ -2596,8 +2387,6 @@ function AdminDashboard({ auth }) {
         <AdminStats orders={orders} auth={auth} />
       ) : adminTab === 'inventory' ? (
         <AdminInventory auth={auth} />
-      ) : adminTab === 'promos' ? (
-        <AdminPromoCodes auth={auth} />
       ) : (
         <React.Fragment>
 
@@ -3522,6 +3311,7 @@ function AuraGiftCards() {
         {page === 'home' && (
           <>
             <HeroSection onShopClick={() => handleNavigate('shop')} />
+            <ProductsSection onAddToCart={addToCart} />
             <FAQSection />
             <SocialProofSection />
           </>
