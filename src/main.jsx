@@ -1334,14 +1334,16 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
         body: JSON.stringify({ code, items: cart.map(item => ({ name: item.name, quantity: 1 })) }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok || data.valid === false || !Number.isFinite(Number(data.total))) {
+      const discountAmount = Number(data.discount_amount ?? data.discount ?? 0);
+      const total = Number(data.total);
+      if (!response.ok || data.valid === false || !Number.isFinite(total) || !Number.isFinite(discountAmount)) {
         setPromo(null);
         setPromoMessage(data.error || 'Ce code promo est invalide ou expiré.');
       } else {
         setPromo({
-          code,
-          discount: Number(data.discount_amount) || 0,
-          total: Math.max(0, Number(data.total)),
+          code: String(data.code || code).trim().toUpperCase(),
+          discount: Math.max(0, discountAmount),
+          total: Math.max(0, total),
         });
         setPromoMessage(data.message || 'Code promo appliqué.');
       }
@@ -2276,7 +2278,7 @@ function activationEtaLabel(order, items) {
 function AdminPromoCodes({ auth }) {
   const emptyForm = {
     code: '',
-    discount_type: 'percent',
+    discount_type: 'percentage',
     discount_value: '',
     starts_at: '',
     ends_at: '',
@@ -2331,7 +2333,7 @@ function AdminPromoCodes({ auth }) {
       setError('Le code doit contenir 4 à 32 caractères : lettres, chiffres, tiret ou underscore.');
       return;
     }
-    if (!Number.isFinite(value) || value <= 0 || (form.discount_type === 'percent' && value > 100)) {
+    if (!Number.isFinite(value) || value <= 0 || (form.discount_type === 'percentage' && value > 100)) {
       setError('La remise doit être positive et ne peut pas dépasser 100 %.');
       return;
     }
@@ -2395,7 +2397,7 @@ function AdminPromoCodes({ auth }) {
     }
   };
 
-  const discountLabel = (promo) => promo.discount_type === 'percent'
+  const discountLabel = (promo) => ['percentage', 'percent'].includes(promo.discount_type)
     ? `${Number(promo.discount_value)} %`
     : formatDA(promo.discount_value);
 
@@ -2421,12 +2423,12 @@ function AdminPromoCodes({ auth }) {
           </label>
           <label>Type de remise
             <select className="form-input" value={form.discount_type} onChange={(event) => setForm({...form, discount_type: event.target.value})}>
-              <option value="percent">Pourcentage</option>
+              <option value="percentage">Pourcentage</option>
               <option value="fixed">Montant fixe</option>
             </select>
           </label>
           <label>Valeur
-            <input className="form-input" type="number" min="1" max={form.discount_type === 'percent' ? 100 : undefined} step="1" value={form.discount_value} onChange={(event) => setForm({...form, discount_value: event.target.value})} required />
+            <input className="form-input" type="number" min="1" max={form.discount_type === 'percentage' ? 100 : undefined} step="1" value={form.discount_value} onChange={(event) => setForm({...form, discount_value: event.target.value})} required />
           </label>
           <label>Utilisations maximales
             <input className="form-input" type="number" min="1" step="1" value={form.max_uses} onChange={(event) => setForm({...form, max_uses: event.target.value})} placeholder="Illimité" />
@@ -3522,6 +3524,7 @@ function AuraGiftCards() {
         {page === 'home' && (
           <>
             <HeroSection onShopClick={() => handleNavigate('shop')} />
+            <ProductsSection onAddToCart={addToCart} />
             <FAQSection />
             <SocialProofSection />
           </>

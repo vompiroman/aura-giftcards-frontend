@@ -31,8 +31,8 @@ for (const marker of [
 
 const homeSection = app.match(/\{page === 'home' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
 const shopSection = app.match(/\{page === 'shop' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
-if (homeSection.includes("<ProductsSection")) {
-  throw new Error("La page d'accueil ne doit pas afficher les cartes produits");
+if (!homeSection.includes("<ProductsSection")) {
+  throw new Error("La page d'accueil doit afficher les cartes produits");
 }
 if (!shopSection.includes("<ProductsSection")) {
   throw new Error("La page boutique doit conserver les cartes produits");
