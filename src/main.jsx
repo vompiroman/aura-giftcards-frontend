@@ -123,7 +123,6 @@ const PRODUCTS = [
   {
     id: 'netflix',
     name: 'Netflix',
-    logo: 'https://api.iconify.design/mdi:netflix.svg?color=%23E50914',
     descKey: 'descNetflix',
     color: 'netflix',
     popular: true,
@@ -135,7 +134,6 @@ const PRODUCTS = [
   {
     id: 'spotify',
     name: 'Spotify',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
     descKey: 'descSpotify',
     color: 'spotify',
     popular: false,
@@ -147,7 +145,6 @@ const PRODUCTS = [
   {
     id: 'crunchyroll',
     name: 'Crunchyroll',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png',
     descKey: 'descCrunchyroll',
     color: 'crunchyroll',
     popular: false,
@@ -158,12 +155,36 @@ const PRODUCTS = [
   }
 ];
 
-const TESTIMONIALS = [
-  { name: 'Amine K.', textKey: 'testim1', stars: 5, service: 'Netflix' },
-  { name: 'Sara M.', textKey: 'testim2', stars: 5, service: 'Spotify' },
-  { name: 'Yacine B.', textKey: 'testim3', stars: 5, service: 'Crunchyroll' },
-  { name: 'Lina D.', textKey: 'testim4', stars: 4, service: 'Netflix' }
-];
+function BrandSymbol({ service }) {
+  const normalized = String(service || '').toLowerCase();
+
+  if (normalized === 'netflix') {
+    return (
+      <svg className="brand-symbol netflix" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path fill="#b20710" d="M7.5 4h5.3v24H7.5z" />
+        <path fill="#b20710" d="M19.2 4h5.3v24h-5.3z" />
+        <path fill="#e50914" d="M7.5 4h5.3l11.7 24h-5.3z" />
+      </svg>
+    );
+  }
+
+  if (normalized === 'spotify') {
+    return (
+      <svg className="brand-symbol spotify" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="14" fill="currentColor" />
+        <path d="M9 12.1c5.3-1.6 11.3-.9 15.2 1.2M10.2 16.5c4.5-1.2 9.5-.6 12.9 1.2M11.2 20.5c3.6-.9 7.5-.4 10.3 1" fill="none" stroke="#07140c" strokeWidth="2.15" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="brand-symbol crunchyroll" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <circle cx="16" cy="16" r="14" fill="currentColor" />
+      <circle cx="18.3" cy="13.4" r="9.1" fill="#fff" />
+      <circle cx="21.6" cy="10.6" r="5.3" fill="currentColor" />
+    </svg>
+  );
+}
 
 const translations = {
   fr: {
@@ -177,24 +198,35 @@ const translations = {
     navLogout: "Déconnexion",
     
     // Top Banner
-    topBanner: "🔥 Offre limitée — Livraison instantanée sur tous les comptes !",
+    topBanner: "Services streaming disponibles partout en Algérie",
+    topBannerSupport: "Support WhatsApp",
     
     // Hero
     heroTitle1: "Tes abonnements streaming",
     heroTitle2: "au meilleur prix",
+    heroEyebrow: "La plateforme streaming pensée pour l'Algérie",
     heroDesc1: "Netflix • Spotify • Crunchyroll",
-    heroDesc2: "Livraison instantanée, paiement sécurisé",
+    heroDesc2: "Netflix attribué automatiquement • Spotify et Crunchyroll activés sur votre compte",
     heroCta: "Acheter maintenant",
-    trustClients: "+500 clients satisfaits",
-    trustDelivery: "Livraison en 5 min",
+    heroSecondary: "Voir les offres",
+    heroNote: "Activation adaptée • Support humain • Paiement local",
+    heroShowcaseNetflix: "Netflix",
+    heroShowcaseManual: "Spotify & Crunchyroll",
+    heroShowcaseEta: "Délai selon le service et la disponibilité",
+    heroShowcaseAuto: "Attribution automatique",
+    heroShowcaseManualActivation: "Activation manuelle",
+    trustClients: "Activation adaptée à chaque service",
+    trustDelivery: "Suivi de commande en ligne",
     trustSecure: "Paiement sécurisé",
     
     // Shop
+    shopEyebrow: "Nos abonnements",
     shopTitle: "Choisissez votre compte",
     shopSubtitle: "Sélectionnez un service et une durée, ajoutez au panier et payez en quelques clics.",
     popular: "Populaire",
     addToCart: "Ajouter au panier",
     added: "Ajouté !",
+    priceLabel: "Prix",
     
     // Stats
     statsTitle: "Ils nous font confiance",
@@ -202,6 +234,34 @@ const translations = {
     statSold: "Comptes vendus",
     statDelivery: "Livraison moyenne",
     statSat: "Clients satisfaits",
+    serviceHighlightsTitle: "Un service clair et suivi",
+    serviceHighlightsSubtitle: "Chaque abonnement suit le bon parcours, du paiement à l'activation.",
+    serviceNetflix: "Netflix automatique",
+    serviceNetflixDesc: "Après confirmation du paiement, l'attribution se fait automatiquement selon le stock disponible.",
+    serviceManual: "Spotify et Crunchyroll",
+    serviceManualDesc: "Nous activons l'abonnement directement sur votre compte après réception de vos identifiants.",
+    serviceSupport: "Support en Algérie",
+    serviceSupportDesc: "Une équipe disponible sur WhatsApp pour vous accompagner et suivre votre commande.",
+    stepsTitle: "Votre abonnement en 3 étapes",
+    stepsEyebrow: "Simple et transparent",
+    stepsSubtitle: "Un parcours simple et transparent, avec un délai adapté à chaque service.",
+    stepChoose: "Choisissez votre service",
+    stepChooseDesc: "Sélectionnez le compte et la durée qui vous conviennent.",
+    stepPay: "Payez en toute sécurité",
+    stepPayDesc: "Réglez par CIB ou Edahabia via notre prestataire sécurisé.",
+    stepActivate: "Recevez ou activez",
+    stepActivateDesc: "Netflix est attribué automatiquement; Spotify et Crunchyroll sont activés sur votre compte.",
+    faqEyebrow: "Besoin d'aide ?",
+    faqTitle: "Questions fréquentes",
+    faqSubtitle: "Les réponses essentielles avant de commander.",
+    faqItems: [
+      ["Comment vais-je recevoir mon abonnement ?", "Après confirmation du paiement, Netflix est attribué automatiquement selon le stock disponible. Pour Spotify et Crunchyroll, transmettez les identifiants de votre propre compte depuis la commande afin que notre équipe réalise l'activation."],
+      ["Comment fonctionne Netflix ?", "Vous recevez l'accès à un profil privé sur un compte Netflix. Ne modifiez pas l'email, le mot de passe ou les autres profils afin de conserver la garantie."],
+      ["Comment fonctionnent Spotify et Crunchyroll ?", "L'abonnement est activé sur votre propre compte. Utilisez de préférence un mot de passe temporaire, puis modifiez-le après confirmation de l'activation."],
+      ["Le paiement est-il sécurisé ?", "Les paiements CIB et Edahabia sont traités par SlickPay. Aura Stream ne collecte pas les données de votre carte bancaire."],
+      ["Que faire si mon accès ne fonctionne plus ?", "Contactez le support WhatsApp avec votre numéro de commande. L'équipe vérifiera l'accès et vous proposera la solution adaptée à votre service."],
+      ["Quel est le délai d'activation ?", "Netflix est attribué automatiquement après paiement lorsque le stock est disponible. Spotify et Crunchyroll sont activés manuellement, généralement de quelques minutes à quelques heures selon la disponibilité de l'équipe."]
+    ],
     
     // Cart
     cartEmpty: "Votre panier est vide",
@@ -237,7 +297,7 @@ const translations = {
     
     // Success
     successTitle: "Commande confirmée !",
-    successDesc: "Merci pour votre achat. Vous recevrez votre code très rapidement par email.",
+    successDesc: "Merci pour votre achat. Suivez l'attribution ou l'activation depuis Mes commandes.",
     successCta: "Voir mes commandes",
     
     // Profile
@@ -272,18 +332,13 @@ const translations = {
     footerServices: "Services",
     footerRights: "Tous droits réservés.",
     
-    // Products & Testimonials
+    // Products
     descNetflix: "Films, séries et documentaires sans limites",
     descSpotify: "Musique illimitée sans publicités",
     descCrunchyroll: "Anime en VOSTFR et simulcast",
     planMonth: "1 mois",
     plan2Months: "2 mois",
     planYear: "1 an",
-    testim1: "Trop rapide ! Code reçu en 2 minutes. Je recommande à 100%.",
-    testim2: "Enfin un site fiable pour les comptes de streaming en Algérie. Merci Aura !",
-    testim3: "Prix correct et livraison instantanée. Mon 3ème achat déjà.",
-    testim4: "Le support WhatsApp est super réactif. Top service.",
-    suffixMin: " min",
     errorGeneric: "Une erreur est survenue.",
     errorRateLimit: "Trop de tentatives. Veuillez patienter quelques minutes.",
     errorEmailTaken: "Cet email est déjà utilisé.",
@@ -304,28 +359,67 @@ const translations = {
     navOrders: "Orders",
     navLogout: "Logout",
     
-    topBanner: "🔥 Limited offer — Instant delivery on all accounts!",
+    topBanner: "Streaming services available throughout Algeria",
+    topBannerSupport: "WhatsApp support",
     
     heroTitle1: "Your streaming subscriptions",
     heroTitle2: "at the best price",
+    heroEyebrow: "The streaming platform built for Algeria",
     heroDesc1: "Netflix • Spotify • Crunchyroll",
-    heroDesc2: "Instant delivery, secure payment",
+    heroDesc2: "Netflix assigned automatically • Spotify and Crunchyroll activated on your account",
     heroCta: "Shop Now",
-    trustClients: "+500 happy clients",
-    trustDelivery: "5 min delivery",
+    heroSecondary: "View offers",
+    heroNote: "Service-specific activation • Human support • Local payment",
+    heroShowcaseNetflix: "Netflix",
+    heroShowcaseManual: "Spotify & Crunchyroll",
+    heroShowcaseEta: "Timing depends on service and availability",
+    heroShowcaseAuto: "Automatic assignment",
+    heroShowcaseManualActivation: "Manual activation",
+    trustClients: "Activation adapted to each service",
+    trustDelivery: "Online order tracking",
     trustSecure: "Secure payment",
     
+    shopEyebrow: "Our subscriptions",
     shopTitle: "Choose your account",
     shopSubtitle: "Select a service and duration, add to cart and pay in a few clicks.",
     popular: "Popular",
     addToCart: "Add to cart",
     added: "Added!",
+    priceLabel: "Price",
     
     statsTitle: "They trust us",
     statsSubtitle: "Join hundreds of satisfied customers",
     statSold: "Accounts sold",
     statDelivery: "Average delivery",
     statSat: "Satisfied customers",
+    serviceHighlightsTitle: "A clear, tracked service",
+    serviceHighlightsSubtitle: "Each subscription follows the right path from payment to activation.",
+    serviceNetflix: "Automatic Netflix",
+    serviceNetflixDesc: "After payment confirmation, assignment is automatic according to available stock.",
+    serviceManual: "Spotify and Crunchyroll",
+    serviceManualDesc: "We activate the subscription directly on your account after receiving your credentials.",
+    serviceSupport: "Support in Algeria",
+    serviceSupportDesc: "Our WhatsApp team can help you and follow up on your order.",
+    stepsTitle: "Your subscription in 3 steps",
+    stepsEyebrow: "Simple and transparent",
+    stepsSubtitle: "A simple, transparent journey with timing adapted to each service.",
+    stepChoose: "Choose your service",
+    stepChooseDesc: "Select the account and duration that suit you.",
+    stepPay: "Pay securely",
+    stepPayDesc: "Pay by CIB or Edahabia through our secure provider.",
+    stepActivate: "Receive or activate",
+    stepActivateDesc: "Netflix is assigned automatically; Spotify and Crunchyroll are activated on your account.",
+    faqEyebrow: "Need help?",
+    faqTitle: "Frequently asked questions",
+    faqSubtitle: "Essential answers before placing an order.",
+    faqItems: [
+      ["How will I receive my subscription?", "After payment is confirmed, Netflix is assigned automatically when stock is available. For Spotify and Crunchyroll, send your own account credentials from the order so our team can activate the service."],
+      ["How does Netflix work?", "You receive access to a private profile on a Netflix account. Do not change the email, password, or other profiles if you want to keep the warranty."],
+      ["How do Spotify and Crunchyroll work?", "The subscription is activated on your own account. Preferably use a temporary password and change it after activation is confirmed."],
+      ["Is payment secure?", "CIB and Edahabia payments are processed by SlickPay. Aura Stream does not collect your bank card details."],
+      ["What if my access stops working?", "Contact WhatsApp support with your order number. The team will check your access and provide the appropriate solution for your service."],
+      ["How long does activation take?", "Netflix is assigned automatically after payment when stock is available. Spotify and Crunchyroll are activated manually, usually within a few minutes to a few hours depending on team availability."]
+    ],
     
     cartEmpty: "Your cart is empty",
     cartEmptySub: "Add accounts to get started",
@@ -357,7 +451,7 @@ const translations = {
     checkoutContact: "Contact us on WhatsApp",
     
     successTitle: "Order confirmed!",
-    successDesc: "Thank you for your purchase. You will receive your code very shortly by email.",
+    successDesc: "Thank you for your purchase. Track assignment or activation from My Orders.",
     successCta: "View my orders",
     
     profileTitle: "My Information",
@@ -388,18 +482,13 @@ const translations = {
     footerServices: "Services",
     footerRights: "All rights reserved.",
     
-    // Products & Testimonials
+    // Products
     descNetflix: "Unlimited movies, TV shows, and documentaries",
     descSpotify: "Ad-free unlimited music",
     descCrunchyroll: "Anime in sub/dub and simulcast",
     planMonth: "1 month",
     plan2Months: "2 months",
     planYear: "1 year",
-    testim1: "Too fast! Code received in 2 minutes. I recommend 100%.",
-    testim2: "Finally a reliable site for streaming accounts in Algeria. Thanks Aura!",
-    testim3: "Fair price and instant delivery. Already my 3rd purchase.",
-    testim4: "WhatsApp support is super responsive. Top service.",
-    suffixMin: " min",
     errorGeneric: "An error occurred.",
     errorRateLimit: "Too many attempts. Please wait a few minutes.",
     errorEmailTaken: "This email is already in use.",
@@ -420,28 +509,67 @@ const translations = {
     navOrders: "طلباتي",
     navLogout: "تسجيل الخروج",
     
-    topBanner: "🔥 عرض محدود — تسليم فوري لجميع الحسابات!",
+    topBanner: "خدمات البث متاحة في جميع أنحاء الجزائر",
+    topBannerSupport: "دعم واتساب",
     
     heroTitle1: "اشتراكات البث الخاصة بك",
     heroTitle2: "بأفضل الأسعار",
+    heroEyebrow: "منصة البث المصممة للجزائر",
     heroDesc1: "Netflix • Spotify • Crunchyroll",
-    heroDesc2: "تسليم فوري، دفع آمن",
+    heroDesc2: "تخصيص نتفليكس تلقائياً • تفعيل سبوتيفاي وكرانشي رول على حسابك",
     heroCta: "تسوق الآن",
-    trustClients: "+500 عميل راضٍ",
-    trustDelivery: "تسليم في 5 دقائق",
+    heroSecondary: "شاهد العروض",
+    heroNote: "تفعيل حسب الخدمة • دعم بشري • دفع محلي",
+    heroShowcaseNetflix: "Netflix",
+    heroShowcaseManual: "Spotify و Crunchyroll",
+    heroShowcaseEta: "المدة حسب الخدمة والتوفر",
+    heroShowcaseAuto: "تخصيص تلقائي",
+    heroShowcaseManualActivation: "تفعيل يدوي",
+    trustClients: "تفعيل مناسب لكل خدمة",
+    trustDelivery: "متابعة الطلب عبر الإنترنت",
     trustSecure: "دفع آمن",
     
+    shopEyebrow: "اشتراكاتنا",
     shopTitle: "اختر حسابك",
     shopSubtitle: "حدد الخدمة والمدة، أضف إلى السلة وادفع بنقرات قليلة.",
     popular: "شائع",
     addToCart: "أضف إلى السلة",
     added: "تمت الإضافة!",
+    priceLabel: "السعر",
     
     statsTitle: "يثقون بنا",
     statsSubtitle: "انضم إلى مئات العملاء الراضين",
     statSold: "حسابات مباعة",
     statDelivery: "متوسط وقت التسليم",
     statSat: "عملاء راضون",
+    serviceHighlightsTitle: "خدمة واضحة ومتابعة",
+    serviceHighlightsSubtitle: "كل اشتراك يمر بالمسار المناسب من الدفع إلى التفعيل.",
+    serviceNetflix: "نتفليكس تلقائي",
+    serviceNetflixDesc: "بعد تأكيد الدفع، يتم التخصيص تلقائياً حسب المخزون المتاح.",
+    serviceManual: "سبوتيفاي وكرانشي رول",
+    serviceManualDesc: "نفعّل الاشتراك مباشرة على حسابك بعد استلام بياناتك.",
+    serviceSupport: "دعم في الجزائر",
+    serviceSupportDesc: "فريق واتساب متاح لمساعدتك ومتابعة طلبك.",
+    stepsTitle: "اشتراكك في 3 خطوات",
+    stepsEyebrow: "بسيط وشفاف",
+    stepsSubtitle: "مسار بسيط وشفاف بمدة مناسبة لكل خدمة.",
+    stepChoose: "اختر خدمتك",
+    stepChooseDesc: "حدد الحساب والمدة المناسبة لك.",
+    stepPay: "ادفع بأمان",
+    stepPayDesc: "ادفع عبر CIB أو Edahabia من خلال مزود آمن.",
+    stepActivate: "استلم أو فعّل",
+    stepActivateDesc: "يتم تخصيص نتفليكس تلقائياً، وتفعيل سبوتيفاي وكرانشي رول على حسابك.",
+    faqEyebrow: "تحتاج مساعدة؟",
+    faqTitle: "الأسئلة الشائعة",
+    faqSubtitle: "الإجابات الأساسية قبل تقديم الطلب.",
+    faqItems: [
+      ["كيف أستلم اشتراكي؟", "بعد تأكيد الدفع، يتم تخصيص نتفليكس تلقائياً عند توفر المخزون. بالنسبة لسبوتيفاي وكرانشي رول، أرسل بيانات حسابك من الطلب ليقوم فريقنا بالتفعيل."],
+      ["كيف يعمل نتفليكس؟", "تحصل على ملف شخصي خاص داخل حساب نتفليكس. لا تغيّر البريد الإلكتروني أو كلمة المرور أو الملفات الأخرى للحفاظ على الضمان."],
+      ["كيف يعمل سبوتيفاي وكرانشي رول؟", "يتم تفعيل الاشتراك على حسابك الشخصي. يفضّل استخدام كلمة مرور مؤقتة وتغييرها بعد تأكيد التفعيل."],
+      ["هل الدفع آمن؟", "تتم معالجة مدفوعات CIB وEdahabia عبر SlickPay. لا تجمع Aura Stream بيانات بطاقتك البنكية."],
+      ["ماذا أفعل إذا توقف الوصول؟", "تواصل مع دعم واتساب وأرسل رقم طلبك. سيتحقق الفريق من الوصول ويقترح الحل المناسب لخدمتك."],
+      ["كم يستغرق التفعيل؟", "يتم تخصيص نتفليكس تلقائياً بعد الدفع عند توفر المخزون. يتم تفعيل سبوتيفاي وكرانشي رول يدوياً، عادةً خلال بضع دقائق إلى بضع ساعات حسب توفر الفريق."]
+    ],
     
     cartEmpty: "سلة التسوق فارغة",
     cartEmptySub: "أضف حسابات للبدء",
@@ -473,7 +601,7 @@ const translations = {
     checkoutContact: "تواصل معنا عبر WhatsApp",
     
     successTitle: "تم تأكيد الطلب!",
-    successDesc: "شكراً لشرائك. ستتلقى الرمز الخاص بك قريباً جداً عبر البريد الإلكتروني.",
+    successDesc: "شكراً لشرائك. تابع التخصيص أو التفعيل من صفحة طلباتي.",
     successCta: "عرض طلباتي",
     
     profileTitle: "معلوماتي",
@@ -509,11 +637,6 @@ const translations = {
     planMonth: "شهر واحد",
     plan2Months: "شهران",
     planYear: "سنة واحدة",
-    testim1: "سريع جداً! استلمت الرمز في دقيقتين. أوصي به 100%.",
-    testim2: "أخيراً موقع موثوق لحسابات البث في الجزائر. شكراً Aura!",
-    testim3: "سعر مناسب وتسليم فوري. هذه عملية الشراء الثالثة لي بالفعل.",
-    testim4: "دعم WhatsApp متجاوب جداً. خدمة ممتازة.",
-    suffixMin: " دقائق",
     errorGeneric: "حدث خطأ ما.",
     errorRateLimit: "محاولات كثيرة جدًا. يرجى الانتظار بضع دقائق.",
     errorEmailTaken: "هذا البريد الإلكتروني مستخدم بالفعل.",
@@ -788,7 +911,14 @@ function TopBanner() {
   const { t } = useLanguage();
   return (
     <div className="top-banner">
-      <span>{t('topBanner')}</span>
+      <div className="top-banner-inner">
+        <span className="status-dot" aria-hidden="true"></span>
+        <span>{t('topBanner')}</span>
+        <span className="banner-separator" aria-hidden="true">•</span>
+        <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">
+          {t('topBannerSupport')}
+        </a>
+      </div>
     </div>
   );
 }
@@ -856,10 +986,11 @@ function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBu
   return (
     <header className="header">
       <div className="header-inner">
-        <div className="logo" onClick={() => onNavigate('home')}>
-          <img src="logo.png" alt="Aura Stream" style={{ height: '45px', display: 'block', cursor: 'pointer' }} />
-        </div>
-        <nav className="nav-links">
+        <button className="logo" type="button" aria-label="Aura Stream — Accueil" onClick={() => onNavigate('home')}>
+          <span className="brand-mark" aria-hidden="true">A</span>
+          <span className="brand-copy">Aura<span>Stream</span></span>
+        </button>
+        <nav className="nav-links" aria-label="Navigation principale">
           <button className="nav-btn" onClick={() => onNavigate('home')}>
             <span className="nav-icon">🏠</span>
             <span className="nav-text">{t('navHome')}</span>
@@ -878,8 +1009,8 @@ function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBu
           )}
           <LanguageSwitcher />
           <ThemeToggle />
-          <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} onClick={onCartClick}>
-            🛒
+          <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} onClick={onCartClick} aria-label={`${t('navCart')} (${cartCount})`}>
+            <span aria-hidden="true">🛒</span>
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
         </nav>
@@ -897,42 +1028,99 @@ function HeroSection({ onShopClick }) {
         <div className="hero-orb hero-orb-2"></div>
         <div className="hero-orb hero-orb-3"></div>
       </div>
-      <div className="hero-content">
-        <h1 className="animate-fadeInUp">
-          <span className="gradient-text">{t('heroTitle1')}</span>
-          <br />{t('heroTitle2')} 🇩🇿
-        </h1>
-        <p className="hero-subtitle animate-fadeInUp delay-1">
-          <span className="services-list">{t('heroDesc1')}</span>
-          <br />{t('heroDesc2')}
-        </p>
-        <button className="hero-cta animate-fadeInUp delay-2" onClick={onShopClick}>
-          {t('heroCta')}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: '0.5rem', transform: document.documentElement.dir === 'rtl' ? 'scaleX(-1)' : 'none'}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </button>
-        <div className="trust-badges animate-fadeInUp delay-3">
-          <div className="trust-badge">
-            <span>✅</span> {t('trustClients')}
+      <div className="hero-shell">
+        <div className="hero-content">
+          <div className="eyebrow animate-fadeInUp"><span aria-hidden="true"></span>{t('heroEyebrow')}</div>
+          <h1 className="animate-fadeInUp delay-1">
+            <span>{t('heroTitle1')}</span>
+            <br /><span className="gradient-text">{t('heroTitle2')}.</span>
+          </h1>
+          <p className="hero-subtitle animate-fadeInUp delay-2">
+            <span className="services-list">{t('heroDesc1')}</span>
+            <br />{t('heroDesc2')}
+          </p>
+          <div className="hero-actions animate-fadeInUp delay-3">
+            <button className="hero-cta" onClick={onShopClick}>
+              {t('heroCta')}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button type="button" className="hero-secondary" onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}>
+              {t('heroSecondary')} <span aria-hidden="true">↓</span>
+            </button>
           </div>
-          <div className="trust-badge">
-            <span>⚡</span> {t('trustDelivery')}
+          <p className="hero-note animate-fadeInUp delay-4">{t('heroNote')}</p>
+        </div>
+
+        <div className="hero-showcase animate-fadeInUp delay-2" aria-label={t('heroDesc1')}>
+          <div className="showcase-glow"></div>
+          <div className="service-ticket ticket-netflix">
+            <div className="ticket-top">
+              <span className="ticket-logo"><BrandSymbol service="netflix" /></span>
+              <span>Netflix</span>
+              <small>Premium</small>
+            </div>
+            <div className="ticket-bottom"><span>1 mois</span><strong>600 DA</strong></div>
           </div>
-          <div className="trust-badge">
-            <span>🔒</span> {t('trustSecure')}
+          <div className="service-ticket ticket-spotify">
+            <div className="ticket-top">
+              <span className="ticket-logo"><BrandSymbol service="spotify" /></span>
+              <span>Spotify</span>
+              <small>Premium</small>
+            </div>
+            <div className="ticket-bottom"><span>1 mois</span><strong>200 DA</strong></div>
           </div>
+          <div className="service-ticket ticket-crunchyroll">
+            <div className="ticket-top">
+              <span className="ticket-logo"><BrandSymbol service="crunchyroll" /></span>
+              <span>Crunchyroll</span>
+              <small>Mega Fan</small>
+            </div>
+            <div className="ticket-bottom"><span>1 an</span><strong>3 000 DA</strong></div>
+          </div>
+          <div className="delivery-pill"><span aria-hidden="true">✓</span>{t('heroShowcaseEta')}</div>
+        </div>
+
+        <div className="trust-badges animate-fadeInUp delay-4">
+          <div className="trust-badge"><span aria-hidden="true">✅</span> {t('trustClients')}</div>
+          <div className="trust-badge"><span aria-hidden="true">⚡</span> {t('trustDelivery')}</div>
+          <div className="trust-badge"><span aria-hidden="true">🔒</span> {t('trustSecure')}</div>
         </div>
       </div>
     </section>
   );
 }
 
+function StepsSection() {
+  const { t } = useLanguage();
+  const steps = [
+    { icon: '1', title: t('stepChoose'), description: t('stepChooseDesc') },
+    { icon: '2', title: t('stepPay'), description: t('stepPayDesc') },
+    { icon: '3', title: t('stepActivate'), description: t('stepActivateDesc') },
+  ];
+  return (
+    <section className="section steps-section" id="how-it-works">
+      <div className="section-header reveal">
+        <div className="eyebrow section-eyebrow"><span aria-hidden="true"></span>{t('stepsEyebrow')}</div>
+        <h2 className="section-title">{t('stepsTitle')}</h2>
+        <p className="section-subtitle">{t('stepsSubtitle')}</p>
+      </div>
+      <div className="steps-grid">
+        {steps.map((step, index) => (
+          <article className="step-card reveal" key={step.icon} style={{ transitionDelay: `${index * 0.1}s` }}>
+            <div className="step-number">{step.icon}</div>
+            <h3>{step.title}</h3>
+            <p>{step.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ProductCard({ product, onAddToCart, className, style }) {
-  const { t, lang } = useLanguage();
+  const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = React.useState(0);
   const [added, setAdded] = React.useState(false);
-
-  // Fallback translated description just for demo (or use product.desc)
-  const productDesc = product.desc; 
 
   const handleAdd = () => {
     const plan = product.plans[selectedPlan];
@@ -941,7 +1129,6 @@ function ProductCard({ product, onAddToCart, className, style }) {
       id: product.id,
       type: product.name,
       name: canonicalName,
-      logo: product.logo,
       color: product.color,
       duration: t(plan.durationKey),
       price: plan.price
@@ -953,22 +1140,28 @@ function ProductCard({ product, onAddToCart, className, style }) {
   return (
     <div className={`product-card ${product.color} ${className || ''}`} style={style}>
       {product.popular && <div className="popular-badge">{t('popular')}</div>}
-      <div className={'product-icon ' + product.color} style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <img src={product.logo} alt={product.name} style={{width: '55%', height: '55%', objectFit: 'contain'}} />
+      <div className="product-brand-row">
+        <div className={'product-icon ' + product.color}>
+          <BrandSymbol service={product.id} />
+        </div>
+        <div>
+          <div className="product-name">{product.name}</div>
+          <div className="product-desc">{t(product.descKey)}</div>
+        </div>
       </div>
-      <div className="product-name">{product.name}</div>
-      <div className="product-desc">{t(product.descKey)}</div>
       <div className="duration-selector">
         {product.plans.map((plan, idx) => (
           <button
             key={idx}
             className={'duration-btn' + (selectedPlan === idx ? ' active' : '')}
             onClick={() => setSelectedPlan(idx)}
+            aria-pressed={selectedPlan === idx}
           >
             {t(plan.durationKey)}
           </button>
         ))}
       </div>
+      <div className="price-label">{t('priceLabel')}</div>
       <div className="product-price">
         <span className="price-current">{product.plans[selectedPlan].price}</span>
         <span className="price-currency">DA</span>
@@ -986,6 +1179,7 @@ function ProductsSection({ onAddToCart }) {
   return (
     <section className="section" id="shop">
       <div className="section-header reveal">
+        <div className="eyebrow section-eyebrow"><span aria-hidden="true"></span>{t('shopEyebrow')}</div>
         <h2 className="section-title">{t('shopTitle')}</h2>
         <p className="section-subtitle">{t('shopSubtitle')}</p>
       </div>
@@ -1036,70 +1230,29 @@ function AnimatedCounter({ target, suffix }) {
 }
 
 function FAQSection() {
+  const { t } = useLanguage();
   const [openIndex, setOpenIndex] = React.useState(null);
-  
-  const faqs = [
-    {
-      icon: "📦",
-      q: "Comment vais-je recevoir mon compte ?",
-      a: "Dès que le paiement est validé, vous recevrez vos identifiants par email et ils seront également affichés sur votre tableau de bord (Mes Commandes) instantanément. Pour Spotify et Crunchyroll, vous nous fournirez vos propres identifiants et nous activerons l'abonnement directement sur votre compte."
-    },
-    {
-      icon: "🎬",
-      q: "Comment fonctionne Netflix ?",
-      a: "Vous recevez un accès à un profil privé sur un compte Netflix Premium. Vous ne devez jamais changer le mot de passe ni accéder aux autres profils. Le compte est sous garantie pendant toute la durée de votre abonnement."
-    },
-    {
-      icon: "🎵",
-      q: "Comment fonctionne Spotify ?",
-      a: "Nous activons un abonnement Spotify Premium (Family) directement sur votre propre compte Spotify. Après le paiement, vous nous fournissez vos identifiants et nous nous occupons de tout en quelques minutes."
-    },
-    {
-      icon: "🥋",
-      q: "Comment fonctionne Crunchyroll ?",
-      a: "Comme pour Spotify, nous activons l'abonnement Crunchyroll directement sur votre propre compte. Vous nous fournissez vos identifiants après le paiement et nous faisons l'activation pour vous."
-    },
-    {
-      icon: "🔒",
-      q: "Puis-je changer le mot de passe ?",
-      a: "Pour Netflix : Non, strictement interdit. Tout changement de mot de passe ou d'email annulera immédiatement votre garantie. Pour Spotify et Crunchyroll : c'est votre propre compte, mais ne modifiez pas les paramètres de l'abonnement."
-    },
-    {
-      icon: "🛡️",
-      q: "Que faire si le mot de passe ne marche plus ?",
-      a: "Pas d'inquiétude ! Tous nos comptes Netflix sont sous garantie. Il suffit de nous contacter sur WhatsApp avec votre numéro de commande et nous vous fournirons un compte de remplacement immédiatement et gratuitement."
-    },
-    {
-      icon: "💳",
-      q: "Quels moyens de paiement acceptez-vous ?",
-      a: "Nous acceptons les paiements par carte CIB/Edahabia via notre partenaire de paiement sécurisé SlickPay. Le processus est 100% sécurisé et automatisé."
-    },
-    {
-      icon: "⏱️",
-      q: "Combien de temps prend la livraison ?",
-      a: "Pour Netflix : la livraison est instantanée et automatique après validation du paiement. Pour Spotify et Crunchyroll : l'activation est faite manuellement dans un délai de quelques minutes à quelques heures maximum."
-    }
-  ];
+  const faqs = t('faqItems');
 
   return (
     <section className="section animate-fadeInUp">
       <div className="section-header">
-        <h2 style={{fontSize: '2rem'}}>Questions Fréquentes</h2>
-        <p>Tout ce que vous devez savoir sur notre service.</p>
+        <div className="eyebrow section-eyebrow"><span aria-hidden="true"></span>{t('faqEyebrow')}</div>
+        <h2 className="section-title">{t('faqTitle')}</h2>
+        <p className="section-subtitle">{t('faqSubtitle')}</p>
       </div>
-      <div style={{maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-        {faqs.map((faq, index) => {
+      <div className="faq-list">
+        {faqs.map(([question, answer], index) => {
           const isOpen = openIndex === index;
           return (
-            <div key={index} className="dashboard-card" style={{cursor: 'pointer', padding: '1.2rem 1.5rem', border: isOpen ? '1px solid var(--gold)' : '1px solid transparent', transition: 'all 0.3s ease'}} onClick={() => setOpenIndex(isOpen ? null : index)}>
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <h3 style={{fontSize: '1.1rem', fontWeight: 600, color: isOpen ? 'var(--gold)' : 'var(--text-primary)'}}>{faq.q}</h3>
-                <span style={{fontSize: '1.5rem', color: 'var(--gold)', transform: isOpen ? 'rotate(45deg)' : 'none', transition: '0.3s', display: 'inline-block'}}>{isOpen ? '×' : '+'}</span>
-              </div>
+            <div key={question} className={`faq-item ${isOpen ? 'open' : ''}`}>
+              <button className="faq-question" type="button" aria-expanded={isOpen} onClick={() => setOpenIndex(isOpen ? null : index)}>
+                <span className="faq-number">{String(index + 1).padStart(2, '0')}</span>
+                <span>{question}</span>
+                <i aria-hidden="true">+</i>
+              </button>
               {isOpen && (
-                <div style={{marginTop: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)'}}>
-                  {faq.a}
-                </div>
+                <div className="faq-answer">{answer}</div>
               )}
             </div>
           );
@@ -1110,36 +1263,26 @@ function FAQSection() {
 }
 
 
-function SocialProofSection() {
+function ServiceHighlightsSection() {
   const { t } = useLanguage();
+  const highlights = [
+    { icon: '✓', title: t('serviceNetflix'), description: t('serviceNetflixDesc') },
+    { icon: '↗', title: t('serviceManual'), description: t('serviceManualDesc') },
+    { icon: '◈', title: t('serviceSupport'), description: t('serviceSupportDesc') },
+  ];
   return (
     <section className="social-proof">
       <div className="section" style={{paddingTop: '3rem', paddingBottom: '3rem'}}>
         <div className="section-header reveal">
-          <h2 className="section-title">{t('statsTitle')}</h2>
-          <p className="section-subtitle">{t('statsSubtitle')}</p>
+          <h2 className="section-title">{t('serviceHighlightsTitle')}</h2>
+          <p className="section-subtitle">{t('serviceHighlightsSubtitle')}</p>
         </div>
         <div className="stats-grid">
-          <div className="reveal" style={{transitionDelay: '0.1s'}}>
-            <AnimatedCounter target={500} suffix="+" />
-            <div className="stat-label">{t('statSold')}</div>
-          </div>
-          <div className="reveal" style={{transitionDelay: '0.2s'}}>
-            <AnimatedCounter target={5} suffix={t('suffixMin')} />
-            <div className="stat-label">{t('statDelivery')}</div>
-          </div>
-          <div className="reveal" style={{transitionDelay: '0.3s'}}>
-            <AnimatedCounter target={98} suffix="%" />
-            <div className="stat-label">{t('statSat')}</div>
-          </div>
-        </div>
-        <div className="testimonials-grid">
-          {TESTIMONIALS.map((testim, idx) => (
-            <div key={idx} className="testimonial reveal" style={{transitionDelay: `${idx * 0.1}s`}}>
-              <div className="testimonial-stars">{'\u2605'.repeat(testim.stars)}{'\u2606'.repeat(5 - testim.stars)}</div>
-              <p className="testimonial-text">&ldquo;{t(testim.textKey)}&rdquo;</p>
-              <div className="testimonial-author">{testim.name}</div>
-              <div className="testimonial-service">{testim.service}</div>
+          {highlights.map((highlight, index) => (
+            <div className="service-highlight reveal" key={highlight.title} style={{transitionDelay: `${index * 0.1}s`}}>
+              <div className="service-highlight-icon" aria-hidden="true">{highlight.icon}</div>
+              <div className="stat-label">{highlight.title}</div>
+              <p>{highlight.description}</p>
             </div>
           ))}
         </div>
@@ -1177,7 +1320,7 @@ function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
                                 'rgba(244,117,33,0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
-                    <img src={item.logo} alt={item.type} style={{width: '60%', height: '60%', objectFit: 'contain'}} />
+                    <BrandSymbol service={item.id || item.type} />
                   </div>
                   <div>
                     <div className="cart-item-name">{item.type}</div>
@@ -1428,7 +1571,7 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
         {cart.map((item, idx) => (
           <div key={idx} className="checkout-item">
             <span style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <img src={item.logo} alt={item.type} style={{width: '24px', height: '24px', objectFit: 'contain'}} />
+              <BrandSymbol service={item.id || item.type} />
               {item.type} &mdash; {item.duration}
             </span>
             <span style={{fontWeight: 600}}>{item.price} DA</span>
@@ -3174,9 +3317,7 @@ function WhatsAppFloat() {
 }
 
 function LegalPage() {
-  const { t, lang } = useLanguage();
-  // Simplified translation approach for legal text - ideally should be in translations object, 
-  // but we can put it here for now to avoid bloating the translations object too much.
+  const { lang } = useLanguage();
   const isAr = lang === 'ar';
   
   return (
@@ -3186,23 +3327,23 @@ function LegalPage() {
       <div className="dashboard-card" style={{marginBottom: '2rem'}}>
         <h3 style={{fontSize: '1.3rem', marginBottom: '1rem', fontWeight: 700}}>Conditions Générales de Vente (CGV)</h3>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
-          <strong>1. Objet :</strong> Les présentes conditions régissent les ventes par Aura Stream de comptes d'abonnement de streaming (Netflix, Spotify, Crunchyroll, etc.).
+          <strong>1. Objet :</strong> Les présentes conditions régissent les services d'abonnement streaming proposés par Aura Stream pour Netflix, Spotify et Crunchyroll.
         </p>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
-          <strong>2. Livraison :</strong> La livraison des identifiants (email et mot de passe) se fait de manière numérique, directement via le tableau de bord "Mes Commandes" ou par email/WhatsApp, immédiatement ou dans un délai maximum de 24h après validation du paiement.
+          <strong>2. Attribution et activation :</strong> Après confirmation du paiement, Netflix est attribué automatiquement selon le stock disponible. Spotify et Crunchyroll sont activés manuellement sur le compte du client après réception des identifiants nécessaires. Le suivi est disponible dans « Mes commandes ».
         </p>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
-          <strong>3. Responsabilité de l'utilisateur :</strong> L'acheteur s'engage à ne pas modifier les mots de passe, les emails ou les profils des comptes fournis (sauf autorisation explicite de notre part). Toute modification entraînera l'annulation immédiate de la garantie sans remboursement.
+          <strong>3. Responsabilité de l'utilisateur :</strong> Pour Netflix, l'acheteur ne doit pas modifier l'email, le mot de passe ou les autres profils du compte attribué. Pour Spotify et Crunchyroll, le client reste responsable de son compte personnel et ne doit pas modifier l'abonnement pendant l'activation.
         </p>
       </div>
 
       <div className="dashboard-card" style={{marginBottom: '2rem'}}>
         <h3 style={{fontSize: '1.3rem', marginBottom: '1rem', fontWeight: 700}}>Politique de Remboursement et Garantie</h3>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
-          <strong>Garantie :</strong> Tous nos comptes sont garantis pour la durée de l'abonnement acheté. En cas de dysfonctionnement (compte désactivé, mot de passe incorrect), Aura Stream s'engage à fournir un compte de remplacement dans les plus brefs délais.
+          <strong>Garantie :</strong> Un accès Netflix attribué est couvert pendant la durée achetée, sous réserve du respect des consignes d'utilisation. Pour Spotify et Crunchyroll, le support vérifie l'activation réalisée sur le compte du client.
         </p>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
-          <strong>Remboursement :</strong> En raison de la nature numérique de nos services, aucun remboursement n'est effectué une fois que les identifiants ont été livrés à l'acheteur. Si nous sommes dans l'incapacité de fournir un compte de remplacement valide sous 48h, un remboursement partiel proportionnel à la durée d'abonnement restante pourra être envisagé.
+          <strong>Remboursement :</strong> En raison de la nature numérique du service, un remboursement n'est normalement plus possible après attribution ou activation. Si Aura Stream ne peut pas fournir le service payé ou une solution de remplacement dans un délai raisonnable, le support étudie un remboursement adapté à la situation.
         </p>
       </div>
 
@@ -3212,15 +3353,15 @@ function LegalPage() {
           Aura Stream utilise vos informations de compte et de commande (nom, prénom, email, téléphone et contenu de la commande) pour fournir le service, sécuriser le paiement et assurer le support. Les données nécessaires au paiement sont transmises à SlickPay.
         </p>
         <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
+          Les identifiants fournis pour activer Spotify ou Crunchyroll sont utilisés uniquement pour traiter la commande et sont transmis au canal opérationnel Discord réservé à l'équipe. Ils ne sont pas utilisés à des fins publicitaires. Nous vous recommandons de choisir un mot de passe temporaire puis de le modifier après confirmation de l'activation.
+        </p>
+        <p style={{marginBottom: '1rem', lineHeight: 1.6, color: 'var(--text-secondary)'}}>
           Avec votre accord, le Pixel Meta et l’API Conversions transmettent à Meta des événements de navigation et d’achat, tels que les pages consultées, les produits choisis, le montant, la devise et un identifiant d’événement. Ces informations servent à mesurer et optimiser nos campagnes publicitaires Meta. Meta peut traiter ces données sur des serveurs situés hors d’Algérie, selon ses propres conditions et mécanismes de transfert.
         </p>
         <p style={{lineHeight: 1.6, color: 'var(--text-secondary)'}}>
           Votre choix publicitaire est facultatif : le refus ne bloque aucune fonctionnalité du site. Vous pouvez donner ou retirer votre accord à tout moment avec le lien « Gérer mes préférences publicitaires » en bas de page. Aura Stream ne vend pas vos données personnelles.
         </p>
       </div>
-      <p aria-live="polite" style={{color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center'}}>
-        {pageInfo.total} commande{pageInfo.total > 1 ? 's' : ''} · Page {currentPage} sur {totalPages}
-      </p>
     </div>
   );
 }
@@ -3258,12 +3399,11 @@ function Footer({ onNavigate, onManageMarketing }) {
           <ul>
             <li><a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" style={{unicodeBidi: 'plaintext'}}>WhatsApp: +213 557 828 812</a></li>
             <li><a href="https://www.instagram.com/aurastreamdz/" target="_blank" rel="noopener noreferrer" className="instagram-link">Instagram</a></li>
-            <li><a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">TikTok</a></li>
           </ul>
         </div>
       </div>
       <div className="footer-bottom">
-        &copy; 2024 Aura Stream. {t('footerRights')}
+        &copy; {new Date().getFullYear()} Aura Stream. {t('footerRights')}
       </div>
     </footer>
   );
@@ -3288,63 +3428,6 @@ function MarketingConsent({ onDecision, onPrivacy }) {
   );
 }
 
-
-function SocialProofPopup() {
-  const [visible, setVisible] = React.useState(false);
-  const [data, setData] = React.useState(null);
-
-  const names = ['Amine', 'Yanis', 'Nabil', 'Sarah', 'Ines', 'Karim', 'Walid', 'Meriem', 'Mohamed', 'Aymen'];
-  const cities = ['Alger', 'Oran', 'Constantine', 'Annaba', 'Blida', 'Tizi Ouzou', 'Béjaïa', 'Tlemcen', 'Sétif'];
-  const products = ['Netflix Premium 1 Mois', 'Spotify Duo 3 Mois', 'Crunchyroll 1 An', 'Netflix Premium 3 Mois', 'Spotify Personnel 1 Mois', 'Crunchyroll 1 Mois'];
-
-  React.useEffect(() => {
-    // Show a popup every 15 to 45 seconds
-    const triggerPopup = () => {
-      const name = names[Math.floor(Math.random() * names.length)];
-      const city = cities[Math.floor(Math.random() * cities.length)];
-      const product = products[Math.floor(Math.random() * products.length)];
-      const time = Math.floor(Math.random() * 59) + 1;
-      
-      setData({ name, city, product, time });
-      setVisible(true);
-
-      setTimeout(() => setVisible(false), 5000); // Hide after 5 seconds
-      
-      const nextDelay = Math.floor(Math.random() * 30000) + 15000;
-      setTimeout(triggerPopup, nextDelay);
-    };
-
-    const initialDelay = Math.floor(Math.random() * 10000) + 5000;
-    setTimeout(triggerPopup, initialDelay);
-  }, []);
-
-  if (!visible || !data) return null;
-
-  return (
-    <div className="social-popup animate-fadeInUp" style={{
-      position: 'fixed', bottom: '20px', left: '20px', zIndex: 9998,
-      background: 'rgba(6,6,11,0.95)', backdropFilter: 'blur(10px)',
-      border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-      padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.5)', maxWidth: '320px'
-    }}>
-      <div style={{background: 'rgba(212,165,116,0.1)', color: 'var(--gold)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem'}}>
-        🛍️
-      </div>
-      <div>
-        <p style={{margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
-          <strong style={{color: 'var(--text-primary)'}}>{data.name}</strong> ({data.city}) a acheté
-        </p>
-        <p style={{margin: '0.2rem 0', fontSize: '0.9rem', fontWeight: 600, color: 'var(--gold)'}}>
-          {data.product}
-        </p>
-        <p style={{margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)'}}>
-          Il y a {data.time} minute{data.time > 1 ? 's' : ''}
-        </p>
-      </div>
-    </div>
-  );
-}
 
 /* ---- Main App ---- */
 function AuraGiftCards() {
@@ -3525,8 +3608,9 @@ function AuraGiftCards() {
           <>
             <HeroSection onShopClick={() => handleNavigate('shop')} />
             <ProductsSection onAddToCart={addToCart} />
+            <StepsSection />
+            <ServiceHighlightsSection />
             <FAQSection />
-            <SocialProofSection />
           </>
         )}
 
@@ -3679,7 +3763,6 @@ function App() {
     <LanguageProvider>
       <AuthProvider>
         <AuraGiftCards />
-        <SocialProofPopup />
       </AuthProvider>
     </LanguageProvider>
   );
