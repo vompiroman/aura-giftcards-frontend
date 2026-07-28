@@ -2012,3 +2012,397 @@ textarea {
     flex-basis: min(82vw, 270px);
   }
 }
+
+/* Aura visual system: local vectors, richer surfaces and brand-specific accents. */
+.ui-icon {
+  width: 1.15em;
+  height: 1.15em;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.aura-mark {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 7px 12px rgba(230, 57, 70, 0.3));
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  padding: 3px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 75% 15%, rgba(232, 201, 160, 0.42), transparent 25%),
+    linear-gradient(145deg, #31111b, #120d15);
+  border: 1px solid rgba(232, 201, 160, 0.28);
+  box-shadow: 0 10px 26px rgba(229, 9, 20, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.logo:hover .brand-mark {
+  transform: translateY(-2px) rotate(-3deg);
+  box-shadow: 0 14px 32px rgba(229, 9, 20, 0.3);
+}
+
+.header {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232, 201, 160, 0.3), transparent);
+  pointer-events: none;
+}
+
+.nav-btn,
+.login-btn,
+.cart-btn {
+  letter-spacing: -0.01em;
+}
+
+.nav-btn:focus-visible,
+.login-btn:focus-visible,
+.cart-btn:focus-visible,
+.hero-cta:focus-visible,
+.add-to-cart-btn:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
+
+.theme-toggle .ui-icon,
+.cart-btn .ui-icon {
+  width: 1.12rem;
+  height: 1.12rem;
+}
+
+.user-btn .ui-icon {
+  width: 1.08rem;
+  height: 1.08rem;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.28;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.027) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.027) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(90deg, #000, transparent 78%);
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: min(68vw, 760px);
+  height: 1px;
+  right: -12%;
+  bottom: 12%;
+  background: linear-gradient(90deg, transparent, rgba(232, 201, 160, 0.46), transparent);
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+
+.hero-cta {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, #f04352 0%, #d82033 48%, #a91222 100%);
+  box-shadow: 0 12px 28px rgba(229, 9, 20, 0.22);
+}
+
+.hero-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-115%) skewX(-22deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+  transition: transform 0.6s ease;
+}
+
+.hero-cta:hover::before {
+  transform: translateX(115%) skewX(-22deg);
+}
+
+.hero-cta > * {
+  position: relative;
+}
+
+.hero-showcase {
+  isolation: isolate;
+}
+
+.service-ticket {
+  border-color: rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(138deg, rgba(28, 28, 40, 0.98), rgba(9, 9, 15, 0.94)),
+    var(--bg-secondary);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.42);
+}
+
+.service-ticket::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.1), transparent 28%, transparent 74%, rgba(255, 255, 255, 0.04));
+}
+
+.ticket-netflix {
+  border-color: rgba(229, 9, 20, 0.35);
+}
+
+.ticket-spotify {
+  border-color: rgba(30, 215, 96, 0.3);
+}
+
+.ticket-crunchyroll {
+  border-color: rgba(255, 122, 48, 0.34);
+}
+
+.ticket-logo {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.025));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.ticket-logo .brand-symbol {
+  width: 27px;
+  height: 27px;
+}
+
+.brand-symbol {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 5px 7px rgba(0, 0, 0, 0.22));
+}
+
+.product-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.06), transparent 30%),
+    linear-gradient(155deg, rgba(30, 30, 42, 0.86), rgba(11, 11, 18, 0.86));
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.17);
+}
+
+.product-card::before {
+  background: linear-gradient(130deg, rgba(255, 255, 255, 0.11), transparent 20%, transparent 72%, rgba(255, 255, 255, 0.035));
+}
+
+.product-card::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  opacity: 0.8;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.product-card.netflix::after {
+  background: linear-gradient(90deg, transparent, #e50914, #ff5864, transparent);
+}
+
+.product-card.spotify::after {
+  background: linear-gradient(90deg, transparent, #1ed760, #79f7aa, transparent);
+}
+
+.product-card.crunchyroll::after {
+  background: linear-gradient(90deg, transparent, #ff7a30, #ffc09d, transparent);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.32);
+}
+
+.product-icon {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 10px 20px rgba(0, 0, 0, 0.16);
+}
+
+.product-icon::before {
+  content: '';
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  top: -48px;
+  right: -42px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.product-icon .brand-symbol {
+  position: relative;
+  width: 33px;
+  height: 33px;
+}
+
+.product-card.netflix .product-icon {
+  background: linear-gradient(145deg, rgba(229, 9, 20, 0.28), rgba(84, 10, 21, 0.2));
+}
+
+.product-card.spotify .product-icon {
+  background: linear-gradient(145deg, rgba(30, 215, 96, 0.24), rgba(9, 75, 38, 0.19));
+}
+
+.product-card.crunchyroll .product-icon {
+  background: linear-gradient(145deg, rgba(255, 122, 48, 0.24), rgba(94, 42, 17, 0.19));
+}
+
+.popular-badge {
+  box-shadow: 0 7px 18px rgba(212, 165, 116, 0.2);
+}
+
+.duration-btn {
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.duration-btn.active {
+  background: linear-gradient(135deg, rgba(232, 201, 160, 0.16), rgba(212, 165, 116, 0.05));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.add-to-cart-btn {
+  border-color: rgba(255, 255, 255, 0.11);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+}
+
+.add-to-cart-btn.netflix:hover {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(229, 9, 20, 0.9), rgba(150, 10, 22, 0.95));
+}
+
+.add-to-cart-btn.spotify:hover {
+  color: #07140c;
+  background: linear-gradient(135deg, #58df8a, #1ed760);
+}
+
+.add-to-cart-btn.crunchyroll:hover {
+  color: #261006;
+  background: linear-gradient(135deg, #ffb17e, #ff7a30);
+}
+
+.service-highlight,
+.step-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(30, 30, 42, 0.72), rgba(10, 10, 16, 0.72));
+  border-color: rgba(255, 255, 255, 0.075);
+}
+
+.service-highlight::after,
+.step-card::after {
+  content: '';
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  right: -90px;
+  bottom: -105px;
+  border-radius: 50%;
+  background: rgba(212, 165, 116, 0.1);
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+.service-highlight-icon,
+.step-number {
+  box-shadow: 0 9px 20px rgba(212, 165, 116, 0.14);
+}
+
+.section-header .section-title::after {
+  content: '';
+  display: block;
+  width: 42px;
+  height: 2px;
+  margin: 0.9rem auto 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--gold-light), transparent);
+}
+
+.footer {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(229, 9, 20, 0.08), transparent 30%),
+    var(--bg-secondary);
+}
+
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-family: 'Manrope', 'DM Sans', system-ui, sans-serif;
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.footer-logo .aura-mark {
+  width: 42px;
+  height: 42px;
+}
+
+.footer-logo > span > span {
+  color: var(--gold-light);
+}
+
+@media (max-width: 620px) {
+  .nav-links .nav-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+
+  .hero::before {
+    background-size: 34px 34px;
+    mask-image: linear-gradient(180deg, #000, transparent 76%);
+  }
+
+  .product-card {
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-card:hover {
+    transform: none;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.15);
+  }
+
+  .product-icon .brand-symbol {
+    width: 29px;
+    height: 29px;
+  }
+
+  .ticket-logo .brand-symbol {
+    width: 25px;
+    height: 25px;
+  }
+
+  .footer-logo .aura-mark {
+    width: 38px;
+    height: 38px;
+  }
+}
