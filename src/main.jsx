@@ -155,8 +155,18 @@ const PRODUCTS = [
   }
 ];
 
-// Source used by the storefront export supplied by the owner.
-const CRUNCHYROLL_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png';
+// Exact logo sources used by the storefront export supplied by the owner.
+const APP_LOGO_URLS = {
+  netflix: 'https://api.iconify.design/mdi:netflix.svg?color=%23E50914',
+  spotify: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+  crunchyroll: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png',
+};
+
+const PLATFORM_RAIL_ITEMS = [
+  { id: 'netflix', name: 'Netflix', price: '600 DA' },
+  { id: 'spotify', name: 'Spotify', price: '200 DA' },
+  { id: 'crunchyroll', name: 'Crunchyroll', price: '500 DA' },
+];
 
 function AuraMark({ className = '' }) {
   return <img className={`aura-mark ${className}`} src="/logo.png" alt="" aria-hidden="true" decoding="async" />;
@@ -172,6 +182,10 @@ function UiIcon({ name, className = '' }) {
     cart: <><path {...common} d="M3.5 4.5h2l1.55 10.1a1.5 1.5 0 0 0 1.48 1.27h7.7a1.5 1.5 0 0 0 1.46-1.15l1.1-4.72H7" /><circle {...common} cx="9.3" cy="20" r="1.25" /><circle {...common} cx="16.5" cy="20" r="1.25" /></>,
     sun: <><circle {...common} cx="12" cy="12" r="3.65" /><path {...common} d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.72 5.28l-1.42 1.42M6.7 17.3l-1.42 1.42M18.72 18.72 17.3 17.3M6.7 6.7 5.28 5.28" /></>,
     moon: <path {...common} d="M20 15.25A8.15 8.15 0 0 1 8.75 4 8.5 8.5 0 1 0 20 15.25Z" />,
+    check: <><circle {...common} cx="12" cy="12" r="9" /><path {...common} d="m8 12.2 2.55 2.55L16.5 8.8" /></>,
+    bolt: <path {...common} d="m13.2 2.8-7 10.1h5l-.45 8.3 7.05-10.4h-5.05l.45-8Z" />,
+    shield: <><path {...common} d="M12 2.8 19.2 6v5.35c0 4.45-2.75 7.85-7.2 9.85-4.45-2-7.2-5.4-7.2-9.85V6L12 2.8Z" /><path {...common} d="m8.7 12 2.15 2.15 4.55-4.55" /></>,
+    clock: <><circle {...common} cx="12" cy="12" r="8.7" /><path {...common} d="M12 7.2v5l3.35 1.9" /></>,
   };
   return <svg className={`ui-icon ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths[name] || paths.home}</svg>;
 }
@@ -180,25 +194,14 @@ function BrandSymbol({ service }) {
   const normalized = String(service || '').toLowerCase();
 
   if (normalized === 'netflix') {
-    return (
-      <svg className="brand-symbol netflix" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-        <path fill="#b20710" d="M8 4h10l12 25.2V4h10v40H30L18 18.8V44H8V4Z" />
-        <path fill="#e50914" d="M18 4h10l12 40H30L18 18.8V4Z" />
-        <path fill="#f34b56" d="m30 29.2 4.8 10.2H30l-2.4-5.1 2.4-5.1Z" />
-      </svg>
-    );
+    return <img className="brand-symbol netflix" src={APP_LOGO_URLS.netflix} alt="" aria-hidden="true" decoding="async" />;
   }
 
   if (normalized === 'spotify') {
-    return (
-      <svg className="brand-symbol spotify" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-        <circle cx="24" cy="24" r="21" fill="#1ed760" />
-        <path d="M12.2 18.1c8.2-2.5 17.45-1.5 23.65 2.08M14 24.2c6.7-1.96 14.22-1.18 19.3 1.77M15.75 30.03c5.08-1.42 10.72-.84 14.6 1.36" fill="none" stroke="#07140c" strokeWidth="3.05" strokeLinecap="round" />
-      </svg>
-    );
+    return <img className="brand-symbol spotify" src={APP_LOGO_URLS.spotify} alt="" aria-hidden="true" decoding="async" />;
   }
 
-  return <img className="brand-symbol crunchyroll" src={CRUNCHYROLL_LOGO_URL} alt="" aria-hidden="true" decoding="async" />;
+  return <img className="brand-symbol crunchyroll" src={APP_LOGO_URLS.crunchyroll} alt="" aria-hidden="true" decoding="async" />;
 }
 
 const translations = {
@@ -1075,6 +1078,7 @@ function HeroSection({ onShopClick }) {
         <div className="hero-orb hero-orb-2"></div>
         <div className="hero-orb hero-orb-3"></div>
       </div>
+      <div className="hero-visual-word" aria-hidden="true">AURA</div>
       <div className="hero-shell">
         <div className="hero-content">
           <div className="eyebrow animate-fadeInUp"><span aria-hidden="true"></span>{t('heroEyebrow')}</div>
@@ -1126,14 +1130,42 @@ function HeroSection({ onShopClick }) {
               <div className="ticket-bottom"><span>1 an</span><strong>3 000 DA</strong></div>
             </div>
           </div>
-          <div className="delivery-pill"><span aria-hidden="true">✓</span>{t('heroShowcaseEta')}</div>
+          <div className="delivery-pill"><UiIcon name="clock" />{t('heroShowcaseEta')}</div>
         </div>
 
         <div className="trust-badges animate-fadeInUp delay-4">
-          <div className="trust-badge"><span aria-hidden="true">✅</span> {t('trustClients')}</div>
-          <div className="trust-badge"><span aria-hidden="true">⚡</span> {t('trustDelivery')}</div>
-          <div className="trust-badge"><span aria-hidden="true">🔒</span> {t('trustSecure')}</div>
+          <div className="trust-badge"><UiIcon name="check" />{t('trustClients')}</div>
+          <div className="trust-badge"><UiIcon name="bolt" />{t('trustDelivery')}</div>
+          <div className="trust-badge"><UiIcon name="shield" />{t('trustSecure')}</div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function PlatformRail({ onShopClick }) {
+  const { t } = useLanguage();
+
+  return (
+    <section className="platform-rail" aria-label={t('heroDesc1')}>
+      <div className="platform-rail-grid">
+        {PLATFORM_RAIL_ITEMS.map((platform, index) => (
+          <button
+            type="button"
+            className={`platform-rail-card ${platform.id}`}
+            key={platform.id}
+            onClick={onShopClick}
+            aria-label={`${t('heroSecondary')} ${platform.name}`}
+          >
+            <span className="platform-rail-index">0{index + 1}</span>
+            <span className="platform-rail-logo"><BrandSymbol service={platform.id} /></span>
+            <span className="platform-rail-copy">
+              <strong>{platform.name}</strong>
+              <small>{platform.price}</small>
+            </span>
+            <span className="platform-rail-arrow" aria-hidden="true">↗</span>
+          </button>
+        ))}
       </div>
     </section>
   );
@@ -1166,7 +1198,7 @@ function StepsSection() {
   );
 }
 
-function ProductCard({ product, onAddToCart, className, style }) {
+function ProductCard({ product, index, onAddToCart, className, style }) {
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = React.useState(0);
   const [added, setAdded] = React.useState(false);
@@ -1193,7 +1225,11 @@ function ProductCard({ product, onAddToCart, className, style }) {
   };
 
   return (
-    <div className={`product-card ${product.color} ${className || ''}`} style={style}>
+    <article className={`product-card ${product.color} ${className || ''}`} style={style}>
+      <div className="product-logo-watermark" aria-hidden="true">
+        <BrandSymbol service={product.id} />
+      </div>
+      <div className="product-card-code">AURA / 0{index + 1}</div>
       {product.popular && <div className="popular-badge">{t('popular')}</div>}
       <div className="product-brand-row">
         <div className={'product-icon ' + product.color}>
@@ -1223,10 +1259,10 @@ function ProductCard({ product, onAddToCart, className, style }) {
         <span className="price-currency">DA</span>
       </div>
       <button type="button" className={'add-to-cart-btn ' + product.color + (added ? ' added' : '')} onClick={handleAdd}>
-        <span className="cart-icon">🛒 {t('addToCart')}</span>
+        <span className="cart-icon"><UiIcon name="cart" />{t('addToCart')}</span>
         <span className="check-icon">✔ {t('added')}</span>
       </button>
-    </div>
+    </article>
   );
 }
 
@@ -1244,6 +1280,7 @@ function ProductsSection({ onAddToCart }) {
           <ProductCard 
             key={product.id} 
             product={product} 
+            index={idx}
             onAddToCart={onAddToCart} 
             className="reveal" 
             style={{transitionDelay: `${idx * 0.1}s`}}
@@ -3694,6 +3731,7 @@ function AuraGiftCards() {
         {page === 'home' && (
           <>
             <HeroSection onShopClick={() => handleNavigate('shop')} />
+            <PlatformRail onShopClick={() => handleNavigate('shop')} />
             <ProductsSection onAddToCart={addToCart} />
             <StepsSection />
             <ServiceHighlightsSection />
