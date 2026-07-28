@@ -155,33 +155,60 @@ const PRODUCTS = [
   }
 ];
 
+function AuraMark({ className = '' }) {
+  return (
+    <svg className={`aura-mark ${className}`} viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <path fill="#ef4050" d="M24 3.5 44 41.5H34.1l-3.25-6.8H17.15l-3.25 6.8H4L24 3.5Z" />
+      <path fill="#8f1723" d="m24 3.5 20 38h-9.9l-3.25-6.8H24V3.5Z" />
+      <path fill="#0d0d15" d="m24 15.2-5.15 11.1h10.3L24 15.2Z" />
+      <path fill="#e8c9a0" d="m30.85 34.7-2.2-4.58h6.23l-2.18 4.58h-1.85Z" />
+      <circle cx="35.7" cy="11.1" r="2.25" fill="#e8c9a0" />
+    </svg>
+  );
+}
+
+function UiIcon({ name, className = '' }) {
+  const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  const paths = {
+    home: <><path {...common} d="m3.5 10.5 8.5-7 8.5 7v9a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5v-9Z" /><path {...common} d="M9 21v-6h6v6" /></>,
+    bag: <><path {...common} d="M5 8.5h14l-1 12H6l-1-12Z" /><path {...common} d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2" /></>,
+    user: <><circle {...common} cx="12" cy="8" r="3.5" /><path {...common} d="M4.5 20.5c1.1-3.55 3.55-5.25 7.5-5.25s6.4 1.7 7.5 5.25" /></>,
+    globe: <><circle {...common} cx="12" cy="12" r="8.5" /><path {...common} d="M3.7 12h16.6M12 3.5c2.1 2.3 3.2 5.13 3.2 8.5S14.1 18.2 12 20.5C9.9 18.2 8.8 15.37 8.8 12S9.9 5.8 12 3.5Z" /></>,
+    cart: <><path {...common} d="M3.5 4.5h2l1.55 10.1a1.5 1.5 0 0 0 1.48 1.27h7.7a1.5 1.5 0 0 0 1.46-1.15l1.1-4.72H7" /><circle {...common} cx="9.3" cy="20" r="1.25" /><circle {...common} cx="16.5" cy="20" r="1.25" /></>,
+    sun: <><circle {...common} cx="12" cy="12" r="3.65" /><path {...common} d="M12 2.5v2M12 19.5v2M21.5 12h-2M4.5 12h-2M18.72 5.28l-1.42 1.42M6.7 17.3l-1.42 1.42M18.72 18.72 17.3 17.3M6.7 6.7 5.28 5.28" /></>,
+    moon: <path {...common} d="M20 15.25A8.15 8.15 0 0 1 8.75 4 8.5 8.5 0 1 0 20 15.25Z" />,
+  };
+  return <svg className={`ui-icon ${className}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">{paths[name] || paths.home}</svg>;
+}
+
 function BrandSymbol({ service }) {
   const normalized = String(service || '').toLowerCase();
 
   if (normalized === 'netflix') {
     return (
-      <svg className="brand-symbol netflix" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <path fill="#b20710" d="M7.5 4h5.3v24H7.5z" />
-        <path fill="#b20710" d="M19.2 4h5.3v24h-5.3z" />
-        <path fill="#e50914" d="M7.5 4h5.3l11.7 24h-5.3z" />
+      <svg className="brand-symbol netflix" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <path fill="#b20710" d="M8 4h10l12 25.2V4h10v40H30L18 18.8V44H8V4Z" />
+        <path fill="#e50914" d="M18 4h10l12 40H30L18 18.8V4Z" />
+        <path fill="#f34b56" d="m30 29.2 4.8 10.2H30l-2.4-5.1 2.4-5.1Z" />
       </svg>
     );
   }
 
   if (normalized === 'spotify') {
     return (
-      <svg className="brand-symbol spotify" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <circle cx="16" cy="16" r="14" fill="currentColor" />
-        <path d="M9 12.1c5.3-1.6 11.3-.9 15.2 1.2M10.2 16.5c4.5-1.2 9.5-.6 12.9 1.2M11.2 20.5c3.6-.9 7.5-.4 10.3 1" fill="none" stroke="#07140c" strokeWidth="2.15" strokeLinecap="round" />
+      <svg className="brand-symbol spotify" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <circle cx="24" cy="24" r="21" fill="#1ed760" />
+        <path d="M12.2 18.1c8.2-2.5 17.45-1.5 23.65 2.08M14 24.2c6.7-1.96 14.22-1.18 19.3 1.77M15.75 30.03c5.08-1.42 10.72-.84 14.6 1.36" fill="none" stroke="#07140c" strokeWidth="3.05" strokeLinecap="round" />
       </svg>
     );
   }
 
   return (
-    <svg className="brand-symbol crunchyroll" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <circle cx="16" cy="16" r="14" fill="currentColor" />
-      <circle cx="18.3" cy="13.4" r="9.1" fill="#fff" />
-      <circle cx="21.6" cy="10.6" r="5.3" fill="currentColor" />
+    <svg className="brand-symbol crunchyroll" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <circle cx="24" cy="24" r="21" fill="#ff7a30" />
+      <circle cx="27.8" cy="21.3" r="13.65" fill="#fff7f2" />
+      <circle cx="32.9" cy="16.5" r="7.25" fill="#ff7a30" />
+      <path d="M14.2 31.35c4.8 4.17 11.75 5.23 17.6 2.42" fill="none" stroke="#ff7a30" strokeWidth="2.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -893,10 +920,12 @@ function LanguageSwitcher() {
   return (
     <div ref={dropdownRef} style={{position: 'relative', display: 'inline-block'}}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="nav-btn lang-btn"
+        aria-label="Changer de langue"
       >
-        <span className="nav-icon">🌐</span>
+        <UiIcon name="globe" className="nav-icon" />
         <span className="nav-text" style={{color: 'var(--gold)'}}>{labels[lang]}</span>
       </button>
       {open && (
@@ -963,8 +992,8 @@ function UserDropdown({ auth, onNavigate }) {
 
   return (
     <div className="user-dropdown-container" ref={dropdownRef}>
-      <button className="nav-btn user-btn" onClick={() => setOpen(!open)}>
-        👤
+      <button className="nav-btn user-btn" type="button" onClick={() => setOpen(!open)} aria-label="Ouvrir mon compte">
+        <UiIcon name="user" />
       </button>
       {open && (
         <div className="user-dropdown-menu animate-fadeIn">
@@ -1006,7 +1035,7 @@ function ThemeToggle() {
       aria-label={isDark ? 'Activer le mode clair' : 'Activer le mode sombre'}
       style={{fontSize: '1.2rem', padding: '0.4rem', minWidth: 'auto', border: 'none', background: 'none'}}
     >
-      {isDark ? '☀️' : '🌙'}
+      <UiIcon name={isDark ? 'sun' : 'moon'} />
     </button>
   );
 }
@@ -1017,30 +1046,30 @@ function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBu
     <header className="header">
       <div className="header-inner">
         <button className="logo" type="button" aria-label="Aura Stream — Accueil" onClick={() => onNavigate('home')}>
-          <span className="brand-mark" aria-hidden="true">A</span>
+          <span className="brand-mark" aria-hidden="true"><AuraMark /></span>
           <span className="brand-copy">Aura<span>Stream</span></span>
         </button>
         <nav className="nav-links" aria-label="Navigation principale">
           <button className="nav-btn home-nav-btn" type="button" onClick={() => onNavigate('home')}>
-            <span className="nav-icon">🏠</span>
+            <UiIcon name="home" className="nav-icon" />
             <span className="nav-text">{t('navHome')}</span>
           </button>
           <button className="nav-btn shop-nav-btn" type="button" onClick={() => onNavigate('shop')}>
-            <span className="nav-icon">🛍️</span>
+            <UiIcon name="bag" className="nav-icon" />
             <span className="nav-text">{t('navShop')}</span>
           </button>
           {auth.user ? (
             <UserDropdown auth={auth} onNavigate={onNavigate} />
           ) : (
             <button className="login-btn" type="button" onClick={onLoginClick}>
-              <span className="nav-icon">👤</span>
+              <UiIcon name="user" className="nav-icon" />
               <span className="nav-text">{t('navLogin')}</span>
             </button>
           )}
           <LanguageSwitcher />
           <ThemeToggle />
           <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} type="button" onClick={onCartClick} aria-label={`${t('navCart')} (${cartCount})`}>
-            <span aria-hidden="true">🛒</span>
+            <UiIcon name="cart" />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
         </nav>
@@ -3441,9 +3470,10 @@ function Footer({ onNavigate, onManageMarketing }) {
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <div className="logo" style={{cursor: 'pointer'}} onClick={() => onNavigate('home')}>
-            <img src="logo.png" alt="Aura Stream" style={{ height: '60px', display: 'block', marginBottom: '1rem' }} />
-          </div>
+          <button className="footer-logo" type="button" onClick={() => onNavigate('home')} aria-label="Aura Stream — Accueil">
+            <AuraMark />
+            <span>Aura<span>Stream</span></span>
+          </button>
           <p>{t('footerDesc')}</p>
         </div>
         <div className="footer-section">
