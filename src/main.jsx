@@ -155,16 +155,11 @@ const PRODUCTS = [
   }
 ];
 
+// Source used by the storefront export supplied by the owner.
+const CRUNCHYROLL_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/0/08/Crunchyroll_Logo.png';
+
 function AuraMark({ className = '' }) {
-  return (
-    <svg className={`aura-mark ${className}`} viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-      <path fill="#ef4050" d="M24 3.5 44 41.5H34.1l-3.25-6.8H17.15l-3.25 6.8H4L24 3.5Z" />
-      <path fill="#8f1723" d="m24 3.5 20 38h-9.9l-3.25-6.8H24V3.5Z" />
-      <path fill="#0d0d15" d="m24 15.2-5.15 11.1h10.3L24 15.2Z" />
-      <path fill="#e8c9a0" d="m30.85 34.7-2.2-4.58h6.23l-2.18 4.58h-1.85Z" />
-      <circle cx="35.7" cy="11.1" r="2.25" fill="#e8c9a0" />
-    </svg>
-  );
+  return <img className={`aura-mark ${className}`} src="/logo.png" alt="" aria-hidden="true" decoding="async" />;
 }
 
 function UiIcon({ name, className = '' }) {
@@ -203,14 +198,7 @@ function BrandSymbol({ service }) {
     );
   }
 
-  return (
-    <svg className="brand-symbol crunchyroll" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-      <circle cx="24" cy="24" r="21" fill="#ff7a30" />
-      <circle cx="27.8" cy="21.3" r="13.65" fill="#fff7f2" />
-      <circle cx="32.9" cy="16.5" r="7.25" fill="#ff7a30" />
-      <path d="M14.2 31.35c4.8 4.17 11.75 5.23 17.6 2.42" fill="none" stroke="#ff7a30" strokeWidth="2.6" strokeLinecap="round" />
-    </svg>
-  );
+  return <img className="brand-symbol crunchyroll" src={CRUNCHYROLL_LOGO_URL} alt="" aria-hidden="true" decoding="async" />;
 }
 
 const translations = {
