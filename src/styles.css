@@ -2412,3 +2412,876 @@ textarea {
     height: 38px;
   }
 }
+
+/* Bold streaming storefront: editorial scale, brand color and layered motion. */
+body {
+  background:
+    radial-gradient(circle at 8% -8%, rgba(229, 9, 20, 0.09), transparent 31rem),
+    #080910;
+}
+
+.top-banner {
+  min-height: 32px;
+  background: linear-gradient(90deg, #15111d, #11141f 48%, #15111d);
+  border-bottom: 1px solid rgba(232, 201, 160, 0.12);
+  color: rgba(240, 236, 230, 0.78);
+  font-size: 0.76rem;
+}
+
+.top-banner a {
+  color: var(--gold-light);
+  font-weight: 700;
+}
+
+.header {
+  background: rgba(8, 9, 16, 0.8);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.header-inner {
+  max-width: 1240px;
+  height: 70px;
+}
+
+.brand-copy {
+  font-size: 1.08rem;
+  letter-spacing: -0.04em;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  padding: 4px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(42, 15, 23, 0.92));
+  border-color: rgba(232, 201, 160, 0.35);
+}
+
+.nav-btn,
+.login-btn,
+.cart-btn {
+  min-height: 40px;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.hero {
+  min-height: 680px;
+  padding: 5.5rem 1.5rem 4.5rem;
+  background:
+    radial-gradient(circle at 20% 35%, rgba(229, 9, 20, 0.16), transparent 28rem),
+    radial-gradient(circle at 82% 68%, rgba(255, 122, 48, 0.1), transparent 30rem),
+    linear-gradient(135deg, #090a11 0%, #0a0b12 55%, #0c1013 100%);
+}
+
+.hero::before {
+  opacity: 0.1;
+  mask-image: linear-gradient(90deg, #000 0%, transparent 72%);
+}
+
+.hero::after {
+  opacity: 0.45;
+}
+
+.hero-orb {
+  opacity: 0.08;
+  filter: blur(110px);
+}
+
+.hero-orb-1 {
+  width: 560px;
+  height: 560px;
+}
+
+.hero-orb-2 {
+  width: 480px;
+  height: 480px;
+}
+
+.hero-shell {
+  max-width: 1240px;
+  column-gap: 4rem;
+}
+
+.hero-content {
+  max-width: 620px;
+}
+
+.eyebrow {
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0.85rem;
+  background: rgba(232, 201, 160, 0.07);
+  border-color: rgba(232, 201, 160, 0.28);
+}
+
+.hero h1 {
+  max-width: 650px;
+  font-size: clamp(3rem, 5.6vw, 5.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+
+.hero h1 .gradient-text {
+  background: linear-gradient(100deg, #e8c9a0 0%, #fff2df 45%, #e36b74 100%);
+  background-size: 100% 100%;
+  animation: none;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  max-width: 580px;
+  margin-bottom: 2.35rem;
+  font-size: 1.02rem;
+  line-height: 1.75;
+}
+
+.hero-subtitle .services-list {
+  letter-spacing: 0.01em;
+}
+
+.hero-cta {
+  min-height: 54px;
+  padding-inline: 1.55rem;
+  background: linear-gradient(110deg, #ff4e5a, #e21e35 58%, #b70f25);
+  box-shadow: 0 15px 34px rgba(229, 9, 20, 0.28);
+  animation: none;
+}
+
+.hero-cta:hover {
+  box-shadow: 0 18px 42px rgba(229, 9, 20, 0.36);
+}
+
+.hero-secondary {
+  color: rgba(240, 236, 230, 0.72);
+}
+
+.hero-note {
+  letter-spacing: 0.02em;
+}
+
+.hero-showcase {
+  min-height: 410px;
+}
+
+.showcase-glow {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(232, 201, 160, 0.17), rgba(229, 9, 20, 0.06) 48%, transparent 72%);
+  filter: blur(30px);
+}
+
+.service-ticket {
+  width: min(330px, 92%);
+  padding: 1.25rem;
+  border-radius: 21px;
+  background: linear-gradient(145deg, rgba(29, 30, 42, 0.96), rgba(12, 13, 21, 0.96));
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.42);
+}
+
+.ticket-netflix {
+  border-color: rgba(229, 9, 20, 0.46);
+}
+
+.ticket-spotify {
+  border-color: rgba(30, 215, 96, 0.38);
+}
+
+.ticket-crunchyroll {
+  border-color: rgba(255, 122, 48, 0.44);
+}
+
+.ticket-logo {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.ticket-logo .brand-symbol {
+  width: 28px;
+  height: 28px;
+}
+
+.ticket-top > span:not(.ticket-logo) {
+  font-size: 0.98rem;
+}
+
+.ticket-bottom {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+}
+
+.trust-badges {
+  gap: 2.1rem;
+  margin-top: 3rem;
+  padding-top: 1.2rem;
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.trust-badge {
+  font-size: 0.82rem;
+}
+
+.section {
+  max-width: 1240px;
+  padding: 5.2rem 1.5rem;
+}
+
+.section-header {
+  margin-bottom: 2.4rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  letter-spacing: -0.055em;
+}
+
+.section-subtitle {
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+.products-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.product-card {
+  min-height: 345px;
+  padding: 1.55rem;
+  border-radius: 21px;
+  background:
+    linear-gradient(150deg, rgba(28, 30, 42, 0.96), rgba(13, 14, 22, 0.96));
+}
+
+.product-card:hover {
+  transform: translateY(-7px);
+}
+
+.product-brand-row {
+  gap: 0.95rem;
+  margin-bottom: 1.75rem;
+}
+
+.product-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 17px;
+}
+
+.product-icon .brand-symbol {
+  width: 36px;
+  height: 36px;
+}
+
+.product-card.crunchyroll .product-icon .brand-symbol {
+  width: 40px;
+  height: 40px;
+}
+
+.product-name {
+  font-size: 1.26rem;
+}
+
+.product-desc {
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.duration-selector {
+  gap: 0.5rem;
+}
+
+.duration-btn {
+  min-height: 42px;
+}
+
+.product-price {
+  margin-top: 0.25rem;
+  margin-bottom: 1.2rem;
+}
+
+.add-to-cart-btn {
+  min-height: 46px;
+  border-radius: 11px;
+}
+
+.popular-badge {
+  top: 1.2rem;
+  right: 1.2rem;
+  padding: 0.32rem 0.72rem;
+}
+
+.how-section {
+  padding-top: 3.7rem;
+}
+
+.step-card {
+  min-height: 190px;
+  padding: 1.45rem;
+  border-radius: 18px;
+}
+
+.social-proof {
+  background:
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.02) 35%, transparent);
+}
+
+.footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 940px) {
+  .hero {
+    padding-top: 4.5rem;
+  }
+
+  .hero-shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: "content" "showcase" "trust";
+    gap: 2.5rem;
+  }
+
+  .hero-content {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-actions {
+    justify-content: center;
+  }
+
+  .hero-note {
+    text-align: center;
+  }
+
+  .hero-showcase {
+    width: min(650px, 100%);
+    margin: 0 auto;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .top-banner {
+    min-height: 30px;
+    font-size: 0.67rem;
+  }
+
+  .header-inner {
+    height: 62px;
+  }
+
+  .brand-mark {
+    width: 37px;
+    height: 37px;
+  }
+
+  .brand-copy {
+    display: none;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 3.7rem 1rem 2.8rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.55rem, 13vw, 4rem);
+    line-height: 1.04;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .hero-actions {
+    gap: 0.5rem;
+  }
+
+  .hero-cta {
+    width: 100%;
+  }
+
+  .hero-secondary {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .hero-showcase {
+    min-height: 330px;
+    transform: scale(0.9);
+    transform-origin: top center;
+    margin-bottom: -30px;
+  }
+
+  .service-ticket {
+    width: min(300px, 88%);
+    padding: 1rem;
+  }
+
+  .trust-badges {
+    gap: 0.8rem;
+    margin-top: 1.8rem;
+  }
+
+  .trust-badge {
+    font-size: 0.7rem;
+  }
+
+  .section {
+    padding: 3.7rem 1rem;
+  }
+
+  .section-header {
+    margin-bottom: 1.8rem;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .product-card {
+    min-height: 0;
+    padding: 1.3rem;
+  }
+
+  .product-brand-row {
+    margin-bottom: 1.3rem;
+  }
+
+  .product-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .product-icon .brand-symbol,
+  .product-card.crunchyroll .product-icon .brand-symbol {
+    width: 33px;
+    height: 33px;
+  }
+
+  .duration-btn {
+    min-height: 44px;
+  }
+}
+
+/* Signature layer */
+.hero-visual-word {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: -0.03em;
+  transform: translateY(-50%) rotate(-90deg);
+  color: transparent;
+  font-family: 'Manrope', 'DM Sans', system-ui, sans-serif;
+  font-size: clamp(8rem, 18vw, 16rem);
+  font-weight: 900;
+  line-height: 0.75;
+  letter-spacing: -0.08em;
+  white-space: nowrap;
+  opacity: 0.075;
+  pointer-events: none;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85);
+}
+
+.ticket-netflix {
+  animation: auraFloatNetflix 6.5s ease-in-out infinite;
+}
+
+.ticket-spotify {
+  animation: auraFloatSpotify 7.25s ease-in-out infinite;
+}
+
+.ticket-crunchyroll {
+  animation: auraFloatCrunchyroll 7.8s ease-in-out infinite;
+}
+
+@keyframes auraFloatNetflix {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-3deg); }
+  50% { transform: translate3d(8px, -10px, 0) rotate(-1.7deg); }
+}
+
+@keyframes auraFloatSpotify {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(2.5deg); }
+  50% { transform: translate3d(-10px, 9px, 0) rotate(1.2deg); }
+}
+
+@keyframes auraFloatCrunchyroll {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-1.5deg); }
+  50% { transform: translate3d(9px, 8px, 0) rotate(-0.2deg); }
+}
+
+.delivery-pill .ui-icon,
+.trust-badge .ui-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--gold-light);
+}
+
+.platform-rail {
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  max-width: 1240px;
+  margin: -3rem auto 0;
+  padding: 0 1.5rem;
+}
+
+.platform-rail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: rgba(14, 15, 24, 0.88);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px);
+}
+
+.platform-rail-card {
+  --platform-color: 232, 201, 160;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 106px;
+  padding: 1.1rem 1.3rem;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.09);
+  background:
+    radial-gradient(circle at 18% 50%, rgba(var(--platform-color), 0.12), transparent 44%),
+    transparent;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.platform-rail-card:last-child {
+  border-right: 0;
+}
+
+.platform-rail-card.netflix,
+.product-card.netflix {
+  --platform-color: 229, 9, 20;
+}
+
+.platform-rail-card.spotify,
+.product-card.spotify {
+  --platform-color: 30, 215, 96;
+}
+
+.platform-rail-card.crunchyroll,
+.product-card.crunchyroll {
+  --platform-color: 255, 122, 48;
+}
+
+.platform-rail-card:hover {
+  z-index: 2;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(var(--platform-color), 0.28), transparent 46%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.platform-rail-index {
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.platform-rail-logo {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(var(--platform-color), 0.32);
+  border-radius: 15px;
+  background: rgba(var(--platform-color), 0.1);
+}
+
+.platform-rail-logo .brand-symbol {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+}
+
+.platform-rail-copy {
+  display: grid;
+  gap: 0.16rem;
+}
+
+.platform-rail-copy strong {
+  font-family: 'Manrope', 'DM Sans', system-ui, sans-serif;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.platform-rail-copy small {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.platform-rail-arrow {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.62);
+  transition: transform 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.platform-rail-card:hover .platform-rail-arrow {
+  transform: translate(2px, -2px);
+  color: rgb(var(--platform-color));
+  border-color: rgba(var(--platform-color), 0.46);
+}
+
+.product-card::before {
+  background:
+    radial-gradient(circle at 92% 8%, rgba(var(--platform-color), 0.18), transparent 35%),
+    linear-gradient(130deg, rgba(255, 255, 255, 0.09), transparent 24%, transparent 75%, rgba(var(--platform-color), 0.08));
+}
+
+.product-card-code {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 1.2rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.product-logo-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 74px;
+  right: -35px;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+  opacity: 0.055;
+  transform: rotate(-11deg);
+  pointer-events: none;
+}
+
+.product-logo-watermark .brand-symbol {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  filter: grayscale(1) brightness(2);
+}
+
+.product-brand-row,
+.duration-selector,
+.price-label,
+.product-price,
+.add-to-cart-btn {
+  position: relative;
+  z-index: 2;
+}
+
+.add-to-cart-btn .cart-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.add-to-cart-btn .cart-icon .ui-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.add-to-cart-btn.netflix:hover {
+  background: linear-gradient(135deg, #e50914, #8f0710);
+}
+
+.add-to-cart-btn.spotify:hover {
+  background: linear-gradient(135deg, #1ed760, #0c8e3b);
+}
+
+.add-to-cart-btn.crunchyroll:hover {
+  background: linear-gradient(135deg, #ff8d4d, #d84f0b);
+}
+
+@media (max-width: 940px) {
+  .platform-rail {
+    margin-top: -2rem;
+  }
+
+  .platform-rail-card {
+    grid-template-columns: auto auto 1fr;
+  }
+
+  .platform-rail-index {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .hero-visual-word {
+    top: 39%;
+    right: -0.1em;
+    font-size: 8rem;
+    opacity: 0.05;
+  }
+
+  .service-ticket {
+    animation: none;
+  }
+
+  .platform-rail {
+    margin-top: -1.25rem;
+    padding: 0 1rem;
+  }
+
+  .platform-rail-grid {
+    display: flex;
+    overflow-x: auto;
+    border-radius: 20px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .platform-rail-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .platform-rail-card {
+    flex: 0 0 min(82vw, 310px);
+    min-height: 92px;
+    padding: 0.9rem 1rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.09);
+    scroll-snap-align: start;
+  }
+
+  .platform-rail-logo {
+    width: 46px;
+    height: 46px;
+  }
+
+  .platform-rail-arrow {
+    width: 31px;
+    height: 31px;
+  }
+
+  .product-logo-watermark {
+    right: -48px;
+    opacity: 0.04;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket-netflix,
+  .ticket-spotify,
+  .ticket-crunchyroll {
+    animation: none;
+  }
+}
+
+[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 8% -8%, rgba(229, 9, 20, 0.08), transparent 31rem),
+    #f6f2ec;
+}
+
+[data-theme="light"] .top-banner {
+  background: linear-gradient(90deg, #efe2d3, #f7efe5 48%, #efe2d3);
+  border-bottom-color: rgba(116, 78, 45, 0.16);
+  color: rgba(48, 38, 32, 0.72);
+}
+
+[data-theme="light"] .header {
+  background: rgba(247, 243, 237, 0.88);
+  border-bottom-color: rgba(50, 38, 32, 0.1);
+}
+
+[data-theme="light"] .login-btn {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(50, 38, 32, 0.12);
+}
+
+[data-theme="light"] .hero {
+  background:
+    radial-gradient(circle at 20% 35%, rgba(229, 9, 20, 0.11), transparent 28rem),
+    radial-gradient(circle at 82% 68%, rgba(30, 215, 96, 0.09), transparent 30rem),
+    linear-gradient(135deg, #faf6f0 0%, #f1ece5 55%, #f5f2ea 100%);
+}
+
+[data-theme="light"] .hero-visual-word {
+  opacity: 0.055;
+  -webkit-text-stroke-color: rgba(67, 45, 37, 0.8);
+}
+
+[data-theme="light"] .eyebrow {
+  background: rgba(145, 92, 50, 0.07);
+  border-color: rgba(145, 92, 50, 0.24);
+}
+
+[data-theme="light"] .service-ticket {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(242, 236, 228, 0.96));
+  box-shadow: 0 25px 55px rgba(71, 49, 38, 0.14);
+}
+
+[data-theme="light"] .platform-rail-grid {
+  border-color: rgba(58, 42, 34, 0.12);
+  background: rgba(255, 252, 248, 0.9);
+  box-shadow: 0 28px 70px rgba(69, 47, 36, 0.12);
+}
+
+[data-theme="light"] .platform-rail-card {
+  border-right-color: rgba(58, 42, 34, 0.1);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .platform-rail-index,
+[data-theme="light"] .platform-rail-copy small {
+  color: rgba(45, 34, 29, 0.48);
+}
+
+[data-theme="light"] .platform-rail-arrow {
+  border-color: rgba(58, 42, 34, 0.14);
+  color: rgba(45, 34, 29, 0.58);
+}
+
+[data-theme="light"] .product-card {
+  border-color: rgba(58, 42, 34, 0.09);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.97), rgba(242, 237, 231, 0.97));
+  box-shadow: 0 18px 44px rgba(69, 47, 36, 0.08);
+}
+
+[data-theme="light"] .product-card-code {
+  color: rgba(45, 34, 29, 0.34);
+}
+
+[data-theme="light"] .product-logo-watermark {
+  opacity: 0.035;
+}
+
+[data-theme="light"] .product-logo-watermark .brand-symbol {
+  filter: grayscale(1) brightness(0.45);
+}
+
+[data-theme="light"] .add-to-cart-btn {
+  color: var(--text-primary);
+  border-color: rgba(58, 42, 34, 0.12);
+  background: rgba(45, 34, 29, 0.045);
+}
