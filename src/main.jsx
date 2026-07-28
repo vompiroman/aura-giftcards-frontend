@@ -199,7 +199,14 @@ const translations = {
     
     // Top Banner
     topBanner: "Services streaming disponibles partout en Algérie",
+    topBannerMobile: "Disponible partout en Algérie",
     topBannerSupport: "Support WhatsApp",
+    topBannerSupportMobile: "WhatsApp",
+    marketingConsentTitle: "Mesure publicitaire Meta",
+    marketingConsentText: "Avec votre accord, le Pixel Meta et l’API Conversions mesurent nos publicités. Le site et le paiement fonctionnent aussi si vous refusez.",
+    marketingConsentLearnMore: "En savoir plus",
+    marketingConsentReject: "Refuser",
+    marketingConsentAccept: "Accepter",
     
     // Hero
     heroTitle1: "Tes abonnements streaming",
@@ -360,7 +367,14 @@ const translations = {
     navLogout: "Logout",
     
     topBanner: "Streaming services available throughout Algeria",
+    topBannerMobile: "Available across Algeria",
     topBannerSupport: "WhatsApp support",
+    topBannerSupportMobile: "WhatsApp",
+    marketingConsentTitle: "Meta advertising measurement",
+    marketingConsentText: "With your consent, Meta Pixel and Conversions API measure our advertising. The site and payment work normally if you decline.",
+    marketingConsentLearnMore: "Learn more",
+    marketingConsentReject: "Decline",
+    marketingConsentAccept: "Accept",
     
     heroTitle1: "Your streaming subscriptions",
     heroTitle2: "at the best price",
@@ -510,7 +524,14 @@ const translations = {
     navLogout: "تسجيل الخروج",
     
     topBanner: "خدمات البث متاحة في جميع أنحاء الجزائر",
+    topBannerMobile: "متاح في جميع أنحاء الجزائر",
     topBannerSupport: "دعم واتساب",
+    topBannerSupportMobile: "واتساب",
+    marketingConsentTitle: "قياس إعلانات Meta",
+    marketingConsentText: "بموافقتك، نستخدم Meta Pixel وConversions API لقياس إعلاناتنا. يعمل الموقع والدفع بشكل طبيعي إذا رفضت.",
+    marketingConsentLearnMore: "اعرف المزيد",
+    marketingConsentReject: "رفض",
+    marketingConsentAccept: "موافقة",
     
     heroTitle1: "اشتراكات البث الخاصة بك",
     heroTitle2: "بأفضل الأسعار",
@@ -913,10 +934,12 @@ function TopBanner() {
     <div className="top-banner">
       <div className="top-banner-inner">
         <span className="status-dot" aria-hidden="true"></span>
-        <span>{t('topBanner')}</span>
+        <span className="banner-copy banner-copy-desktop">{t('topBanner')}</span>
+        <span className="banner-copy banner-copy-mobile">{t('topBannerMobile')}</span>
         <span className="banner-separator" aria-hidden="true">•</span>
         <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">
-          {t('topBannerSupport')}
+          <span className="banner-copy banner-copy-desktop">{t('topBannerSupport')}</span>
+          <span className="banner-copy banner-copy-mobile">{t('topBannerSupportMobile')}</span>
         </a>
       </div>
     </div>
@@ -975,7 +998,14 @@ function ThemeToggle() {
   }, [isDark]);
 
   return (
-    <button className="theme-toggle nav-btn" onClick={() => setIsDark(!isDark)} title={isDark ? '☀️' : '🌙'} style={{fontSize: '1.2rem', padding: '0.4rem', minWidth: 'auto', border: 'none', background: 'none'}}>
+    <button
+      className="theme-toggle nav-btn"
+      type="button"
+      onClick={() => setIsDark(!isDark)}
+      title={isDark ? 'Activer le mode clair' : 'Activer le mode sombre'}
+      aria-label={isDark ? 'Activer le mode clair' : 'Activer le mode sombre'}
+      style={{fontSize: '1.2rem', padding: '0.4rem', minWidth: 'auto', border: 'none', background: 'none'}}
+    >
       {isDark ? '☀️' : '🌙'}
     </button>
   );
@@ -991,25 +1021,25 @@ function Header({ cartCount, onCartClick, onNavigate, auth, onLoginClick, cartBu
           <span className="brand-copy">Aura<span>Stream</span></span>
         </button>
         <nav className="nav-links" aria-label="Navigation principale">
-          <button className="nav-btn" onClick={() => onNavigate('home')}>
+          <button className="nav-btn home-nav-btn" type="button" onClick={() => onNavigate('home')}>
             <span className="nav-icon">🏠</span>
             <span className="nav-text">{t('navHome')}</span>
           </button>
-          <button className="nav-btn" onClick={() => onNavigate('shop')}>
+          <button className="nav-btn shop-nav-btn" type="button" onClick={() => onNavigate('shop')}>
             <span className="nav-icon">🛍️</span>
             <span className="nav-text">{t('navShop')}</span>
           </button>
           {auth.user ? (
             <UserDropdown auth={auth} onNavigate={onNavigate} />
           ) : (
-            <button className="login-btn" onClick={onLoginClick}>
+            <button className="login-btn" type="button" onClick={onLoginClick}>
               <span className="nav-icon">👤</span>
               <span className="nav-text">{t('navLogin')}</span>
             </button>
           )}
           <LanguageSwitcher />
           <ThemeToggle />
-          <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} onClick={onCartClick} aria-label={`${t('navCart')} (${cartCount})`}>
+          <button className={`cart-btn ${cartBump ? 'shake-animation' : ''}`} type="button" onClick={onCartClick} aria-label={`${t('navCart')} (${cartCount})`}>
             <span aria-hidden="true">🛒</span>
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </button>
@@ -1053,29 +1083,31 @@ function HeroSection({ onShopClick }) {
 
         <div className="hero-showcase animate-fadeInUp delay-2" aria-label={t('heroDesc1')}>
           <div className="showcase-glow"></div>
-          <div className="service-ticket ticket-netflix">
-            <div className="ticket-top">
-              <span className="ticket-logo"><BrandSymbol service="netflix" /></span>
-              <span>Netflix</span>
-              <small>Premium</small>
+          <div className="service-tickets-track">
+            <div className="service-ticket ticket-netflix">
+              <div className="ticket-top">
+                <span className="ticket-logo"><BrandSymbol service="netflix" /></span>
+                <span>Netflix</span>
+                <small>Premium</small>
+              </div>
+              <div className="ticket-bottom"><span>1 mois</span><strong>600 DA</strong></div>
             </div>
-            <div className="ticket-bottom"><span>1 mois</span><strong>600 DA</strong></div>
-          </div>
-          <div className="service-ticket ticket-spotify">
-            <div className="ticket-top">
-              <span className="ticket-logo"><BrandSymbol service="spotify" /></span>
-              <span>Spotify</span>
-              <small>Premium</small>
+            <div className="service-ticket ticket-spotify">
+              <div className="ticket-top">
+                <span className="ticket-logo"><BrandSymbol service="spotify" /></span>
+                <span>Spotify</span>
+                <small>Premium</small>
+              </div>
+              <div className="ticket-bottom"><span>1 mois</span><strong>200 DA</strong></div>
             </div>
-            <div className="ticket-bottom"><span>1 mois</span><strong>200 DA</strong></div>
-          </div>
-          <div className="service-ticket ticket-crunchyroll">
-            <div className="ticket-top">
-              <span className="ticket-logo"><BrandSymbol service="crunchyroll" /></span>
-              <span>Crunchyroll</span>
-              <small>Mega Fan</small>
+            <div className="service-ticket ticket-crunchyroll">
+              <div className="ticket-top">
+                <span className="ticket-logo"><BrandSymbol service="crunchyroll" /></span>
+                <span>Crunchyroll</span>
+                <small>Mega Fan</small>
+              </div>
+              <div className="ticket-bottom"><span>1 an</span><strong>3 000 DA</strong></div>
             </div>
-            <div className="ticket-bottom"><span>1 an</span><strong>3 000 DA</strong></div>
           </div>
           <div className="delivery-pill"><span aria-hidden="true">✓</span>{t('heroShowcaseEta')}</div>
         </div>
@@ -1121,6 +1153,11 @@ function ProductCard({ product, onAddToCart, className, style }) {
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = React.useState(0);
   const [added, setAdded] = React.useState(false);
+  const addedTimerRef = React.useRef(null);
+
+  React.useEffect(() => () => {
+    if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current);
+  }, []);
 
   const handleAdd = () => {
     const plan = product.plans[selectedPlan];
@@ -1134,7 +1171,8 @@ function ProductCard({ product, onAddToCart, className, style }) {
       price: plan.price
     });
     setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
+    if (addedTimerRef.current) window.clearTimeout(addedTimerRef.current);
+    addedTimerRef.current = window.setTimeout(() => setAdded(false), 1500);
   };
 
   return (
@@ -1152,6 +1190,7 @@ function ProductCard({ product, onAddToCart, className, style }) {
       <div className="duration-selector">
         {product.plans.map((plan, idx) => (
           <button
+            type="button"
             key={idx}
             className={'duration-btn' + (selectedPlan === idx ? ' active' : '')}
             onClick={() => setSelectedPlan(idx)}
@@ -1166,7 +1205,7 @@ function ProductCard({ product, onAddToCart, className, style }) {
         <span className="price-current">{product.plans[selectedPlan].price}</span>
         <span className="price-currency">DA</span>
       </div>
-      <button className={'add-to-cart-btn ' + product.color + (added ? ' added' : '')} onClick={handleAdd}>
+      <button type="button" className={'add-to-cart-btn ' + product.color + (added ? ' added' : '')} onClick={handleAdd}>
         <span className="cart-icon">🛒 {t('addToCart')}</span>
         <span className="check-icon">✔ {t('added')}</span>
       </button>
@@ -1235,7 +1274,7 @@ function FAQSection() {
   const faqs = t('faqItems');
 
   return (
-    <section className="section animate-fadeInUp">
+    <section className="section faq-section animate-fadeInUp">
       <div className="section-header">
         <div className="eyebrow section-eyebrow"><span aria-hidden="true"></span>{t('faqEyebrow')}</div>
         <h2 className="section-title">{t('faqTitle')}</h2>
@@ -1294,14 +1333,29 @@ function ServiceHighlightsSection() {
 function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
   const { t } = useLanguage();
   const total = displayCartTotal(cart);
+  const closeButtonRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <React.Fragment>
-      <div className="cart-overlay" onClick={onClose}></div>
-      <div className="cart-sidebar">
+      <div className="cart-overlay" aria-hidden="true" onClick={onClose}></div>
+      <aside className="cart-sidebar" role="dialog" aria-modal="true" aria-labelledby="cart-title">
         <div className="cart-header">
-          <h2>{t('navCart')} ({cart.length})</h2>
-          <button className="cart-close" onClick={onClose}>&times;</button>
+          <h2 id="cart-title">{t('navCart')} ({cart.length})</h2>
+          <button ref={closeButtonRef} className="cart-close" type="button" onClick={onClose} aria-label="Fermer le panier">&times;</button>
         </div>
         <div className="cart-items">
           {cart.length === 0 ? (
@@ -1329,7 +1383,7 @@ function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
                 </div>
                 <div className="cart-item-right">
                   <span className="cart-item-price">{formatDA(unitPrice(item))}</span>
-                  <button className="cart-item-remove" onClick={() => onRemove(idx)}>&times;</button>
+                  <button className="cart-item-remove" type="button" onClick={() => onRemove(idx)} aria-label={`Retirer ${item.type}`}>&times;</button>
                 </div>
               </div>
             ))
@@ -1341,7 +1395,7 @@ function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
               <span>{t('cartTotal')}</span>
               <span className="cart-total-amount">{total} DA</span>
             </div>
-            <button className="checkout-btn" onClick={onCheckout}>
+            <button className="checkout-btn" type="button" onClick={onCheckout}>
               {t('checkoutBtn')} &rarr;
             </button>
             <div className="cart-whatsapp-help">
@@ -1350,7 +1404,7 @@ function CartSidebar({ cart, onRemove, onClose, onCheckout }) {
             </div>
           </div>
         )}
-      </div>
+      </aside>
     </React.Fragment>
   );
 }
@@ -1364,6 +1418,21 @@ function LoginModal({ auth, onClose, onSuccess }) {
   const [error, setError] = React.useState('');
   const [successMsg, setSuccessMsg] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const closeButtonRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1390,10 +1459,10 @@ function LoginModal({ auth, onClose, onSuccess }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal">
-        <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2>{isForgot ? t('forgotPass') : (isSignup ? t('signupTitle') : t('loginTitle'))}</h2>
+    <div className="modal-overlay" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-title">
+        <button ref={closeButtonRef} className="modal-close" type="button" onClick={onClose} aria-label="Fermer">&times;</button>
+        <h2 id="login-modal-title">{isForgot ? t('forgotPass') : (isSignup ? t('signupTitle') : t('loginTitle'))}</h2>
         <p className="modal-subtitle">
           {isForgot ? t('forgotSub') : (isSignup ? t('signupSub') : t('loginSub'))}
         </p>
@@ -1584,8 +1653,8 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
             <span>{formatDA(subtotal)}</span>
           </div>
         )}
-        <div style={{display: 'flex', gap: '0.6rem', alignItems: 'end', marginBottom: '1rem'}}>
-          <label htmlFor="checkout-promo" style={{flex: 1, color: 'var(--text-secondary)', fontSize: '0.85rem'}}>
+        <div className="checkout-promo-row" style={{display: 'flex', gap: '0.6rem', alignItems: 'end', marginBottom: '1rem'}}>
+          <label className="checkout-promo-label" htmlFor="checkout-promo" style={{flex: 1, color: 'var(--text-secondary)', fontSize: '0.85rem'}}>
             Code promo
             <input
               id="checkout-promo"
@@ -1597,7 +1666,7 @@ function CheckoutPage({ cart, email, onSuccess, onBack }) {
               style={{marginTop: '0.35rem'}}
             />
           </label>
-          <button type="button" className="btn btn-secondary" onClick={validatePromo} disabled={promoLoading || !promoCode.trim()}>
+          <button type="button" className="btn btn-secondary checkout-promo-btn" onClick={validatePromo} disabled={promoLoading || !promoCode.trim()}>
             {promoLoading ? 'Vérification…' : 'Appliquer'}
           </button>
         </div>
@@ -3410,19 +3479,19 @@ function Footer({ onNavigate, onManageMarketing }) {
 }
 
 function MarketingConsent({ onDecision, onPrivacy }) {
+  const { t } = useLanguage();
   return (
     <div className="marketing-consent" role="dialog" aria-modal="true" aria-labelledby="marketing-consent-title">
       <div>
-        <h2 id="marketing-consent-title">Mesure publicitaire Meta</h2>
+        <h2 id="marketing-consent-title">{t('marketingConsentTitle')}</h2>
         <p>
-          Avec votre accord, nous utilisons le Pixel Meta et l’API Conversions pour mesurer nos publicités.
-          Le site et le paiement fonctionnent normalement si vous refusez.
-          {' '}<button type="button" className="consent-privacy-link" onClick={onPrivacy}>En savoir plus</button>
+          {t('marketingConsentText')}
+          {' '}<button type="button" className="consent-privacy-link" onClick={onPrivacy}>{t('marketingConsentLearnMore')}</button>
         </p>
       </div>
       <div className="marketing-consent-actions">
-        <button type="button" onClick={() => onDecision(false)}>Refuser</button>
-        <button type="button" onClick={() => onDecision(true)}>Accepter</button>
+        <button type="button" onClick={() => onDecision(false)}>{t('marketingConsentReject')}</button>
+        <button type="button" onClick={() => onDecision(true)}>{t('marketingConsentAccept')}</button>
       </div>
     </div>
   );
