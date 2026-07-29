@@ -68,6 +68,12 @@ for (const header of ["Content-Security-Policy", "X-Frame-Options", "max-age=315
 if (serializedVercel.includes("unsafe-inline") || serializedVercel.includes("unsafe-eval")) {
   throw new Error("La CSP Vercel autorise encore du JavaScript ou CSS inline");
 }
+if (!serializedVercel.includes("https://aura-giftcards-api.onrender.com/api/:path*")) {
+  throw new Error("Le proxy API Vercel est absent");
+}
+if (!app.includes('const API_BASE = "/api"')) {
+  throw new Error("Le frontend ne passe pas par le proxy API de même origine");
+}
 
 if (!robots.includes("https://www.aura-stream.com/sitemap.xml")) {
   throw new Error("robots.txt ne référence pas le sitemap de production");
