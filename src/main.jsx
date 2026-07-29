@@ -59,17 +59,12 @@ const parseOrderItems = (value) => {
 };
 
 const CATALOG = {
-  "Netflix 1 mois": 600,
-  "Netflix 2 mois": 1100,
-  "Netflix 3 mois": 4000,
-  "Netflix 6 mois": 7500,
-  "Netflix 12 mois": 14000,
-  "Spotify 1 mois": 200,
-  "Spotify 2 mois": 900,
-  "Spotify 3 mois": 2400,
-  "Crunchyroll 1 mois": 500,
-  "Crunchyroll 3 mois": 1200,
-  "Crunchyroll 1 an": 3000,
+  "Netflix Premium 1 mois": 600,
+  "Netflix Premium 2 mois": 1100,
+  "Spotify Family 1 mois": 500,
+  "Spotify Family 1 an": 4000,
+  "Crunchyroll Mega Fan 1 mois": 500,
+  "Crunchyroll Mega Fan 1 an": 3000,
 };
 
 function unitPrice(itemOrName) {
@@ -122,7 +117,7 @@ function ToastContainer() {
 const PRODUCTS = [
   {
     id: 'netflix',
-    name: 'Netflix',
+    name: 'Netflix Premium',
     descKey: 'descNetflix',
     color: 'netflix',
     popular: true,
@@ -133,18 +128,18 @@ const PRODUCTS = [
   },
   {
     id: 'spotify',
-    name: 'Spotify',
+    name: 'Spotify Family',
     descKey: 'descSpotify',
     color: 'spotify',
     popular: false,
     plans: [
-      { durationKey: 'planMonth', canonicalDuration: '1 mois', price: 200 },
-      { durationKey: 'plan2Months', canonicalDuration: '2 mois', price: 900 }
+      { durationKey: 'planMonth', canonicalDuration: '1 mois', price: 500 },
+      { durationKey: 'planYear', canonicalDuration: '1 an', price: 4000 }
     ]
   },
   {
     id: 'crunchyroll',
-    name: 'Crunchyroll',
+    name: 'Crunchyroll Mega Fan',
     descKey: 'descCrunchyroll',
     color: 'crunchyroll',
     popular: false,
@@ -164,7 +159,7 @@ const APP_LOGO_URLS = {
 
 const PLATFORM_RAIL_ITEMS = [
   { id: 'netflix', name: 'Netflix', price: '600 DA' },
-  { id: 'spotify', name: 'Spotify', price: '200 DA' },
+  { id: 'spotify', name: 'Spotify', price: '500 DA' },
   { id: 'crunchyroll', name: 'Crunchyroll', price: '500 DA' },
 ];
 
@@ -1119,7 +1114,7 @@ function HeroSection({ onShopClick }) {
                 <span>Spotify</span>
                 <small>Premium</small>
               </div>
-              <div className="ticket-bottom"><span>1 mois</span><strong>200 DA</strong></div>
+              <div className="ticket-bottom"><span>1 mois</span><strong>500 DA</strong></div>
             </div>
             <div className="service-ticket ticket-crunchyroll">
               <div className="ticket-top">
@@ -3288,9 +3283,9 @@ function OrdersPage({ auth }) {
             const items = parseOrderItems(order.items);
             const date = new Date(order.created_at).toLocaleDateString('fr-DZ');
             const hasNetflix = items.some(item => String(item.name || '').toLowerCase().includes('netflix'));
-            const isNetflixWaitingForStock = order.status === 'pending' && order.payment_status === 'paid' && hasNetflix;
+            const isNetflixWaitingForStock = order.payment_status === 'paid' && hasNetflix && !order.account;
             const pendingLabel = isNetflixWaitingForStock
-              ? 'Paiement reçu — attribution Netflix en cours selon le stock disponible.'
+              ? 'En attente de stock'
               : order.payment_status === 'paid'
                 ? 'Paiement reçu — activation en cours'
                 : 'Paiement non confirmé';
@@ -3301,7 +3296,7 @@ function OrdersPage({ auth }) {
             }
             
             return (
-            <div key={order.order_id} className="dashboard-card" style={{display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: order.status === 'active' ? '4px solid var(--spotify)' : 'none'}}>
+            <div key={order.order_id} className="dashboard-card" style={{display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: order.status === 'active' && !isNetflixWaitingForStock ? '4px solid var(--spotify)' : 'none'}}>
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem'}}>
                 <div>
                   <div style={{fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.3rem'}}>{date}</div>
@@ -3313,10 +3308,10 @@ function OrdersPage({ auth }) {
                 <div style={{display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end'}}>
                   <span style={{
                     padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600,
-                    background: order.status === 'active' ? 'rgba(29,185,84,0.1)' : order.status === 'pending' ? 'rgba(255,193,7,0.1)' : 'rgba(255,255,255,0.05)',
-                    color: order.status === 'active' ? 'var(--spotify)' : order.status === 'pending' ? 'var(--gold)' : 'var(--text-secondary)'
+                    background: isNetflixWaitingForStock || order.status === 'pending' ? 'rgba(255,193,7,0.1)' : order.status === 'active' ? 'rgba(29,185,84,0.1)' : 'rgba(255,255,255,0.05)',
+                    color: isNetflixWaitingForStock || order.status === 'pending' ? 'var(--gold)' : order.status === 'active' ? 'var(--spotify)' : 'var(--text-secondary)'
                   }}>
-                    {order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? pendingLabel : order.status === 'cancelled' ? 'Annulée' : 'Terminée'}
+                    {isNetflixWaitingForStock ? 'En attente de stock' : order.status === 'active' ? (daysLeft !== null ? (daysLeft > 0 ? `Actif (${daysLeft}j restants)` : 'Expiré') : 'Actif') : order.status === 'pending' ? pendingLabel : order.status === 'cancelled' ? 'Annulée' : 'Terminée'}
                   </span>
                   {activationEtaLabel(order, items) && (
                     <div style={{width: '100%', fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'right'}}>
@@ -3328,15 +3323,9 @@ function OrdersPage({ auth }) {
                       Expire le : {new Date(order.expires_at).toLocaleDateString('fr-DZ')}
                     </div>
                   )}
-                  {daysLeft !== null && daysLeft <= 7 && daysLeft > 0 && (
+                  {daysLeft !== null && daysLeft <= 3 && daysLeft > 0 && !isNetflixWaitingForStock && (
                     <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => {
                        const message = `Bonjour Aura Stream ! Mon abonnement se termine dans ${daysLeft} jours et je souhaite le renouveler pour ne pas perdre l'accès. (Commande #${order.order_id})`;
-                       window.open(`https://wa.me/213557828812?text=${encodeURIComponent(message)}`, '_blank');
-                    }}>Renouveler</button>
-                  )}
-                  {daysLeft !== null && daysLeft <= 0 && (
-                    <button className="btn btn-primary" style={{padding: '0.4rem 1rem', fontSize: '0.85rem'}} onClick={() => {
-                       const message = `Bonjour Aura Stream ! Mon abonnement est expiré et je souhaite le renouveler. (Commande #${order.order_id})`;
                        window.open(`https://wa.me/213557828812?text=${encodeURIComponent(message)}`, '_blank');
                     }}>Renouveler</button>
                   )}
@@ -3360,7 +3349,7 @@ function OrdersPage({ auth }) {
                       <OrderCredentialsUpdater order={order} service="Crunchyroll" color="#F47521" icon="🍘" onUpdated={fetchOrders} />
                     )}
 
-                    {order.status === 'active' && (
+                    {order.status === 'active' && !isNetflixWaitingForStock && order.account && (
                       <div style={{marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(255,255,255,0.1)'}}>
                         {items.some(i => i.name.toLowerCase().includes('netflix')) ? (
                           <NetflixOTPButton orderId={order.order_id} auth={auth} account={order.account} />
