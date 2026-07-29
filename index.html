@@ -2,79 +2,881 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="index,follow,max-image-preview:large">
-  <meta name="theme-color" content="#06060b">
-  <title>Aura Stream — Comptes Streaming | Netflix, Spotify, Crunchyroll</title>
-  <meta name="description" content="Netflix attribué automatiquement, Spotify et Crunchyroll activés sur votre compte en Algérie. Paiement sécurisé et suivi de commande.">
-  <meta property="og:title" content="Aura Stream — Comptes Streaming">
-  <meta property="og:description" content="Netflix, Spotify et Crunchyroll au meilleur prix en Algérie, avec paiement sécurisé et suivi de commande.">
-  <meta property="og:image" content="https://www.aura-stream.com/logo.png">
-  <meta property="og:image:alt" content="Aura Stream — abonnements streaming en Algérie">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#191A1F">
+  <meta name="description" content="Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.">
+  <title>Aura Stream — Comptes streaming en Algérie</title>
   <link rel="canonical" href="https://www.aura-stream.com/">
-  <meta property="og:url" content="https://www.aura-stream.com/">
-  <meta property="og:site_name" content="Aura Stream">
-  <meta property="og:locale" content="fr_DZ">
+  <meta property="og:title" content="Aura Stream — Comptes streaming en Algérie">
+  <meta property="og:description" content="Netflix Premium, Spotify Family et Crunchyroll Mega Fan avec paiement CIB ou Edahabia.">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Aura Stream — Netflix, Spotify et Crunchyroll en Algérie">
-  <meta name="twitter:description" content="Abonnements streaming, paiement sécurisé et activation rapide en Algérie.">
-  <meta name="twitter:image" content="https://www.aura-stream.com/logo.png">
-  <link rel="icon" type="image/png" href="logo.png">
+  <meta property="og:url" content="https://www.aura-stream.com/">
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "name": "Aura Stream",
+      "url": "https://www.aura-stream.com/",
+      "areaServed": "DZ",
+      "currenciesAccepted": "DZD"
+    }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": "https://www.aura-stream.com/#organization",
-        "name": "Aura Stream",
-        "url": "https://www.aura-stream.com/",
-        "logo": "https://www.aura-stream.com/logo.png",
-        "contactPoint": { "@type": "ContactPoint", "telephone": "+213557828812", "contactType": "customer service", "availableLanguage": ["fr", "ar", "en"] }
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://www.aura-stream.com/#website",
-        "url": "https://www.aura-stream.com/",
-        "name": "Aura Stream",
-        "publisher": { "@id": "https://www.aura-stream.com/#organization" },
-        "inLanguage": "fr-DZ"
-      },
-      {
-        "@type": "ItemList",
-        "name": "Abonnements streaming Aura Stream",
-        "itemListElement": [
-          { "@type": "ListItem", "position": 1, "item": { "@type": "Product", "name": "Netflix 1 mois", "offers": { "@type": "Offer", "price": "600", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } },
-          { "@type": "ListItem", "position": 2, "item": { "@type": "Product", "name": "Spotify 1 mois", "offers": { "@type": "Offer", "price": "200", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } },
-          { "@type": "ListItem", "position": 3, "item": { "@type": "Product", "name": "Crunchyroll 1 mois", "offers": { "@type": "Offer", "price": "500", "priceCurrency": "DZD", "availability": "https://schema.org/InStock" } } }
-        ]
-      },
-      {
-        "@type": "FAQPage",
-        "mainEntity": [
-          { "@type": "Question", "name": "Comment recevoir mon abonnement ?", "acceptedAnswer": { "@type": "Answer", "text": "Après confirmation du paiement, l'activation et les informations de livraison sont disponibles dans Mes commandes." } },
-          { "@type": "Question", "name": "Quels moyens de paiement sont acceptés ?", "acceptedAnswer": { "@type": "Answer", "text": "Le paiement sécurisé est proposé par Edahabia et CIB via SlickPay." } },
-          { "@type": "Question", "name": "Que faire en cas de problème ?", "acceptedAnswer": { "@type": "Answer", "text": "Le support Aura Stream est disponible sur WhatsApp avec votre numéro de commande." } }
-        ]
-      }
-    ]
-  }
-  </script>
-  <link rel="stylesheet" href="/src/styles.css">
-  <script type="module" src="/src/load-error.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+  <script type="module" src="/src/meta.js"></script>
+
+  <link rel="stylesheet" href="/canvas.css">
 </head>
-<body>
-  <div id="root">
-    <div class="loading-screen">
-      <div class="loading-spinner"></div>
-      <p style="color:var(--gold);font-weight:500;">Chargement...</p>
+
+<body class="font-body antialiased selection:bg-aura selection:text-white">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-graphite">
+    Aller au contenu
+  </a>
+
+  <div class="bg-graphite px-4 py-2.5 text-ivory">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center text-xs sm:text-sm">
+      <span>
+        <i class="fa-solid fa-location-dot mr-1.5 text-sand" aria-hidden="true"></i>
+        Livraison partout en Algérie
+      </span>
+      <span class="hidden text-white/30 sm:inline">•</span>
+      <span>
+        <i class="fa-brands fa-whatsapp mr-1.5 text-[#25D366]" aria-hidden="true"></i>
+        Support WhatsApp humain
+      </span>
+      <a class="font-semibold text-aura underline decoration-aura/40 underline-offset-4 hover:text-white" href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">
+        Nous écrire →
+      </a>
     </div>
   </div>
 
-  <script type="module" src="/src/main.jsx"></script>
+  <header class="sticky top-0 z-50 border-b border-black/10 bg-ivory/95 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
+      <button type="button" class="route-link flex min-h-11 items-center gap-3 rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2" data-route="home" aria-label="Aura Stream — Accueil">
+        <span class="grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-graphite shadow-lg shadow-aura/20">
+          <img src="/logo.png" alt="Aura Stream" class="h-10 w-10 object-contain">
+        </span>
+        <span class="font-title text-lg font-extrabold tracking-tight text-graphite">
+          Aura <span class="text-aura">Stream</span>
+        </span>
+      </button>
+
+      <nav class="hidden items-center gap-7 lg:flex" aria-label="Navigation principale">
+        <button class="nav-link route-link text-sm font-semibold transition hover:text-aura" data-route="home" aria-current="page">Accueil</button>
+        <button class="nav-link route-link text-sm font-semibold transition hover:text-aura" data-route="products">Boutique</button>
+        <button class="nav-link route-link text-sm font-semibold transition hover:text-aura" data-route="home" data-scroll="how">Comment ça marche</button>
+        <button class="nav-link route-link text-sm font-semibold transition hover:text-aura" data-route="faq">FAQ</button>
+      </nav>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button type="button" class="account-link route-link hidden min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-graphite transition hover:bg-black/5 sm:flex" data-route="login">
+          Se connecter
+        </button>
+        <button type="button" class="route-link relative flex min-h-11 items-center gap-2 rounded-xl bg-aura px-3.5 text-sm font-bold text-white shadow-lg shadow-aura/20 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2 sm:px-4" data-route="cart">
+          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+          <span class="hidden sm:inline">Panier</span>
+          <span id="cart-count" class="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-extrabold text-aura">2</span>
+        </button>
+        <button id="mobile-menu-toggle" type="button" class="grid h-11 w-11 place-items-center rounded-xl border border-black/10 text-graphite lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Ouvrir le menu">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <nav id="mobile-menu" class="hidden border-t border-black/10 bg-ivory px-4 py-3 lg:hidden" aria-label="Navigation mobile">
+      <div class="mx-auto grid max-w-7xl gap-1">
+        <button class="route-link rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-black/5" data-route="home">Accueil</button>
+        <button class="route-link rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-black/5" data-route="products">Boutique</button>
+        <button class="route-link rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-black/5" data-route="home" data-scroll="how">Comment ça marche</button>
+        <button class="route-link rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-black/5" data-route="faq">FAQ & Support</button>
+        <button class="account-link route-link rounded-xl px-4 py-3 text-left text-sm font-semibold hover:bg-black/5" data-route="login">Se connecter</button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <!-- HOME -->
+    <section id="view-home" class="page-view" data-view="home">
+      <section class="hero-grid overflow-hidden bg-graphite text-ivory">
+        <div class="mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.04fr_.96fr] lg:items-center lg:gap-16 lg:px-8 lg:py-24">
+          <div>
+            <p class="mb-5 text-xs font-bold uppercase tracking-[0.16em] text-sand">
+              Comptes streaming pour l’Algérie
+            </p>
+            <h1 class="max-w-3xl font-title text-4xl font-extrabold leading-[1.05] tracking-[-0.045em] sm:text-5xl lg:text-6xl">
+              Le bon compte.<br>
+              Le bon prix.<br>
+              <span class="text-aura">Sans complication.</span>
+            </h1>
+            <p class="mt-6 max-w-xl text-base leading-7 text-ivory/70 sm:text-lg">
+              Ton profil Netflix Premium est livré automatiquement. L’accès Spotify Family et Crunchyroll Mega Fan est activé avec un support humain du début à la fin.
+            </p>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <button type="button" class="route-link inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-aura px-6 font-title text-sm font-bold text-white shadow-lg shadow-aura/25 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]" data-route="products">
+                Voir les offres
+                <i class="fa-solid fa-arrow-right text-xs" aria-hidden="true"></i>
+              </button>
+              <button type="button" class="route-link inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/20 px-6 font-title text-sm font-bold text-ivory transition hover:border-white/50 hover:bg-white/5" data-route="home" data-scroll="how">
+                Comment ça marche
+                <i class="fa-solid fa-arrow-down text-xs" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium text-ivory/70 sm:text-sm">
+              <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Paiement CIB / Edahabia</span>
+              <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Prix affichés en DA</span>
+              <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Support WhatsApp humain</span>
+            </div>
+          </div>
+
+          <div class="relative mx-auto w-full max-w-xl">
+            <div class="absolute inset-x-12 top-1/2 h-48 -translate-y-1/2 rounded-full bg-aura/15 blur-3xl" aria-hidden="true"></div>
+            <div class="relative rounded-3xl border border-white/10 bg-white/[0.045] p-4 shadow-2xl backdrop-blur-sm sm:p-6">
+              <div class="mb-5 flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.14em] text-sand">Tes accès</p>
+                  <p class="mt-1 text-sm text-ivory/55">Prix clairs · Activation suivie</p>
+                </div>
+                <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-ivory/65">Disponible</span>
+              </div>
+
+              <div class="space-y-3">
+                <article class="flex items-center gap-4 rounded-2xl border border-[#E50914]/20 bg-[#E50914]/10 p-4 sm:p-5">
+                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="w-8">
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="font-title text-lg font-bold">Netflix</h2>
+                    <p class="text-xs text-ivory/60">Accès à un profil Netflix Premium.</p>
+                  </div>
+                  <p class="whitespace-nowrap font-title text-xl font-extrabold">600 <span class="text-xs font-bold text-ivory/60">DA</span></p>
+                </article>
+
+                <article class="ml-4 flex items-center gap-4 rounded-2xl border border-[#1ED760]/20 bg-[#1ED760]/10 p-4 sm:ml-8 sm:p-5">
+                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="w-9">
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="font-title text-lg font-bold">Spotify</h2>
+                    <p class="text-xs text-ivory/60">Accès à un profil Spotify Family.</p>
+                  </div>
+                  <p class="whitespace-nowrap font-title text-xl font-extrabold">500 <span class="text-xs font-bold text-ivory/60">DA</span></p>
+                </article>
+
+                <article class="mr-4 flex items-center gap-4 rounded-2xl border border-[#F47521]/20 bg-[#F47521]/10 p-4 sm:mr-8 sm:p-5">
+                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
+                    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Crunchyroll%202024%20stacked.svg" alt="Crunchyroll" class="w-9">
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h2 class="font-title text-lg font-bold">Crunchyroll</h2>
+                    <p class="text-xs text-ivory/60">Accès Crunchyroll Mega Fan sur ton compte.</p>
+                  </div>
+                  <p class="whitespace-nowrap font-title text-xl font-extrabold">500 <span class="text-xs font-bold text-ivory/60">DA</span></p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="border-b border-black/10 bg-white">
+        <div class="mx-auto grid max-w-7xl divide-y divide-black/10 px-4 sm:px-6 md:grid-cols-3 md:divide-x md:divide-y-0 lg:px-8">
+          <div class="flex items-center gap-4 py-5 md:px-6">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-red-50"><img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="w-7"></span>
+            <div><p class="font-title text-sm font-bold">Netflix Premium</p><p class="text-xs text-black/55">À partir de 600 DA</p><p class="mt-1 text-[11px] text-black/45">Accès à un profil</p><p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-green-700">Livraison automatique</p></div>
+          </div>
+          <div class="flex items-center gap-4 py-5 md:px-6">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-green-100"><img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="w-8"></span>
+            <div><p class="font-title text-sm font-bold">Spotify Family</p><p class="text-xs text-black/55">À partir de 500 DA</p><p class="mt-1 text-[11px] text-black/45">Accès Premium sans publicité</p><p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-green-700">Activation manuelle</p></div>
+          </div>
+          <div class="flex items-center gap-4 py-5 md:px-6">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-orange-100"><img src="https://commons.wikimedia.org/wiki/Special:FilePath/Crunchyroll%202024%20stacked.svg" alt="Crunchyroll" class="w-8"></span>
+            <div><p class="font-title text-sm font-bold">Crunchyroll Mega Fan</p><p class="text-xs text-black/55">À partir de 500 DA</p><p class="mt-1 text-[11px] text-black/45">4 écrans · VOSTFR + VF</p><p class="mt-1 text-[10px] font-bold uppercase tracking-wider text-orange-700">Activation manuelle</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-ivory py-16 sm:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="max-w-2xl">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Nos abonnements</p>
+            <h2 class="mt-3 font-title text-3xl font-extrabold tracking-tight sm:text-4xl">Choisis ton accès</h2>
+            <p class="mt-4 leading-7 text-black/60">Une offre claire pour chaque plateforme. Ajoute au panier, règle en dinars, puis suis l’activation.</p>
+          </div>
+
+          <div class="mt-10 grid gap-5 lg:grid-cols-3">
+            <article class="group relative overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-lift">
+              <span class="absolute right-4 top-4 rounded-full bg-red-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-aura">Le plus demandé</span>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="h-6 w-auto">
+              <h3 class="mt-6 font-title text-xl font-bold">Netflix Premium</h3>
+              <p class="mt-2 min-h-12 text-sm leading-6 text-black/55">Accès à un profil Netflix Premium.</p>
+              <p class="mt-5 text-xs font-semibold leading-5 text-green-700">Livraison automatique après confirmation du paiement</p>
+              <div class="mt-4 flex items-end justify-between">
+                <p class="font-title text-3xl font-extrabold">600 <span class="text-sm">DA</span></p>
+                <span class="text-xs text-black/45">1 mois</span>
+              </div>
+              <button class="route-link mt-6 flex min-h-12 w-full items-center justify-center rounded-xl bg-graphite font-title text-sm font-bold text-white transition hover:bg-aura" data-route="products">Choisir Netflix</button>
+            </article>
+
+            <article class="group relative overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-lift">
+              <span class="absolute right-4 top-4 rounded-full bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-green-800">Activation manuelle</span>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="h-6 w-auto">
+              <h3 class="mt-6 font-title text-xl font-bold">Spotify Family</h3>
+              <p class="mt-2 min-h-12 text-sm leading-6 text-black/55">Accès à un profil Spotify Family.</p>
+              <p class="mt-5 text-xs font-semibold leading-5 text-green-700">Notre équipe active l’abonnement sur ton compte Spotify.</p>
+              <div class="mt-4 flex items-end justify-between">
+                <p class="font-title text-3xl font-extrabold">500 <span class="text-sm">DA</span></p>
+                <span class="text-xs text-black/45">1 mois</span>
+              </div>
+              <button class="route-link mt-6 flex min-h-12 w-full items-center justify-center rounded-xl bg-graphite font-title text-sm font-bold text-white transition hover:bg-aura" data-route="products">Choisir Spotify</button>
+            </article>
+
+            <article class="group relative overflow-hidden rounded-2xl border border-black/10 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-lift">
+              <span class="absolute right-4 top-4 rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-700">Activation manuelle</span>
+              <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Crunchyroll%202024%20stacked.svg" alt="Crunchyroll" class="h-7 w-auto">
+              <h3 class="mt-6 font-title text-xl font-bold">Crunchyroll Mega Fan</h3>
+              <p class="mt-2 min-h-12 text-sm leading-6 text-black/55">Accès Crunchyroll Mega Fan sur ton compte.</p>
+              <p class="mt-5 text-xs font-semibold leading-5 text-orange-700">Notre équipe active l’abonnement sur ton compte Crunchyroll.</p>
+              <div class="mt-4 flex items-end justify-between">
+                <p class="font-title text-3xl font-extrabold">500 <span class="text-sm">DA</span></p>
+                <span class="text-xs text-black/45">1 mois</span>
+              </div>
+              <button class="route-link mt-6 flex min-h-12 w-full items-center justify-center rounded-xl bg-graphite font-title text-sm font-bold text-white transition hover:bg-aura" data-route="products">Choisir Crunchyroll</button>
+            </article>
+          </div>
+
+          <div class="mt-6 grid gap-5 rounded-2xl bg-graphite p-6 text-ivory shadow-soft sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <h3 class="font-title text-xl font-bold">Spotify et Crunchyroll : une activation accompagnée</h3>
+              <p class="mt-2 max-w-3xl text-sm leading-6 text-ivory/65">Après ton paiement, tu remplis un formulaire sécurisé pour transmettre les informations nécessaires. Notre équipe effectue l’activation et te confirme chaque étape sur WhatsApp.</p>
+            </div>
+            <button class="route-link min-h-12 rounded-xl bg-sand px-5 font-title text-sm font-bold text-graphite transition hover:scale-[1.02]" data-route="faq">Voir le fonctionnement</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="bg-graphite py-16 text-ivory sm:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Simple et transparent</p>
+          <h2 class="mt-3 max-w-2xl font-title text-3xl font-extrabold tracking-tight sm:text-4xl">Ton abonnement en trois étapes</h2>
+          <div class="mt-10 grid gap-5 md:grid-cols-3">
+            <article class="rounded-2xl border border-white/10 bg-white/[0.045] p-6">
+              <p class="font-title text-4xl font-extrabold text-sand">01</p>
+              <h3 class="mt-6 font-title text-xl font-bold">Choisis</h3>
+              <p class="mt-3 text-sm leading-6 text-ivory/60">Sélectionne la plateforme et la durée qui te conviennent.</p>
+            </article>
+            <article class="rounded-2xl border border-white/10 bg-white/[0.045] p-6">
+              <p class="font-title text-4xl font-extrabold text-sand">02</p>
+              <h3 class="mt-6 font-title text-xl font-bold">Paie localement</h3>
+              <p class="mt-3 text-sm leading-6 text-ivory/60">Règle avec CIB ou Edahabia via SlickPay.</p>
+            </article>
+            <article class="rounded-2xl border border-white/10 bg-white/[0.045] p-6">
+              <p class="font-title text-4xl font-extrabold text-sand">03</p>
+              <h3 class="mt-6 font-title text-xl font-bold">Reçois ou fais activer</h3>
+              <p class="mt-3 text-sm leading-6 text-ivory/60">Le profil Netflix Premium est livré automatiquement. Spotify Family et Crunchyroll Mega Fan sont activés sur ton compte.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-ivory py-16 sm:py-20">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div class="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-center">
+            <div>
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Suivi de commande</p>
+              <h2 class="mt-3 font-title text-3xl font-extrabold tracking-tight sm:text-4xl">Suis chaque étape</h2>
+              <p class="mt-4 leading-7 text-black/60">De la confirmation du paiement jusqu’à l’activation, tu sais toujours où en est ta commande.</p>
+              <button class="route-link mt-6 min-h-12 rounded-xl border border-graphite px-5 font-title text-sm font-bold transition hover:bg-graphite hover:text-white" data-route="order">Voir un exemple de suivi</button>
+            </div>
+            <div class="rounded-2xl border border-black/10 bg-white p-6 shadow-soft sm:p-8">
+              <div class="grid grid-cols-4 gap-2">
+                <div class="text-center">
+                  <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                  <p class="mt-3 text-[11px] font-semibold sm:text-xs">Paiement</p>
+                </div>
+                <div class="text-center">
+                  <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                  <p class="mt-3 text-[11px] font-semibold sm:text-xs">Confirmé</p>
+                </div>
+                <div class="text-center">
+                  <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-sand text-xs text-graphite"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
+                  <p class="mt-3 text-[11px] font-semibold text-[#9A7137] sm:text-xs">Activation</p>
+                </div>
+                <div class="text-center">
+                  <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-black/10 text-xs text-black/35"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                  <p class="mt-3 text-[11px] font-semibold text-black/35 sm:text-xs">Activé</p>
+                </div>
+              </div>
+              <div class="relative mt-[-52px] h-px bg-black/10" aria-hidden="true">
+                <div class="h-px w-2/3 bg-sand"></div>
+              </div>
+              <div class="mt-16 flex items-center gap-3 rounded-xl bg-[#FBF4E9] p-4 text-sm text-[#7A6040]">
+                <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                Activation Spotify en cours — confirmation sur WhatsApp.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-aura py-12 text-white">
+        <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div>
+            <h2 class="font-title text-2xl font-extrabold sm:text-3xl">Prêt à lancer ton abonnement ?</h2>
+            <p class="mt-2 text-sm text-white/75">Choisis ton service. Nous nous occupons du reste.</p>
+          </div>
+          <button class="route-link min-h-12 rounded-xl bg-graphite px-6 font-title text-sm font-bold text-white transition hover:scale-[1.03]" data-route="products">Voir les offres</button>
+        </div>
+      </section>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section id="view-products" class="page-view hidden bg-ivory" data-view="products">
+      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Boutique Aura Stream</p>
+            <h1 class="mt-3 font-title text-4xl font-extrabold tracking-tight sm:text-5xl">Choisis ton accès</h1>
+            <p class="mt-4 max-w-2xl leading-7 text-black/60">Sélectionne une offre et une durée. Les prix et le mode d’activation restent visibles avant l’ajout au panier.</p>
+          </div>
+          <div class="flex flex-wrap gap-2" aria-label="Filtres de service">
+            <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="true" data-filter="all">Toutes les offres</button>
+            <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="false" data-filter="netflix">Netflix</button>
+            <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="false" data-filter="spotify">Spotify</button>
+            <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="false" data-filter="crunchyroll">Crunchyroll</button>
+          </div>
+        </div>
+
+        <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3" id="product-grid">
+          <article class="product-card rounded-2xl border border-black/10 bg-white p-6 shadow-soft" data-service="netflix" data-product="Netflix Premium">
+            <div class="flex items-start justify-between gap-4">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="h-6 w-auto">
+              <span class="rounded-full bg-red-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-aura">Profil Premium</span>
+            </div>
+            <h2 class="mt-6 font-title text-xl font-bold">Netflix Premium</h2>
+            <p class="mt-2 text-sm leading-6 text-black/55">Accès à un profil Netflix Premium</p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button class="duration-btn min-h-10 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="true" data-price="600" data-duration="1 mois">1 mois</button>
+            </div>
+            <div class="mt-6 flex items-end justify-between">
+              <p class="price-value font-title text-3xl font-extrabold">600 <span class="text-sm">DA</span></p>
+              <span class="text-xs font-semibold text-green-700"><i class="fa-solid fa-bolt mr-1" aria-hidden="true"></i>Disponible · Livraison auto</span>
+            </div>
+            <button class="add-product mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]">Ajouter au panier</button>
+          </article>
+
+          <article class="product-card rounded-2xl border border-black/10 bg-white p-6 shadow-soft" data-service="spotify" data-product="Spotify Family">
+            <div class="flex items-start justify-between gap-4">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="h-6 w-auto">
+              <span class="rounded-full bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-green-800">Activation manuelle</span>
+            </div>
+            <h2 class="mt-6 font-title text-xl font-bold">Spotify Family</h2>
+            <p class="mt-2 text-sm leading-6 text-black/55">Accès à un profil Spotify Family</p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button class="duration-btn min-h-10 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="true" data-price="500" data-duration="1 mois">1 mois</button>
+              <button class="duration-btn min-h-10 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="false" data-price="4000" data-duration="1 an">1 an</button>
+            </div>
+            <div class="mt-6 flex items-end justify-between">
+              <p class="price-value font-title text-3xl font-extrabold">500 <span class="text-sm">DA</span></p>
+              <span class="text-xs font-semibold text-green-700"><i class="fa-solid fa-user-check mr-1" aria-hidden="true"></i>Disponible · Activation dans la journée</span>
+            </div>
+            <button class="add-product mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]">Ajouter au panier</button>
+          </article>
+
+          <article class="product-card rounded-2xl border border-black/10 bg-white p-6 shadow-soft" data-service="crunchyroll" data-product="Crunchyroll Mega Fan">
+            <div class="flex items-start justify-between gap-4">
+              <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Crunchyroll%202024%20stacked.svg" alt="Crunchyroll" class="h-7 w-auto">
+              <span class="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-700">4 écrans</span>
+            </div>
+            <h2 class="mt-6 font-title text-xl font-bold">Crunchyroll Mega Fan</h2>
+            <p class="mt-2 text-sm leading-6 text-black/55">4 écrans · VOSTFR + VF</p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <button class="duration-btn min-h-10 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="true" data-price="500" data-duration="1 mois">1 mois</button>
+              <button class="duration-btn min-h-10 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="false" data-price="3000" data-duration="1 an">1 an</button>
+            </div>
+            <div class="mt-6 flex items-end justify-between">
+              <p class="price-value font-title text-3xl font-extrabold">500 <span class="text-sm">DA</span></p>
+              <span class="text-xs font-semibold text-orange-700"><i class="fa-solid fa-user-check mr-1" aria-hidden="true"></i>Disponible · Activation dans la journée</span>
+            </div>
+            <button class="add-product mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]">Ajouter au panier</button>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- CART & CHECKOUT -->
+    <section id="view-cart" class="page-view hidden bg-ivory" data-view="cart">
+      <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div class="mx-auto max-w-3xl">
+          <div class="grid grid-cols-3 gap-3" aria-label="Progression du paiement">
+            <div class="checkout-step text-center" data-step-indicator="1">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-aura text-sm font-bold text-white">1</span>
+              <p class="mt-2 text-xs font-bold">Informations</p>
+            </div>
+            <div class="checkout-step text-center opacity-40" data-step-indicator="2">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-graphite text-sm font-bold text-white">2</span>
+              <p class="mt-2 text-xs font-bold">Paiement</p>
+            </div>
+            <div class="checkout-step text-center opacity-40" data-step-indicator="3">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-graphite text-sm font-bold text-white">3</span>
+              <p class="mt-2 text-xs font-bold">Confirmation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 grid gap-8 lg:grid-cols-[1fr_360px] lg:items-start">
+          <div class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-8">
+            <section id="checkout-info" data-checkout-panel="1">
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Étape 1</p>
+              <h1 class="mt-3 font-title text-2xl font-extrabold sm:text-3xl">Vos informations</h1>
+              <p id="customer-info-description" class="mt-3 text-sm leading-6 text-black/55">Tes informations servent à rattacher la commande à ton compte et à te prévenir sur WhatsApp.</p>
+
+              <form id="customer-form" class="mt-8 grid gap-5 sm:grid-cols-2">
+                <label class="grid gap-2 text-sm font-semibold">
+                  Prénom
+                  <input id="customer-first-name" required autocomplete="given-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Nassym">
+                </label>
+                <label class="grid gap-2 text-sm font-semibold">
+                  Nom
+                  <input id="customer-last-name" required autocomplete="family-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Yaker">
+                </label>
+                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">
+                  Adresse e-mail
+                  <input id="customer-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com">
+                </label>
+                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">
+                  Numéro WhatsApp
+                  <input id="customer-whatsapp" required autocomplete="tel" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="tel" placeholder="+213 5 00 00 00 00">
+                </label>
+                <p id="profile-save-status" class="hidden text-xs font-medium text-black/50 sm:col-span-2" role="status" aria-live="polite"></p>
+                <div id="spotify-credentials-panel" class="hidden rounded-2xl bg-[#FBF4E9] p-5 sm:col-span-2">
+                  <div class="flex items-center gap-3">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="h-6 w-auto">
+                    <p class="font-title text-sm font-bold">Informations pour l’activation Spotify</p>
+                  </div>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="grid gap-2 text-sm font-semibold">
+                      E-mail du compte Spotify
+                      <input id="spotify-email" autocomplete="email" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="spotify@exemple.com">
+                    </label>
+                    <label class="grid gap-2 text-sm font-semibold">
+                      Mot de passe temporaire
+                      <span class="relative">
+                        <input id="spotify-password" class="min-h-12 w-full rounded-xl border border-[#D9C39F] bg-white px-4 pr-12 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" placeholder="••••••••">
+                        <button id="toggle-password" type="button" class="absolute inset-y-0 right-0 grid w-12 place-items-center text-black/45" aria-label="Afficher le mot de passe">
+                          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </span>
+                    </label>
+                  </div>
+                  <p class="mt-4 text-xs leading-5 text-[#7A6040]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire différent de tes autres services. Les informations doivent être chiffrées côté serveur et supprimées après activation.</p>
+                </div>
+                <div id="crunchyroll-credentials-panel" class="hidden rounded-2xl bg-[#FFF7F0] p-5 sm:col-span-2">
+                  <div class="flex items-center gap-3">
+                    <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Crunchyroll%202024%20stacked.svg" alt="Crunchyroll" class="h-7 w-auto">
+                    <p class="font-title text-sm font-bold">Informations pour l’activation Crunchyroll</p>
+                  </div>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="grid gap-2 text-sm font-semibold">
+                      E-mail du compte Crunchyroll
+                      <input id="crunchyroll-email" autocomplete="email" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="crunchyroll@exemple.com">
+                    </label>
+                    <label class="grid gap-2 text-sm font-semibold">
+                      Mot de passe temporaire
+                      <input id="crunchyroll-password" autocomplete="current-password" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" placeholder="••••••••">
+                    </label>
+                  </div>
+                </div>
+                <label class="flex items-start gap-3 rounded-xl border border-black/10 bg-ivory p-4 text-xs leading-5 text-black/60 sm:col-span-2">
+                  <input id="marketing-consent" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 accent-[#D93646]">
+                  <span>J’accepte que mes données de commande soient utilisées pour mesurer les publicités Aura Stream sur Meta. Ce choix est facultatif.</span>
+                </label>
+              </form>
+              <button id="to-payment" type="button" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">Continuer vers le paiement</button>
+            </section>
+
+            <section id="checkout-payment" class="hidden" data-checkout-panel="2">
+              <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Étape 2</p>
+              <h1 class="mt-3 font-title text-2xl font-extrabold sm:text-3xl">Mode de paiement</h1>
+              <p class="mt-3 text-sm leading-6 text-black/55">Sélectionne ta carte. Le paiement est traité via SlickPay.</p>
+              <fieldset class="mt-8 grid gap-4">
+                <legend class="sr-only">Mode de paiement</legend>
+                <label class="flex cursor-pointer items-center gap-4 rounded-2xl border-2 border-aura bg-red-50/50 p-5">
+                  <input checked class="h-5 w-5 accent-[#D93646]" type="radio" name="payment" value="SlickPay">
+                  <span class="grid h-11 w-11 place-items-center rounded-xl bg-white text-aura shadow-sm"><i class="fa-solid fa-credit-card" aria-hidden="true"></i></span>
+                  <span class="flex-1"><strong class="block font-title text-sm">CIB / Edahabia</strong><span class="text-xs text-black/50">Les deux cartes sont traitées par le même prestataire SlickPay.</span></span>
+                  <span class="rounded-full bg-aura px-3 py-1 text-[10px] font-bold uppercase text-white">Recommandé</span>
+                </label>
+              </fieldset>
+              <div class="mt-6 flex items-start gap-3 rounded-xl bg-green-50 p-4 text-sm text-green-800">
+                <i class="fa-solid fa-lock mt-0.5" aria-hidden="true"></i>
+                <div><strong class="block">Paiement sécurisé via SlickPay</strong><span class="text-xs">Les informations de carte ne transitent pas par Aura Stream.</span></div>
+              </div>
+              <button id="pay-button" type="button" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">
+                Payer <span id="pay-total">1 100 DA</span> <i class="fa-solid fa-lock ml-2 text-xs" aria-hidden="true"></i>
+              </button>
+            </section>
+
+            <section id="checkout-confirmation" class="hidden py-6 text-center" data-checkout-panel="3">
+              <span class="mx-auto grid h-20 w-20 place-items-center rounded-full bg-green-100 text-3xl text-green-700"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+              <p class="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-green-700">Paiement reçu</p>
+              <h1 class="mt-3 font-title text-3xl font-extrabold">Commande confirmée !</h1>
+              <p class="mx-auto mt-4 max-w-lg text-sm leading-7 text-black/55">Netflix sera livré sous peu. Notre équipe va activer ton Spotify et tu recevras une confirmation sur WhatsApp.</p>
+              <p class="mt-6 font-title text-sm font-bold text-aura">Commande #AS-2024-0842 · 1 100 DA</p>
+              <button type="button" class="route-link mt-8 min-h-12 rounded-xl bg-graphite px-6 font-title text-sm font-bold text-white transition hover:bg-aura" data-route="order">Suivre ma commande</button>
+            </section>
+          </div>
+
+          <aside class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft lg:sticky lg:top-24">
+            <h2 class="font-title text-lg font-bold">Votre panier</h2>
+            <div id="checkout-items" class="mt-5 divide-y divide-black/10"></div>
+            <div class="mt-5 space-y-3 border-t border-black/10 pt-5 text-sm">
+              <div class="flex justify-between text-black/55"><span>Sous-total</span><span id="subtotal-value">1 100 DA</span></div>
+              <div class="flex justify-between text-black/55"><span>Frais de service</span><span>Offerts</span></div>
+              <div class="flex items-end justify-between pt-2">
+                <span class="font-title font-bold">Total</span>
+                <span id="checkout-total" class="font-title text-2xl font-extrabold text-aura">1 100 DA</span>
+              </div>
+            </div>
+            <div class="mt-6 grid gap-3 text-xs text-black/55">
+              <span><i class="fa-solid fa-shield-halved mr-2 text-green-700" aria-hidden="true"></i>Paiement CIB / Edahabia sécurisé</span>
+              <span id="netflix-delivery-note"><i class="fa-solid fa-bolt mr-2 text-sand" aria-hidden="true"></i>Netflix livré automatiquement</span>
+              <span><i class="fa-brands fa-whatsapp mr-2 text-[#25D366]" aria-hidden="true"></i>Confirmation sur WhatsApp</span>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDER TRACKING -->
+    <section id="view-order" class="page-view hidden bg-ivory" data-view="order">
+      <div class="bg-graphite text-ivory">
+        <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Espace client</p>
+          <h1 class="mt-3 font-title text-4xl font-extrabold tracking-tight sm:text-5xl">Mes commandes</h1>
+          <p class="mt-4 max-w-2xl text-ivory/60">Retrouve tes paiements confirmés, tes activations et les accès qui t’ont été attribués.</p>
+        </div>
+      </div>
+      <div id="my-orders-content" class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft">
+          <i class="fa-solid fa-spinner fa-spin text-2xl text-aura" aria-hidden="true"></i>
+          <p class="mt-3 text-sm text-black/55">Chargement de tes commandes…</p>
+        </div>
+      </div>
+      <div id="order-demo-content" class="mx-auto hidden max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1fr_340px] lg:px-8">
+        <div class="space-y-6">
+          <section class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <h2 class="font-title text-xl font-bold">Statut de la commande</h2>
+              <span class="rounded-full bg-[#FBF4E9] px-4 py-2 text-xs font-bold text-[#A07A40]">Activation en cours</span>
+            </div>
+            <div class="mt-8 grid grid-cols-4 gap-2">
+              <div class="text-center">
+                <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                <p class="mt-3 text-[11px] font-bold sm:text-xs">Paiement</p><p class="mt-1 text-[10px] text-green-700">Validé</p>
+              </div>
+              <div class="text-center">
+                <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                <p class="mt-3 text-[11px] font-bold sm:text-xs">Confirmé</p><p class="mt-1 text-[10px] text-green-700">Aujourd’hui</p>
+              </div>
+              <div class="text-center">
+                <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-sand text-xs text-graphite"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
+                <p class="mt-3 text-[11px] font-bold text-[#A07A40] sm:text-xs">Activation</p><p class="mt-1 text-[10px] text-[#A07A40]">En cours</p>
+              </div>
+              <div class="text-center opacity-35">
+                <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-black/15 text-xs"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                <p class="mt-3 text-[11px] font-bold sm:text-xs">Activé</p><p class="mt-1 text-[10px]">À venir</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-8">
+            <h2 class="font-title text-xl font-bold">Articles commandés</h2>
+            <div class="mt-6 divide-y divide-black/10">
+              <article class="grid gap-4 py-5 first:pt-0 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                <span class="grid h-12 w-12 place-items-center rounded-xl bg-red-50"><img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix" class="w-8"></span>
+                <div><h3 class="font-title text-sm font-bold">Netflix Premium</h3><p class="mt-1 text-xs text-black/50">1 mois · Accès à un profil · Livraison automatique</p><span class="mt-2 inline-block rounded-full bg-green-100 px-3 py-1 text-[10px] font-bold uppercase text-green-800">Livré</span></div>
+                <p class="font-title font-extrabold">600 DA</p>
+              </article>
+              <article class="grid gap-4 py-5 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                <span class="grid h-12 w-12 place-items-center rounded-xl bg-green-100"><img src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg" alt="Spotify" class="w-9"></span>
+                <div><h3 class="font-title text-sm font-bold">Spotify Family</h3><p class="mt-1 text-xs text-black/50">1 mois · Accès Family · Activation manuelle</p><span class="mt-2 inline-block rounded-full bg-[#FBF4E9] px-3 py-1 text-[10px] font-bold uppercase text-[#A07A40]">Activation en cours</span></div>
+                <p class="font-title font-extrabold">500 DA</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-8">
+            <h2 class="font-title text-xl font-bold">Journal d’activité</h2>
+            <ol class="mt-6 space-y-6">
+              <li class="grid grid-cols-[24px_1fr] gap-4">
+                <span class="mt-1 grid h-6 w-6 place-items-center rounded-full bg-green-100 text-[10px] text-green-700"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                <div><h3 class="font-title text-sm font-bold">Paiement confirmé</h3><p class="mt-1 text-xs leading-5 text-black/50">Paiement de 1 100 DA validé via SlickPay (CIB / Edahabia).</p></div>
+              </li>
+              <li class="grid grid-cols-[24px_1fr] gap-4">
+                <span class="mt-1 grid h-6 w-6 place-items-center rounded-full bg-green-100 text-[10px] text-green-700"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
+                <div><h3 class="font-title text-sm font-bold">Netflix livré</h3><p class="mt-1 text-xs leading-5 text-black/50">Les accès ont été envoyés à ton adresse e-mail.</p></div>
+              </li>
+              <li class="grid grid-cols-[24px_1fr] gap-4">
+                <span class="mt-1 grid h-6 w-6 place-items-center rounded-full bg-[#FBF4E9] text-[10px] text-[#A07A40]"><i class="fa-solid fa-clock" aria-hidden="true"></i></span>
+                <div><h3 class="font-title text-sm font-bold text-[#A07A40]">Activation Spotify en cours</h3><p class="mt-1 text-xs leading-5 text-black/50">Notre équipe traite les informations transmises.</p></div>
+              </li>
+              <li class="grid grid-cols-[24px_1fr] gap-4 opacity-40">
+                <span class="mt-1 grid h-6 w-6 place-items-center rounded-full bg-black/10 text-[10px]"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span>
+                <div><h3 class="font-title text-sm font-bold">Confirmation WhatsApp</h3><p class="mt-1 text-xs">En attente.</p></div>
+              </li>
+            </ol>
+          </section>
+        </div>
+
+        <aside class="h-fit rounded-2xl border border-black/10 bg-white p-5 shadow-soft lg:sticky lg:top-24">
+          <h2 class="font-title text-lg font-bold">Résumé</h2>
+          <dl class="mt-5 space-y-4 text-sm">
+            <div class="flex justify-between gap-4"><dt class="text-black/50">Commande</dt><dd class="font-semibold">#AS-2024-0842</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-black/50">Date</dt><dd class="font-semibold">28 juillet 2026</dd></div>
+            <div class="flex justify-between gap-4"><dt class="text-black/50">Paiement</dt><dd class="font-semibold">CIB · Validé</dd></div>
+            <div class="flex justify-between gap-4 border-t border-black/10 pt-4"><dt class="font-title font-bold">Total</dt><dd class="font-title text-xl font-extrabold text-aura">1 100 DA</dd></div>
+          </dl>
+          <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" class="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] font-title text-sm font-bold text-white transition hover:scale-[1.02]">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>Contacter le support
+          </a>
+        </aside>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="view-login" class="page-view hidden min-h-[72vh] bg-graphite text-ivory" data-view="login">
+      <div class="mx-auto grid max-w-7xl lg:min-h-[72vh] lg:grid-cols-[.9fr_1.1fr]">
+        <div class="hidden overflow-hidden border-r border-white/10 p-12 lg:flex lg:flex-col lg:justify-between">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Espace Aura Stream</p>
+            <h1 class="mt-5 max-w-md font-title text-5xl font-extrabold leading-tight tracking-tight">Tes abonnements.<br><span class="text-aura">Tout en un.</span></h1>
+            <p class="mt-6 max-w-md leading-7 text-ivory/60">Retrouve tes commandes, suis les activations et contacte le support depuis un seul espace.</p>
+          </div>
+          <div class="grid gap-3 text-sm text-ivory/65">
+            <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Suivi de commande centralisé</span>
+            <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Historique de tes abonnements</span>
+            <span><i class="fa-solid fa-circle-check mr-2 text-sand" aria-hidden="true"></i>Support WhatsApp humain</span>
+          </div>
+        </div>
+
+        <div class="flex items-center px-4 py-12 sm:px-8 lg:px-16">
+          <div class="mx-auto w-full max-w-lg rounded-2xl bg-ivory p-5 text-softblack shadow-2xl sm:p-8">
+            <div class="grid grid-cols-2 rounded-xl bg-black/5 p-1">
+              <button class="auth-tab min-h-11 rounded-lg bg-white px-4 text-sm font-bold shadow-sm" aria-selected="true" data-auth="signin">Se connecter</button>
+              <button class="auth-tab min-h-11 rounded-lg px-4 text-sm font-bold text-black/45" aria-selected="false" data-auth="signup">Créer un compte</button>
+            </div>
+
+            <form id="signin-form" class="mt-8" data-auth-panel="signin">
+              <h2 class="font-title text-2xl font-extrabold">Bon retour !</h2>
+              <p class="mt-2 text-sm text-black/50">Connecte-toi pour retrouver tes commandes.</p>
+              <div class="mt-6 grid gap-5">
+                <label class="grid gap-2 text-sm font-semibold">Adresse e-mail<input id="signin-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com"></label>
+                <label class="grid gap-2 text-sm font-semibold">Mot de passe<input id="signin-password" required autocomplete="current-password" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" placeholder="••••••••"></label>
+                <label class="flex items-center gap-3 text-sm"><input id="remember-me" class="h-4 w-4 accent-[#D93646]" type="checkbox">Se souvenir de moi</label>
+              </div>
+              <button type="submit" class="mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:bg-[#BE2E3D]">Se connecter</button>
+              <button type="button" class="mt-3 min-h-12 w-full rounded-xl border border-black/15 bg-white font-title text-sm font-bold transition hover:border-black/35"><i class="fa-brands fa-google mr-2" aria-hidden="true"></i>Continuer avec Google</button>
+            </form>
+
+            <form id="signup-form" class="mt-8 hidden" data-auth-panel="signup">
+              <h2 class="font-title text-2xl font-extrabold">Créer un compte</h2>
+              <p class="mt-2 text-sm text-black/50">Un espace simple pour suivre tes abonnements.</p>
+              <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                <label class="grid gap-2 text-sm font-semibold">Prénom<input id="signup-first-name" required autocomplete="given-name" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="text"></label>
+                <label class="grid gap-2 text-sm font-semibold">Nom<input id="signup-last-name" required autocomplete="family-name" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="text"></label>
+                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">Adresse e-mail<input id="signup-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email"></label>
+                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">Numéro WhatsApp<input id="signup-phone" required autocomplete="tel" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="tel" placeholder="+213"></label>
+                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">Mot de passe<input id="signup-password" required autocomplete="new-password" minlength="8" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password"></label>
+                <label class="flex items-start gap-3 text-xs leading-5 sm:col-span-2"><input required class="mt-1 h-4 w-4 shrink-0 accent-[#D93646]" type="checkbox">J’accepte les Conditions Générales de Vente et la Politique de Confidentialité.</label>
+              </div>
+              <button type="submit" class="mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:bg-[#BE2E3D]">Créer mon compte</button>
+            </form>
+            <p id="auth-feedback" class="mt-5 hidden rounded-xl px-4 py-3 text-sm" role="alert"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ & SUPPORT -->
+    <section id="view-faq" class="page-view hidden bg-ivory" data-view="faq">
+      <div class="bg-graphite text-ivory">
+        <div class="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-20">
+          <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">FAQ & Support</p>
+          <h1 class="mt-4 font-title text-4xl font-extrabold tracking-tight sm:text-5xl">Comment pouvons-nous t’aider ?</h1>
+          <div class="relative mx-auto mt-8 max-w-2xl">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-black/40" aria-hidden="true"></i>
+            <label for="faq-search" class="sr-only">Chercher dans les questions</label>
+            <input id="faq-search" class="min-h-14 w-full rounded-xl bg-white pl-12 pr-4 text-softblack outline-none ring-aura/30 placeholder:text-black/40 focus:ring-4" type="search" placeholder="Chercher une question, un service…">
+          </div>
+          <div class="mt-5 flex flex-wrap justify-center gap-2 text-xs">
+            <button class="faq-category rounded-full border border-white/15 px-4 py-2 hover:bg-white/10">Netflix</button>
+            <button class="faq-category rounded-full border border-white/15 px-4 py-2 hover:bg-white/10">Spotify</button>
+            <button class="faq-category rounded-full border border-white/15 px-4 py-2 hover:bg-white/10">Crunchyroll</button>
+            <button class="faq-category rounded-full border border-white/15 px-4 py-2 hover:bg-white/10">Paiement</button>
+            <button class="faq-category rounded-full border border-white/15 px-4 py-2 hover:bg-white/10">Sécurité</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[260px_1fr] lg:px-8">
+        <aside class="h-fit rounded-2xl border border-black/10 bg-white p-4 shadow-soft lg:sticky lg:top-24">
+          <h2 class="px-3 py-2 font-title text-sm font-bold">Toutes les questions</h2>
+          <div class="mt-2 grid gap-1 text-sm">
+            <button class="faq-category rounded-xl bg-black/5 px-3 py-3 text-left font-semibold hover:bg-black/10">Livraison & Activation</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Netflix</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Spotify</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Crunchyroll</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Paiement</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Sécurité & Données</button>
+            <button class="faq-category rounded-xl px-3 py-3 text-left font-semibold hover:bg-black/5">Compte & Support</button>
+          </div>
+        </aside>
+
+        <div>
+          <h2 class="font-title text-2xl font-extrabold">Questions fréquentes</h2>
+          <div id="faq-list" class="mt-6 overflow-hidden rounded-2xl border border-black/10 bg-white shadow-soft">
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="true" data-keywords="livraison abonnement activation">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="true">
+                Comment vais-je recevoir mon abonnement ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Netflix est livré automatiquement à l’adresse e-mail fournie. Pour Spotify et Crunchyroll, notre équipe active l’abonnement sur ton compte et te confirme l’opération sur WhatsApp.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="netflix livraison automatique compte">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Comment fonctionne la livraison Netflix ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Après confirmation du paiement, les informations du compte Netflix sont attribuées automatiquement à ta commande et apparaissent dans ton espace de suivi.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="spotify activation compte mot de passe">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Comment se passe l’activation Spotify ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Tu renseignes ton compte Spotify après le paiement. Utilise un mot de passe temporaire unique. Notre équipe effectue l’activation puis les informations doivent être supprimées du système.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="crunchyroll activation anime compte">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Comment se passe l’activation Crunchyroll ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Le fonctionnement est similaire à Spotify : l’abonnement est activé sur ton compte existant et une confirmation est envoyée lorsque l’opération est terminée.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="paiement cib edahabia slickpay sécurisé">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Le paiement CIB / Edahabia est-il sécurisé ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Le paiement est traité par SlickPay. Aura Stream ne reçoit ni ne conserve les numéros complets de carte bancaire.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="sécurité mot de passe spotify crunchyroll données">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Est-ce risqué de donner mon mot de passe Spotify / Crunchyroll ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Utilise impérativement un mot de passe temporaire et différent de tes autres comptes. Change-le après l’activation. Le système de production doit chiffrer les informations et les supprimer automatiquement après traitement.</p></div></div>
+            </article>
+            <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="accès panne problème support remboursement">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Que faire si mon accès ne fonctionne plus ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Contacte le support WhatsApp avec ton numéro de commande. L’équipe vérifie l’accès et applique la solution prévue par les conditions de vente.</p></div></div>
+            </article>
+            <article class="faq-item px-5 sm:px-6" data-open="false" data-keywords="commande suivi paiement activation">
+              <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
+                Comment suivre ma commande après paiement ?
+                <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
+              </button>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Le lien de suivi est affiché après le paiement et envoyé avec la confirmation. Tu peux également retrouver la commande depuis ton compte Aura Stream.</p></div></div>
+            </article>
+          </div>
+
+          <section class="mt-10 rounded-2xl bg-graphite p-6 text-ivory shadow-soft sm:p-8">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Support humain</p>
+            <h2 class="mt-3 font-title text-2xl font-extrabold">On est là pour toi</h2>
+            <div class="mt-6 grid gap-3 sm:grid-cols-3">
+              <a class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#25D366] font-title text-sm font-bold text-white" href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp</a>
+              <a class="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/15 font-title text-sm font-bold hover:bg-white/5" href="https://www.instagram.com/aurastreamdz/" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-instagram" aria-hidden="true"></i>Instagram</a>
+              <button class="min-h-12 rounded-xl border border-white/15 font-title text-sm font-bold hover:bg-white/5" type="button"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Formulaire de contact</button>
+            </div>
+            <form class="mt-6 grid gap-4 sm:grid-cols-2" id="support-form">
+              <label class="grid gap-2 text-sm font-semibold">Ton nom<input required class="min-h-12 rounded-xl border border-white/15 bg-white/5 px-4 font-normal text-white outline-none placeholder:text-white/30 focus:border-aura" type="text"></label>
+              <label class="grid gap-2 text-sm font-semibold">Ton e-mail<input required class="min-h-12 rounded-xl border border-white/15 bg-white/5 px-4 font-normal text-white outline-none placeholder:text-white/30 focus:border-aura" type="email"></label>
+              <label class="grid gap-2 text-sm font-semibold sm:col-span-2">Ta question<textarea required class="min-h-32 rounded-xl border border-white/15 bg-white/5 px-4 py-3 font-normal text-white outline-none placeholder:text-white/30 focus:border-aura"></textarea></label>
+              <button class="min-h-12 rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:bg-[#BE2E3D] sm:col-span-2 sm:justify-self-start" type="submit">Envoyer</button>
+            </form>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-graphite text-ivory">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center overflow-hidden rounded-xl bg-white/5"><img src="/logo.png" alt="Aura Stream" class="h-10 w-10 object-contain"></span>
+          <span class="font-title text-lg font-extrabold">Aura <span class="text-aura">Stream</span></span>
+        </div>
+        <p class="mt-4 text-sm leading-6 text-ivory/55">Des comptes streaming au meilleur prix en Algérie, avec paiement local et support humain.</p>
+      </div>
+      <div>
+        <h2 class="font-title text-sm font-bold">Boutique</h2>
+        <div class="mt-4 grid gap-3 text-sm text-ivory/55">
+          <button class="route-link w-fit hover:text-white" data-route="products">Netflix</button>
+          <button class="route-link w-fit hover:text-white" data-route="products">Spotify</button>
+          <button class="route-link w-fit hover:text-white" data-route="products">Crunchyroll</button>
+        </div>
+      </div>
+      <div>
+        <h2 class="font-title text-sm font-bold">Aide</h2>
+        <div class="mt-4 grid gap-3 text-sm text-ivory/55">
+          <button class="route-link w-fit hover:text-white" data-route="home" data-scroll="how">Comment ça marche</button>
+          <button class="route-link w-fit hover:text-white" data-route="order">Suivre une commande</button>
+          <button class="route-link w-fit hover:text-white" data-route="faq">FAQ</button>
+        </div>
+      </div>
+      <div>
+        <h2 class="font-title text-sm font-bold">Contact</h2>
+        <div class="mt-4 grid gap-3 text-sm text-ivory/55">
+          <a class="w-fit hover:text-white" href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          <a class="w-fit hover:text-white" href="https://www.instagram.com/aurastreamdz/" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <button class="route-link w-fit hover:text-white" data-route="faq">Support client</button>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-white/10">
+      <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-ivory/40 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+        <p>© 2026 Aura Stream. Tous droits réservés.</p>
+        <div class="flex flex-wrap gap-4"><a href="#" class="hover:text-white">CGV</a><a href="#" class="hover:text-white">Confidentialité</a><a href="#" class="hover:text-white">Remboursements</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer" class="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-2xl text-white shadow-xl transition hover:scale-105" aria-label="Contacter Aura Stream sur WhatsApp">
+    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+  </a>
+
+  <div id="toast" class="fixed bottom-5 left-1/2 z-[80] flex -translate-x-1/2 translate-y-8 items-center gap-3 rounded-xl bg-graphite px-5 py-3 text-sm font-semibold text-white opacity-0 shadow-2xl transition duration-300" role="status" aria-live="polite">
+    <i class="fa-solid fa-check-circle text-green-400" aria-hidden="true"></i>
+    <span id="toast-message">Ajouté au panier</span>
+  </div>
+
+  <aside id="marketing-consent-banner" class="fixed inset-x-4 bottom-4 z-[90] hidden rounded-2xl border border-white/10 bg-graphite p-5 text-ivory shadow-2xl sm:left-auto sm:max-w-md" aria-label="Préférences publicitaires">
+    <h2 class="font-title text-base font-bold">Mesure publicitaire Meta</h2>
+    <p class="mt-2 text-xs leading-5 text-white/65">Avec ton accord, Aura Stream utilise le Pixel Meta pour mesurer ses publicités. Le site et le paiement fonctionnent aussi si tu refuses.</p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button id="accept-marketing" type="button" class="min-h-10 rounded-xl bg-aura px-4 text-xs font-bold text-white">Accepter</button>
+      <button id="decline-marketing" type="button" class="min-h-10 rounded-xl border border-white/20 px-4 text-xs font-bold text-white">Refuser</button>
+    </div>
+  </aside>
+
+    <script type="module" src="/src/canvas.js"></script>
 </body>
 </html>

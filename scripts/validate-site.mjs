@@ -2,49 +2,50 @@ import { readFile, readdir } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [html, app, meta, headers, vercel, robots, sitemap, distHtml] = await Promise.all([
+const [html, app, meta, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
   read("../index.html"),
-  read("../src/main.jsx"),
+  read("../src/canvas.js"),
   read("../src/meta.js"),
-  read("../public/_headers"),
   read("../vercel.json"),
   read("../public/robots.txt"),
   read("../public/sitemap.xml"),
   read("../dist/index.html"),
+  read("../dist/canvas.css"),
 ]);
 
-const source = [html, app, meta, headers, vercel, robots, sitemap].join("\n");
+const source = [html, app, meta, vercel, robots, sitemap].join("\n");
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
 for (const marker of [
-  "payment_status === 'paid'",
-  "function SuccessPage",
+  "submitPendingCredentials",
+  "activation-credentials-form",
+  "waiting_for_stock",
   "InitiateCheckout",
-  "ViewContent",
-  "trackMetaPurchase",
+  "AddToCart",
   "marketing_consent_version",
-  "function MarketingConsent",
+  "META_CONSENT_VERSION",
 ]) {
-  if (!app.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
+  if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
 
-const homeSection = app.match(/\{page === 'home' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
-const shopSection = app.match(/\{page === 'shop' && \([\s\S]*?\n\s*\)\}/)?.[0] || "";
-if (!homeSection.includes("<ProductsSection")) {
-  throw new Error("La page d'accueil doit afficher les cartes produits");
+for (const offer of [
+  '"Spotify|1 mois": 500',
+  '"Spotify|1 an": 4000',
+  '"Crunchyroll|1 mois": 500',
+  '"Crunchyroll|1 an": 3000',
+]) {
+  if (!app.includes(offer)) throw new Error(`Offre officielle absente: ${offer}`);
 }
-if (!shopSection.includes("<ProductsSection")) {
-  throw new Error("La page boutique doit conserver les cartes produits");
-}
-if (!app.includes("HeroSection onShopClick={() => handleNavigate('shop')}")) {
-  throw new Error("Le CTA Hero ne navigue plus vers la boutique");
+if (/\b(3 mois|6 mois)\b/i.test(html)) {
+  throw new Error("Une ancienne durée de 3 ou 6 mois est encore visible");
 }
 
 for (const forbidden of [
+  "tailwindcss.com",
+  "data:image/png;base64",
   "text/babel",
   "babel-standalone",
-  "react.production.min.js",
   "unsafe-eval",
   "aura-stream.netlify.app",
 ]) {
@@ -58,17 +59,14 @@ JSON.parse(jsonLdMatch[1]);
 if (!html.includes('href="https://www.aura-stream.com/"')) {
   throw new Error("URL canonique de production absente");
 }
-if (!headers.includes("Content-Security-Policy") || !headers.includes("/assets/*")) {
-  throw new Error("En-têtes Netlify de sécurité/cache incomplets");
-}
 
 const vercelConfig = JSON.parse(vercel);
 const serializedVercel = JSON.stringify(vercelConfig);
-if (
-  !serializedVercel.includes("Content-Security-Policy") ||
-  !serializedVercel.includes("max-age=31536000")
-) {
-  throw new Error("En-têtes Vercel de sécurité/cache incomplets");
+for (const header of ["Content-Security-Policy", "X-Frame-Options", "max-age=31536000"]) {
+  if (!serializedVercel.includes(header)) throw new Error(`En-tête Vercel absent: ${header}`);
+}
+if (serializedVercel.includes("unsafe-inline") || serializedVercel.includes("unsafe-eval")) {
+  throw new Error("La CSP Vercel autorise encore du JavaScript ou CSS inline");
 }
 
 if (!robots.includes("https://www.aura-stream.com/sitemap.xml")) {
@@ -80,9 +78,11 @@ if (!sitemap.includes("https://www.aura-stream.com/")) {
 if (!distHtml.includes('type="module" crossorigin src="/assets/')) {
   throw new Error("Bundle Vite absent de dist/index.html");
 }
+if (!distHtml.includes('href="/canvas.css"') || distCss.length < 10_000) {
+  throw new Error("CSS Tailwind compilé absent ou incomplet");
+}
 
 const distAssets = await readdir(new URL("../dist/assets/", import.meta.url));
 if (!distAssets.some((name) => name.endsWith(".js"))) throw new Error("Bundle JS absent");
-if (!distAssets.some((name) => name.endsWith(".css"))) throw new Error("Bundle CSS absent");
 
-console.log("Validation du build, de l’UTF-8, du SEO et des en-têtes réussie.");
+console.log("Validation du build, du catalogue, de l’UTF-8, du SEO et des en-têtes réussie.");
