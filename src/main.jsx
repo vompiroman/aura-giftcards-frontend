@@ -310,7 +310,7 @@ const translations = {
     // Checkout
     checkoutBack: "Retour",
     checkoutTitle: "Résumé de commande",
-    checkoutPay: "Payer par Edahabia / CIB",
+    checkoutPay: "Payer par CIB / Edahabia via SlickPay",
     checkoutProcessing: "Création du paiement sécurisé...",
     checkoutProblem: "Un problème ?",
     checkoutContact: "Contactez-nous sur WhatsApp",
