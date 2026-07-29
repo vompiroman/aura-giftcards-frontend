@@ -18,8 +18,7 @@ const views = [...document.querySelectorAll("[data-view]")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
-    const API_ORIGIN = "https://aura-giftcards-api.onrender.com";
-    const API_BASE = `${API_ORIGIN}/api`;
+    const API_BASE = "/api";
     const authFeedback = document.getElementById("auth-feedback");
     let authToken = sessionStorage.getItem("aura_access_token") || localStorage.getItem("aura_access_token") || "";
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
@@ -97,7 +96,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     async function apiRequest(path, options = {}) {
       const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+      const timeoutId = window.setTimeout(() => controller.abort(), 45000);
+      const slowRequestId = window.setTimeout(() => {
+        showToast(path === "/login"
+          ? "Connexion en cours — le serveur se réveille…"
+          : "Le serveur se réveille — encore quelques secondes…");
+      }, 8000);
       const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
       if (authToken) headers.Authorization = `Bearer ${authToken}`;
       try {
@@ -115,7 +119,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             sessionStorage.removeItem("aura_access_token");
             localStorage.removeItem("aura_access_token");
           }
-          throw new Error(payload?.error || payload?.message || `Erreur API (${response.status})`);
+          const message = typeof payload?.error === "string"
+            ? payload.error
+            : typeof payload?.message === "string"
+              ? payload.message
+              : `Erreur API (${response.status})`;
+          throw new Error(message);
         }
         return payload;
       } catch (error) {
@@ -128,6 +137,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         throw error;
       } finally {
         window.clearTimeout(timeoutId);
+        window.clearTimeout(slowRequestId);
       }
     }
 
@@ -524,6 +534,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       mobileToggle.setAttribute("aria-expanded", "false");
       window.history.replaceState(null, "", "#" + route);
       if (route === "order") loadMyOrders();
+      if (route === "cart") setCheckoutStep(1);
 
       if (scrollTarget) {
         requestAnimationFrame(() => {
@@ -605,6 +616,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         "hidden",
         !hasCrunchyroll
       );
+      ["spotify-email", "spotify-password"].forEach(id => {
+        document.getElementById(id).required = hasSpotify;
+      });
+      ["crunchyroll-email", "crunchyroll-password"].forEach(id => {
+        document.getElementById(id).required = hasCrunchyroll;
+      });
       document.getElementById("netflix-delivery-note")?.classList.toggle("hidden", !hasNetflix);
       const customerInfoDescription = document.getElementById("customer-info-description");
       if (customerInfoDescription) {
@@ -675,15 +692,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showRoute("products");
         return;
       }
-    await saveCheckoutProfile({ quiet: true });
-    trackMeta("InitiateCheckout", {
-      value: cart.reduce((sum, item) => sum + item.price, 0),
-      currency: "DZD",
-      content_type: "product",
-      content_ids: cart.map(apiProductName),
-      num_items: cart.length,
+      await saveCheckoutProfile({ quiet: true });
+      trackMeta("InitiateCheckout", {
+        value: cart.reduce((sum, item) => sum + item.price, 0),
+        currency: "DZD",
+        content_type: "product",
+        content_ids: cart.map(apiProductName),
+        num_items: cart.length,
+      });
+      setCheckoutStep(2);
     });
-    setCheckoutStep(2);
+
+    document.getElementById("back-to-information").addEventListener("click", () => {
+      setCheckoutStep(1);
     });
 
     document.getElementById("pay-button").addEventListener("click", async event => {
@@ -874,8 +895,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("support-form").addEventListener("submit", event => {
       event.preventDefault();
-      showToast("Message envoyé — nous revenons vers toi rapidement.");
-      event.currentTarget.reset();
+      const name = document.getElementById("support-name").value.trim();
+      const email = document.getElementById("support-email").value.trim();
+      const message = document.getElementById("support-message").value.trim();
+      const text = `Bonjour Aura Stream,\n\nNom : ${name}\nE-mail : ${email}\n\nMa demande :\n${message}`;
+      window.open(`https://wa.me/213557828812?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+      showToast("WhatsApp est ouvert avec ton message prêt à envoyer.");
     });
 
     ["customer-first-name", "customer-last-name", "customer-whatsapp"].forEach(id => {
