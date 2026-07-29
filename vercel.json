@@ -3,6 +3,11 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "alias": [
+    "www.aura-stream.com",
+    "aura-stream.com",
+    "aura-stream-deploy.vercel.app"
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
