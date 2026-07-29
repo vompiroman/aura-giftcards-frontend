@@ -79,7 +79,7 @@
         <button type="button" class="route-link relative flex min-h-11 items-center gap-2 rounded-xl bg-aura px-3.5 text-sm font-bold text-white shadow-lg shadow-aura/20 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2 sm:px-4" data-route="cart">
           <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
           <span class="hidden sm:inline">Panier</span>
-          <span id="cart-count" class="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-extrabold text-aura">2</span>
+          <span id="cart-count" class="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-extrabold text-aura">0</span>
         </button>
         <button id="mobile-menu-toggle" type="button" class="grid h-11 w-11 place-items-center rounded-xl border border-black/10 text-graphite lg:hidden" aria-expanded="false" aria-controls="mobile-menu" aria-label="Ouvrir le menu">
           <i class="fa-solid fa-bars" aria-hidden="true"></i>
@@ -516,7 +516,7 @@
                 <div><strong class="block">Paiement sécurisé via SlickPay</strong><span class="text-xs">Les informations de carte ne transitent pas par Aura Stream.</span></div>
               </div>
               <button id="pay-button" type="button" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">
-                Payer <span id="pay-total">1 100 DA</span> <i class="fa-solid fa-lock ml-2 text-xs" aria-hidden="true"></i>
+                Payer <span id="pay-total">0 DA</span> <i class="fa-solid fa-lock ml-2 text-xs" aria-hidden="true"></i>
               </button>
             </section>
 
@@ -534,11 +534,11 @@
             <h2 class="font-title text-lg font-bold">Votre panier</h2>
             <div id="checkout-items" class="mt-5 divide-y divide-black/10"></div>
             <div class="mt-5 space-y-3 border-t border-black/10 pt-5 text-sm">
-              <div class="flex justify-between text-black/55"><span>Sous-total</span><span id="subtotal-value">1 100 DA</span></div>
+              <div class="flex justify-between text-black/55"><span>Sous-total</span><span id="subtotal-value">0 DA</span></div>
               <div class="flex justify-between text-black/55"><span>Frais de service</span><span>Offerts</span></div>
               <div class="flex items-end justify-between pt-2">
                 <span class="font-title font-bold">Total</span>
-                <span id="checkout-total" class="font-title text-2xl font-extrabold text-aura">1 100 DA</span>
+                <span id="checkout-total" class="font-title text-2xl font-extrabold text-aura">0 DA</span>
               </div>
             </div>
             <div class="mt-6 grid gap-3 text-xs text-black/55">
