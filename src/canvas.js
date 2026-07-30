@@ -15,6 +15,7 @@ const views = [...document.querySelectorAll("[data-view]")];
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toast-message");
     const accountLinks = [...document.querySelectorAll(".account-link")];
+    const adminLinks = [...document.querySelectorAll(".admin-link")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
@@ -25,6 +26,10 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let currentUser = null;
     let lastSavedProfile = "";
 let loadedOrders = [];
+let activePromo = null;
+let adminOrdersPage = 1;
+let adminOrdersTotalPages = 1;
+let adminLoaded = false;
 
 const storedMarketingConsent = getMetaMarketingConsent();
 if (marketingConsentInput) {
@@ -174,10 +179,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function setAccountState(user) {
       currentUser = user || null;
       const authenticated = Boolean(currentUser && authToken);
+      const isAdminUser = authenticated && currentUser.is_admin === true;
       accountLinks.forEach(link => {
         link.dataset.route = authenticated ? "order" : "login";
         link.textContent = authenticated ? "Mes commandes" : "Se connecter";
       });
+      adminLinks.forEach(link => link.classList.toggle("hidden", !isAdminUser));
+      const adminIdentity = document.getElementById("admin-identity");
+      if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || "administrateur"}` : "";
       if (!authenticated) return;
 
       const metadata = currentUser.user_metadata || {};
@@ -242,8 +251,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const result = await apiRequest("/me");
         setAccountState(result.user);
+        if (result.user?.is_admin === true && window.location.hash === "#admin") {
+          await loadAdminDashboard();
+        }
         const loginView = document.querySelector('[data-view="login"]');
-        if (loginView && !loginView.classList.contains("hidden")) showRoute("order");
+        if (loginView && !loginView.classList.contains("hidden")) {
+          showRoute(result.user?.is_admin === true ? "admin" : "order");
+        }
         return true;
       } catch {
         setAccountState(null);
@@ -313,6 +327,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return;
       }
       cart = renewedItems;
+      clearPromo();
       updateCart();
       setCheckoutStep(1);
       showRoute("cart");
@@ -523,7 +538,82 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       showToast.timeout = window.setTimeout(() => toast.classList.remove("toast-show"), 2600);
     }
 
+    function setPromoFeedback(message = "", isError = false) {
+      const feedback = document.getElementById("promo-feedback");
+      const feedbackMessage = document.getElementById("promo-feedback-message");
+      const removeButton = document.getElementById("promo-remove");
+      if (!feedback || !feedbackMessage || !removeButton) return;
+      feedback.classList.toggle("hidden", !message);
+      feedback.classList.toggle("flex", Boolean(message));
+      feedback.classList.toggle("text-red-700", Boolean(message) && isError);
+      feedback.classList.toggle("text-green-700", Boolean(message) && !isError);
+      feedbackMessage.textContent = message;
+      removeButton.classList.toggle("hidden", !activePromo);
+    }
+
+    function clearPromo(message = "") {
+      activePromo = null;
+      const input = document.getElementById("promo-code");
+      if (input) input.value = "";
+      setPromoFeedback(message);
+    }
+
+    async function applyPromoCode() {
+      const input = document.getElementById("promo-code");
+      const button = document.getElementById("promo-apply");
+      const code = String(input?.value || "").trim().toUpperCase();
+      if (!authToken) {
+        setPromoFeedback("Connecte-toi pour utiliser un code promo.", true);
+        showRoute("login");
+        return;
+      }
+      if (!cart.length) {
+        setPromoFeedback("Ajoute d’abord un abonnement au panier.", true);
+        return;
+      }
+      if (!code) {
+        setPromoFeedback("Saisis un code promo.", true);
+        return;
+      }
+      const originalLabel = button?.textContent || "Appliquer";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Vérification…";
+      }
+      try {
+        const result = await apiRequest("/validate-promo", {
+          method: "POST",
+          body: JSON.stringify({
+            code,
+            items: cart.map(item => ({ name: apiProductName(item), quantity: 1 }))
+          })
+        });
+        activePromo = {
+          code,
+          subtotal: Number(result.subtotal || 0),
+          discount_amount: Number(result.discount_amount || 0),
+          total: Number(result.total || 0)
+        };
+        if (input) input.value = code;
+        updateCart();
+        setPromoFeedback(`${code} appliqué : −${formatPrice(activePromo.discount_amount)}`);
+      } catch (error) {
+        activePromo = null;
+        updateCart();
+        setPromoFeedback(error.message || "Ce code promo n’est pas valide.", true);
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalLabel;
+        }
+      }
+    }
+
     function showRoute(route, scrollTarget) {
+      if (route === "admin" && currentUser && currentUser.is_admin !== true) {
+        showToast("Accès administrateur requis");
+        route = "home";
+      }
       const selected = document.querySelector(`[data-view="${route}"]`) || document.querySelector('[data-view="home"]');
       views.forEach(view => view.classList.toggle("hidden", view !== selected));
       navLinks.forEach(link => {
@@ -535,6 +625,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       window.history.replaceState(null, "", "#" + route);
       if (route === "order") loadMyOrders();
       if (route === "cart") setCheckoutStep(1);
+      if (route === "admin" && currentUser?.is_admin === true) loadAdminDashboard();
 
       if (scrollTarget) {
         requestAnimationFrame(() => {
@@ -548,6 +639,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     routeLinks.forEach(link => {
       link.addEventListener("click", () => showRoute(link.dataset.route, link.dataset.scroll));
+    });
+
+    window.addEventListener("hashchange", () => {
+      const route = window.location.hash.replace("#", "");
+      if (["home", "products", "cart", "order", "login", "faq", "admin"].includes(route)) {
+        showRoute(route);
+      }
     });
 
     mobileToggle.addEventListener("click", () => {
@@ -587,6 +685,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           price: Number(activeDuration.dataset.price)
         };
       cart.push(item);
+      clearPromo();
       updateCart();
       showToast(`${item.name} ajouté au panier`);
       trackMeta("AddToCart", {
@@ -654,19 +753,41 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         `).join("");
       }
 
-      const total = cart.reduce((sum, item) => sum + item.price, 0);
-      document.getElementById("subtotal-value").textContent = formatPrice(total);
+      const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+      if (activePromo && Number(activePromo.subtotal) !== subtotal) activePromo = null;
+      const discount = activePromo ? Math.min(Number(activePromo.discount_amount || 0), subtotal) : 0;
+      const total = Math.max(0, subtotal - discount);
+      document.getElementById("subtotal-value").textContent = formatPrice(subtotal);
       document.getElementById("checkout-total").textContent = formatPrice(total);
       document.getElementById("pay-total").textContent = formatPrice(total);
+      const discountRow = document.getElementById("promo-discount-row");
+      const discountValue = document.getElementById("promo-discount-value");
+      discountRow?.classList.toggle("hidden", discount <= 0);
+      discountRow?.classList.toggle("flex", discount > 0);
+      if (discountValue) discountValue.textContent = `−${formatPrice(discount)}`;
+      document.getElementById("promo-remove")?.classList.toggle("hidden", !activePromo);
 
       document.querySelectorAll(".remove-cart").forEach(removeButton => {
         removeButton.addEventListener("click", () => {
           cart.splice(Number(removeButton.dataset.index), 1);
+          clearPromo();
           updateCart();
           showToast("Article retiré du panier");
         });
       });
     }
+
+    document.getElementById("promo-apply")?.addEventListener("click", applyPromoCode);
+    document.getElementById("promo-code")?.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        applyPromoCode();
+      }
+    });
+    document.getElementById("promo-remove")?.addEventListener("click", () => {
+      clearPromo("Code promo retiré.");
+      updateCart();
+    });
 
     function setCheckoutStep(step) {
       document.querySelectorAll("[data-checkout-panel]").forEach(panel => {
@@ -694,7 +815,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
       await saveCheckoutProfile({ quiet: true });
       trackMeta("InitiateCheckout", {
-        value: cart.reduce((sum, item) => sum + item.price, 0),
+        value: activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
         currency: "DZD",
         content_type: "product",
         content_ids: cart.map(apiProductName),
@@ -740,8 +861,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           method: "POST",
           body: JSON.stringify({
             items: cart.map(item => ({ name: apiProductName(item), quantity: 1 })),
-          marketing_consent: marketingConsentInput?.checked === true,
-          marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined
+            marketing_consent: marketingConsentInput?.checked === true,
+            marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
+            promo_code: activePromo?.code || undefined
           })
         });
         activeOrderId = order.order_id || order.id;
@@ -776,6 +898,346 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const visible = input.type === "text";
       input.type = visible ? "password" : "text";
       document.getElementById("toggle-password").setAttribute("aria-label", visible ? "Afficher le mot de passe" : "Masquer le mot de passe");
+    });
+
+    function setAdminFeedback(message = "", isError = true) {
+      const box = document.getElementById("admin-global-feedback");
+      if (!box) return;
+      box.textContent = message;
+      box.classList.toggle("hidden", !message);
+      box.classList.toggle("border-red-200", Boolean(message) && isError);
+      box.classList.toggle("bg-red-50", Boolean(message) && isError);
+      box.classList.toggle("text-red-800", Boolean(message) && isError);
+      box.classList.toggle("border-green-200", Boolean(message) && !isError);
+      box.classList.toggle("bg-green-50", Boolean(message) && !isError);
+      box.classList.toggle("text-green-800", Boolean(message) && !isError);
+    }
+
+    function formatDateTime(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return new Intl.DateTimeFormat("fr-DZ", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(date);
+    }
+
+    function adminOrderStatusLabel(status) {
+      return ({
+        pending: "En attente",
+        active: "Activé",
+        completed: "Terminé",
+        cancelled: "Annulé"
+      })[status] || status || "Inconnu";
+    }
+
+    function activateAdminTab(name) {
+      document.querySelectorAll(".admin-tab").forEach(button => {
+        const active = button.dataset.adminTab === name;
+        button.setAttribute("aria-selected", String(active));
+        button.classList.toggle("bg-graphite", active);
+        button.classList.toggle("text-white", active);
+        button.classList.toggle("text-black/55", !active);
+      });
+      document.querySelectorAll("[data-admin-panel]").forEach(panel => {
+        panel.classList.toggle("hidden", panel.dataset.adminPanel !== name);
+      });
+      if (name === "orders") loadAdminOrders();
+      if (name === "stock") loadAdminInventory();
+      if (name === "promos") loadAdminPromos();
+      if (name === "activity") loadAdminAudit();
+    }
+
+    async function loadAdminOverview() {
+      const result = await apiRequest("/admin/dashboard?days=30");
+      const summary = result.summary || {};
+      document.getElementById("admin-revenue-total").textContent = formatPrice(Number(summary.revenue_total || 0));
+      document.getElementById("admin-revenue-period").textContent = formatPrice(Number(summary.revenue_period || 0));
+      document.getElementById("admin-paid-orders").textContent = String(Number(summary.paid_orders_total || 0));
+      document.getElementById("admin-pending-orders").textContent = String(Number(summary.activation_pending || 0));
+      document.getElementById("admin-average-order").textContent = `Panier moyen : ${formatPrice(Number(summary.average_order || 0))}`;
+      document.getElementById("admin-payment-alerts").textContent =
+        `Non payées : ${Number(summary.unpaid_orders || 0)} · Échouées : ${Number(summary.failed_payments || 0)}`;
+      document.getElementById("admin-generated-at").textContent = `Mis à jour ${formatDateTime(result.generated_at)}`;
+
+      const daily = Array.isArray(result.revenue_by_day) ? result.revenue_by_day : [];
+      const chart = document.getElementById("admin-revenue-chart");
+      const maxRevenue = Math.max(1, ...daily.map(row => Number(row.revenue || 0)));
+      chart.innerHTML = daily.map(row => {
+        const revenue = Number(row.revenue || 0);
+        const height = revenue > 0 ? Math.max(12, Math.round((revenue / maxRevenue) * 100)) : 4;
+        return `<div class="group relative flex h-full min-w-1 flex-1 items-end" title="${escapeHTML(row.date)} · ${formatPrice(revenue)}">
+          <span class="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-graphite px-2 py-1 text-[10px] font-bold text-white group-hover:block">${formatPrice(revenue)} · ${Number(row.sales || 0)} vente(s)</span>
+          <span class="w-full rounded-t bg-aura/75 transition group-hover:bg-aura" style="height:${height}%"></span>
+        </div>`;
+      }).join("") || '<p class="m-auto text-sm text-black/45">Aucune vente sur cette période.</p>';
+
+      const stock = Array.isArray(result.stock) ? result.stock : [];
+      document.getElementById("admin-stock-summary").innerHTML = stock.map(item => {
+        const available = Number(item.available || 0);
+        const warning = available <= 2;
+        return `<article class="flex items-center justify-between rounded-xl border border-black/10 p-4">
+          <div><p class="font-title text-sm font-bold capitalize">${escapeHTML(item.service)}</p><p class="mt-1 text-xs text-black/45">${Number(item.assigned || 0)} attribué(s)</p></div>
+          <span class="rounded-full px-3 py-1.5 text-xs font-extrabold ${warning ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}">${available} disponible(s)</span>
+        </article>`;
+      }).join("");
+    }
+
+    async function loadAdminOrders() {
+      const list = document.getElementById("admin-orders-list");
+      if (!list || currentUser?.is_admin !== true) return;
+      list.innerHTML = '<p class="py-8 text-center text-sm text-black/45"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Chargement…</p>';
+      const params = new URLSearchParams({
+        page: String(adminOrdersPage),
+        limit: "25",
+        search: document.getElementById("admin-order-search")?.value.trim() || "",
+        service: document.getElementById("admin-order-service")?.value || "",
+        status: document.getElementById("admin-order-status")?.value || ""
+      });
+      try {
+        const result = await apiRequest(`/admin/all-orders?${params}`);
+        const orders = Array.isArray(result.orders) ? result.orders : [];
+        adminOrdersTotalPages = Math.max(1, Number(result.total_pages || 1));
+        document.getElementById("admin-orders-page").textContent =
+          `Page ${adminOrdersPage} sur ${adminOrdersTotalPages} · ${Number(result.total || 0)} commande(s)`;
+        document.getElementById("admin-orders-prev").disabled = adminOrdersPage <= 1;
+        document.getElementById("admin-orders-next").disabled = adminOrdersPage >= adminOrdersTotalPages;
+        list.innerHTML = orders.map(order => {
+          const items = (Array.isArray(order.items) ? order.items : [])
+            .map(item => escapeHTML(item.name || item.service || "Abonnement"))
+            .join(" · ");
+          const paymentClass = order.payment_status === "paid"
+            ? "bg-green-50 text-green-700"
+            : order.payment_status === "failed"
+              ? "bg-red-50 text-red-700"
+              : "bg-amber-50 text-amber-700";
+          return `<article class="rounded-2xl border border-black/10 p-4 sm:p-5">
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(order.payment_status || "unpaid")}</span></div>
+                <p class="mt-2 truncate text-sm text-black/65">${escapeHTML(order.assigned_email || "Sans e-mail")}</p>
+                <p class="mt-1 text-xs text-black/45">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
+              </div>
+              <div class="flex flex-wrap items-center gap-3">
+                <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
+                <select class="admin-order-status-select min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
+                  ${["pending", "active", "completed", "cancelled"].map(status =>
+                    `<option value="${status}" ${order.status === status ? "selected" : ""}>${adminOrderStatusLabel(status)}</option>`
+                  ).join("")}
+                </select>
+              </div>
+            </div>
+          </article>`;
+        }).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucune commande ne correspond aux filtres.</p>';
+        list.querySelectorAll(".admin-order-status-select").forEach(select => {
+          select.addEventListener("change", async () => {
+            select.disabled = true;
+            try {
+              await apiRequest("/admin/update-order-status", {
+                method: "POST",
+                body: JSON.stringify({ order_id: select.dataset.orderId, status: select.value })
+              });
+              showToast("Statut de la commande mis à jour");
+              await Promise.all([loadAdminOrders(), loadAdminOverview(), loadAdminAudit()]);
+            } catch (error) {
+              showToast(error.message || "Mise à jour impossible");
+              await loadAdminOrders();
+            }
+          });
+        });
+      } catch (error) {
+        list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
+      }
+    }
+
+    async function loadAdminInventory() {
+      const list = document.getElementById("admin-inventory-list");
+      if (!list || currentUser?.is_admin !== true) return;
+      try {
+        const result = await apiRequest("/admin/inventory");
+        const inventory = Array.isArray(result.inventory) ? result.inventory : [];
+        document.getElementById("admin-stock-count").textContent = `${inventory.filter(item => !item.is_used).length} disponible(s)`;
+        list.innerHTML = inventory.map(item => `<article class="flex flex-col gap-3 rounded-2xl border border-black/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm capitalize">${escapeHTML(item.service)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-black/5 text-black/55" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span></div><p class="mt-2 truncate text-sm text-black/65">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")} · Ajouté ${formatDateTime(item.created_at)}</p></div>
+          ${item.is_used ? "" : `<button class="admin-delete-stock min-h-10 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}">Supprimer</button>`}
+        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
+        list.querySelectorAll(".admin-delete-stock").forEach(button => {
+          button.addEventListener("click", async () => {
+            if (!window.confirm("Supprimer ce compte non attribué du stock ?")) return;
+            button.disabled = true;
+            try {
+              await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}`, { method: "DELETE" });
+              showToast("Compte retiré du stock");
+              await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
+            } catch (error) {
+              showToast(error.message || "Suppression impossible");
+              button.disabled = false;
+            }
+          });
+        });
+      } catch (error) {
+        list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
+      }
+    }
+
+    async function loadAdminPromos() {
+      const list = document.getElementById("admin-promos-list");
+      if (!list || currentUser?.is_admin !== true) return;
+      try {
+        const result = await apiRequest("/admin/promo-codes");
+        const promos = Array.isArray(result.promo_codes) ? result.promo_codes : [];
+        list.innerHTML = promos.map(promo => `<article class="rounded-2xl border border-black/10 p-5">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-lg tracking-[0.12em]">${escapeHTML(promo.masked_code)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${promo.active ? "bg-green-50 text-green-700" : "bg-black/5 text-black/50"}">${promo.active ? "Actif" : "Inactif"}</span></div><p class="mt-2 text-sm text-black/50">${Number(promo.discount_value || 0)} % · ${(promo.services || []).map(escapeHTML).join(", ") || "Toute la boutique"}</p></div>
+            <button class="admin-toggle-promo min-h-10 rounded-xl border border-black/15 px-4 text-xs font-bold hover:border-aura hover:text-aura" type="button" data-promo-id="${escapeHTML(promo.id)}" data-active="${promo.active}">${promo.active ? "Désactiver" : "Réactiver"}</button>
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-3 border-t border-black/10 pt-5 sm:grid-cols-4">
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Ventes</p><p class="mt-1 font-title text-xl font-extrabold">${Number(promo.sales_count || 0)}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Revenu généré</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.revenue_amount || 0))}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Réductions</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.discount_total || 0))}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Dernière vente</p><p class="mt-1 text-xs font-semibold">${formatDateTime(promo.last_used_at)}</p></div>
+          </div>
+        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun code promo créé.</p>';
+        list.querySelectorAll(".admin-toggle-promo").forEach(button => {
+          button.addEventListener("click", async () => {
+            button.disabled = true;
+            try {
+              await apiRequest(`/admin/promo-codes/${encodeURIComponent(button.dataset.promoId)}`, {
+                method: "PATCH",
+                body: JSON.stringify({ active: button.dataset.active !== "true" })
+              });
+              await Promise.all([loadAdminPromos(), loadAdminAudit()]);
+            } catch (error) {
+              showToast(error.message || "Modification impossible");
+              button.disabled = false;
+            }
+          });
+        });
+      } catch (error) {
+        list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
+      }
+    }
+
+    async function loadAdminAudit() {
+      const list = document.getElementById("admin-audit-list");
+      if (!list || currentUser?.is_admin !== true) return;
+      try {
+        const result = await apiRequest("/admin/audit-logs?limit=50");
+        const events = Array.isArray(result.events) ? result.events : [];
+        list.innerHTML = events.map(event => `<article class="flex gap-4 rounded-2xl border border-black/10 p-4">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-black/55"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
+          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(String(event.action || "").replaceAll("_", " "))}</p><p class="mt-1 truncate text-xs text-black/45">${escapeHTML(event.target_type || "système")} ${event.target_id ? `· ${escapeHTML(event.target_id)}` : ""}</p><p class="mt-1 text-[11px] text-black/35">${formatDateTime(event.created_at)}</p></div>
+        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucune activité récente.</p>';
+      } catch (error) {
+        list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
+      }
+    }
+
+    async function loadAdminDashboard({ refresh = false } = {}) {
+      if (currentUser?.is_admin !== true) return;
+      if (adminLoaded && !refresh) return;
+      adminLoaded = true;
+      setAdminFeedback("");
+      const results = await Promise.allSettled([
+        loadAdminOverview(),
+        loadAdminOrders(),
+        loadAdminInventory(),
+        loadAdminPromos(),
+        loadAdminAudit()
+      ]);
+      if (results.some(result => result.status === "rejected")) {
+        setAdminFeedback("Certaines données n’ont pas pu être actualisées. Réessaie dans quelques instants.");
+      }
+    }
+
+    document.querySelectorAll(".admin-tab").forEach(button => {
+      button.addEventListener("click", () => activateAdminTab(button.dataset.adminTab));
+    });
+    document.querySelectorAll(".admin-open-tab").forEach(button => {
+      button.addEventListener("click", () => activateAdminTab(button.dataset.targetTab));
+    });
+    document.getElementById("admin-refresh")?.addEventListener("click", async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      try {
+        await loadAdminDashboard({ refresh: true });
+        showToast("Tableau de bord actualisé");
+      } finally {
+        button.disabled = false;
+      }
+    });
+    document.getElementById("admin-order-filters")?.addEventListener("submit", event => {
+      event.preventDefault();
+      adminOrdersPage = 1;
+      loadAdminOrders();
+    });
+    document.getElementById("admin-orders-prev")?.addEventListener("click", () => {
+      if (adminOrdersPage <= 1) return;
+      adminOrdersPage -= 1;
+      loadAdminOrders();
+    });
+    document.getElementById("admin-orders-next")?.addEventListener("click", () => {
+      if (adminOrdersPage >= adminOrdersTotalPages) return;
+      adminOrdersPage += 1;
+      loadAdminOrders();
+    });
+    document.getElementById("admin-stock-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      const feedback = document.getElementById("admin-stock-form-feedback");
+      const values = Object.fromEntries(new FormData(form));
+      button.disabled = true;
+      try {
+        await apiRequest("/admin/inventory", { method: "POST", body: JSON.stringify(values) });
+        form.reset();
+        feedback.textContent = "Compte ajouté au stock.";
+        feedback.className = "mt-3 text-xs text-green-300";
+        await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
+      } catch (error) {
+        feedback.textContent = error.message || "Ajout impossible.";
+        feedback.className = "mt-3 text-xs text-red-300";
+      } finally {
+        button.disabled = false;
+      }
+    });
+    document.getElementById("admin-promo-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      const feedback = document.getElementById("admin-promo-form-feedback");
+      const data = new FormData(form);
+      const payload = {
+        code: String(data.get("code") || "").trim().toUpperCase(),
+        discount_type: "percentage",
+        discount_value: Number(data.get("discount_value")),
+        max_uses: data.get("max_uses") ? Number(data.get("max_uses")) : null,
+        max_uses_per_client: data.get("max_uses_per_client") ? Number(data.get("max_uses_per_client")) : null,
+        starts_at: data.get("starts_at") ? new Date(String(data.get("starts_at"))).toISOString() : null,
+        ends_at: data.get("ends_at") ? new Date(String(data.get("ends_at"))).toISOString() : null,
+        services: data.getAll("services")
+      };
+      button.disabled = true;
+      try {
+        const result = await apiRequest("/admin/promo-codes", { method: "POST", body: JSON.stringify(payload) });
+        form.reset();
+        feedback.textContent = `Code créé : ${result.code}. Copie-le maintenant, il ne sera plus réaffiché.`;
+        feedback.className = "mt-3 text-xs font-bold text-green-300";
+        await Promise.all([loadAdminPromos(), loadAdminAudit()]);
+      } catch (error) {
+        feedback.textContent = error.message || "Création impossible.";
+        feedback.className = "mt-3 text-xs text-red-300";
+      } finally {
+        button.disabled = false;
+      }
+    });
+    document.getElementById("admin-signout")?.addEventListener("click", () => {
+      saveAuthToken("", false);
+      setAccountState(null);
+      adminLoaded = false;
+      showRoute("home");
+      showToast("Déconnexion réussie");
     });
 
     document.querySelectorAll(".auth-tab").forEach(tab => {
@@ -847,8 +1309,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
-        showRoute("cart");
-        setCheckoutStep(1);
+        if (result.user?.is_admin === true) {
+          showRoute("admin");
+        } else {
+          showRoute(cart.length ? "cart" : "order");
+          if (cart.length) setCheckoutStep(1);
+        }
       } catch (error) {
         setAuthFeedback(error.message || "Connexion impossible.");
       } finally {
@@ -930,7 +1396,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     updateCart();
     const initialRoute = window.location.hash.replace("#", "");
-    if (["home", "products", "cart", "order", "login", "faq"].includes(initialRoute)) {
+    if (["home", "products", "cart", "order", "login", "faq", "admin"].includes(initialRoute)) {
       showRoute(initialRoute);
     }
     restoreSession().then(() => verifyPaymentReturn());
