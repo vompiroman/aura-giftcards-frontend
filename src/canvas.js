@@ -19,7 +19,10 @@ const views = [...document.querySelectorAll("[data-view]")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
-    const API_BASE = "/api";
+    // Vercel deployment protection can intercept same-origin /api rewrites.
+    // The Render API explicitly allows the production site through CORS, so use
+    // the canonical API origin for every browser request.
+    const API_BASE = "https://aura-giftcards-api.onrender.com/api";
     const authFeedback = document.getElementById("auth-feedback");
     let authToken = sessionStorage.getItem("aura_access_token") || localStorage.getItem("aura_access_token") || "";
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
