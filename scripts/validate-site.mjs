@@ -71,7 +71,7 @@ if (serializedVercel.includes("unsafe-inline") || serializedVercel.includes("uns
 if (!serializedVercel.includes("https://aura-giftcards-api.onrender.com/api/:path*")) {
   throw new Error("Le proxy API Vercel est absent");
 }
-if (!app.includes('const API_BASE = "/api"')) {
+if (!app.includes('const API_BASE = "https://aura-giftcards-api.onrender.com/api"')) {
   throw new Error("Le frontend ne passe pas par le proxy API de même origine");
 }
 
