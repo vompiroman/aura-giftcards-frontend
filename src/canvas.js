@@ -34,6 +34,23 @@ let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
 
+    function warmApiConnection() {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 5000);
+      fetch(`${API_BASE}/healthz`, {
+        method: "GET",
+        cache: "no-store",
+        credentials: "omit",
+        signal: controller.signal
+      }).catch(() => {}).finally(() => window.clearTimeout(timer));
+    }
+
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(warmApiConnection, { timeout: 1000 });
+    } else {
+      window.setTimeout(warmApiConnection, 0);
+    }
+
 const storedMarketingConsent = getMetaMarketingConsent();
 if (marketingConsentInput) {
   marketingConsentInput.checked = storedMarketingConsent?.status === "granted";
@@ -123,9 +140,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         try { payload = await response.json(); } catch { payload = null; }
         if (!response.ok) {
           if (response.status === 401) {
-            authToken = "";
-            sessionStorage.removeItem("aura_access_token");
-            localStorage.removeItem("aura_access_token");
+            saveAuthToken("", false);
+            setAccountState(null);
           }
           const message = typeof payload?.error === "string"
             ? payload.error
@@ -165,6 +181,29 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       sessionStorage.removeItem("aura_access_token");
       localStorage.removeItem("aura_access_token");
       if (authToken) (remember ? localStorage : sessionStorage).setItem("aura_access_token", authToken);
+      if (!authToken) {
+        sessionStorage.removeItem("aura_cached_user");
+        localStorage.removeItem("aura_cached_user");
+      }
+    }
+
+    function saveCachedUser(user, remember = false) {
+      sessionStorage.removeItem("aura_cached_user");
+      localStorage.removeItem("aura_cached_user");
+      if (!user) return;
+      (remember ? localStorage : sessionStorage).setItem("aura_cached_user", JSON.stringify(user));
+    }
+
+    function readCachedUser() {
+      for (const storage of [sessionStorage, localStorage]) {
+        try {
+          const raw = storage.getItem("aura_cached_user");
+          if (raw) return JSON.parse(raw);
+        } catch {
+          storage.removeItem("aura_cached_user");
+        }
+      }
+      return null;
     }
 
     function profileNames(metadata = {}) {
@@ -251,8 +290,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setAccountState(null);
         return false;
       }
+      const cachedUser = readCachedUser();
+      if (cachedUser) {
+        setAccountState(cachedUser);
+        const loginView = document.querySelector('[data-view="login"]');
+        if (loginView && !loginView.classList.contains("hidden")) {
+          showRoute(cachedUser.is_admin === true ? "admin" : "order");
+        }
+      }
       try {
         const result = await apiRequest("/me");
+        saveCachedUser(result.user, Boolean(localStorage.getItem("aura_access_token")));
         setAccountState(result.user);
         if (result.user?.is_admin === true && window.location.hash === "#admin") {
           await loadAdminDashboard();
@@ -263,7 +311,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         }
         return true;
       } catch {
-        setAccountState(null);
+        if (!cachedUser || !authToken) setAccountState(null);
         return false;
       }
     }
@@ -663,6 +711,58 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         card.querySelectorAll(".duration-btn").forEach(item => item.setAttribute("aria-pressed", "false"));
         button.setAttribute("aria-pressed", "true");
         card.querySelector(".price-value").innerHTML = `${formatPrice(Number(button.dataset.price)).replace(" DA", "")} <span class="text-sm">DA</span>`;
+      });
+    });
+
+    function closeCustomSelect(root, { restoreFocus = false } = {}) {
+      const trigger = root.querySelector(".custom-select-trigger");
+      const options = root.querySelector(".custom-select-options");
+      trigger?.setAttribute("aria-expanded", "false");
+      options?.classList.add("hidden");
+      if (restoreFocus) trigger?.focus();
+    }
+
+    document.querySelectorAll("[data-custom-select]").forEach(root => {
+      const trigger = root.querySelector(".custom-select-trigger");
+      const options = root.querySelector(".custom-select-options");
+      const input = root.querySelector('input[type="hidden"]');
+      if (!trigger || !options || !input) return;
+
+      trigger.addEventListener("click", () => {
+        const willOpen = trigger.getAttribute("aria-expanded") !== "true";
+        document.querySelectorAll("[data-custom-select]").forEach(other => {
+          if (other !== root) closeCustomSelect(other);
+        });
+        trigger.setAttribute("aria-expanded", String(willOpen));
+        options.classList.toggle("hidden", !willOpen);
+        if (willOpen) {
+          const selected = options.querySelector('[role="option"][aria-selected="true"]');
+          selected?.focus();
+        }
+      });
+
+      options.querySelectorAll('[role="option"]').forEach(option => {
+        option.addEventListener("click", () => {
+          options.querySelectorAll('[role="option"]').forEach(item => item.setAttribute("aria-selected", "false"));
+          option.setAttribute("aria-selected", "true");
+          input.value = option.dataset.value || "";
+          trigger.querySelector("span").textContent = option.textContent.trim();
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          closeCustomSelect(root, { restoreFocus: true });
+        });
+      });
+
+      root.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          closeCustomSelect(root, { restoreFocus: true });
+        }
+      });
+    });
+
+    document.addEventListener("click", event => {
+      document.querySelectorAll("[data-custom-select]").forEach(root => {
+        if (!root.contains(event.target)) closeCustomSelect(root);
       });
     });
 
@@ -1243,20 +1343,25 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       showToast("Déconnexion réussie");
     });
 
-    document.querySelectorAll(".auth-tab").forEach(tab => {
-      tab.addEventListener("click", () => {
-        document.querySelectorAll(".auth-tab").forEach(item => {
-          const selected = item === tab;
-          item.setAttribute("aria-selected", String(selected));
-          item.classList.toggle("bg-white", selected);
-          item.classList.toggle("shadow-sm", selected);
-          item.classList.toggle("text-black/45", !selected);
-        });
-        document.querySelectorAll("[data-auth-panel]").forEach(panel => {
-          panel.classList.toggle("hidden", panel.dataset.authPanel !== tab.dataset.auth);
-        });
+    function showAuthPanel(name) {
+      document.querySelectorAll(".auth-tab").forEach(tab => {
+        const selected = tab.dataset.auth === name;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.classList.toggle("bg-white", selected);
+        tab.classList.toggle("shadow-sm", selected);
+        tab.classList.toggle("text-black/45", !selected);
       });
+      document.querySelectorAll("[data-auth-panel]").forEach(panel => {
+        panel.classList.toggle("hidden", panel.dataset.authPanel !== name);
+      });
+      document.getElementById("forgot-password-link")?.classList.toggle("hidden", name !== "signin");
+    }
+
+    document.querySelectorAll(".auth-tab").forEach(tab => {
+      tab.addEventListener("click", () => showAuthPanel(tab.dataset.auth));
     });
+    document.getElementById("forgot-password-link")?.addEventListener("click", () => showAuthPanel("forgot"));
+    document.getElementById("back-to-signin-from-forgot")?.addEventListener("click", () => showAuthPanel("signin"));
 
     document.querySelectorAll(".faq-question").forEach(button => {
       button.addEventListener("click", () => {
@@ -1293,6 +1398,58 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     });
 
+    function recoveryAccessToken() {
+      const values = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash.includes("=")) {
+        new URLSearchParams(hash).forEach((value, key) => values.set(key, value));
+      }
+      return values.get("access_token") || values.get("token") || "";
+    }
+
+    document.getElementById("forgot-password-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const result = await apiRequest("/forgot-password", {
+          method: "POST",
+          body: JSON.stringify({ email: document.getElementById("forgot-email").value.trim() })
+        });
+        setAuthFeedback(result.message || "Si cet email existe, un lien a été envoyé.", false);
+      } catch (error) {
+        setAuthFeedback(error.message || "Impossible d'envoyer le lien.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    document.getElementById("reset-password-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const token = recoveryAccessToken();
+      const password = document.getElementById("reset-password").value;
+      if (!token) {
+        setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
+        return;
+      }
+      const button = event.currentTarget.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const result = await apiRequest("/reset-password", {
+          method: "POST",
+          body: JSON.stringify({ token, password })
+        });
+        setAuthFeedback(result.message || "Mot de passe mis à jour. Tu peux te connecter.", false);
+        showAuthPanel("signin");
+        window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
+      } catch (error) {
+        setAuthFeedback(error.message || "Lien de réinitialisation invalide ou expiré.");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
     document.getElementById("signin-form").addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -1308,7 +1465,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             password: document.getElementById("signin-password").value
           })
         });
-        saveAuthToken(result.access_token, document.getElementById("remember-me").checked);
+        const remember = document.getElementById("remember-me").checked;
+        saveAuthToken(result.access_token, remember);
+        saveCachedUser(result.user, remember);
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
@@ -1346,6 +1505,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
         if (result.access_token) {
           saveAuthToken(result.access_token, true);
+          saveCachedUser(result.user, true);
           setAccountState(result.user);
           showRoute("cart");
           setCheckoutStep(1);
@@ -1398,8 +1558,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     updateCart();
-    const initialRoute = window.location.hash.replace("#", "");
+    const recoveryMode = new URLSearchParams(window.location.search).get("type") === "recovery" || Boolean(recoveryAccessToken());
+    const initialRoute = recoveryMode ? "login" : window.location.hash.replace("#", "");
     if (["home", "products", "cart", "order", "login", "faq", "admin"].includes(initialRoute)) {
       showRoute(initialRoute);
     }
+    if (recoveryMode) showAuthPanel("reset");
     restoreSession().then(() => verifyPaymentReturn());
