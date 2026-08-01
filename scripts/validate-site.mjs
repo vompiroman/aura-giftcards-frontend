@@ -25,6 +25,10 @@ for (const marker of [
   "AddToCart",
   "marketing_consent_version",
   "META_CONSENT_VERSION",
+  "forgot-password-form",
+  "reset-password-form",
+  "data-custom-select",
+  "warmApiConnection",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -48,6 +52,8 @@ for (const forbidden of [
   "babel-standalone",
   "unsafe-eval",
   "aura-stream.netlify.app",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_SECRET_KEY",
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }
