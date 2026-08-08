@@ -2,10 +2,11 @@ import { readFile, readdir } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [html, app, meta, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
+const [html, app, meta, session, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
   read("../index.html"),
   read("../src/canvas.js"),
   read("../src/meta.js"),
+  read("../src/session.js"),
   read("../vercel.json"),
   read("../public/robots.txt"),
   read("../public/sitemap.xml"),
@@ -13,7 +14,7 @@ const [html, app, meta, vercel, robots, sitemap, distHtml, distCss] = await Prom
   read("../dist/canvas.css"),
 ]);
 
-const source = [html, app, meta, vercel, robots, sitemap].join("\n");
+const source = [html, app, meta, session, vercel, robots, sitemap].join("\n");
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
@@ -23,12 +24,20 @@ for (const marker of [
   "waiting_for_stock",
   "InitiateCheckout",
   "AddToCart",
+  "ViewContent",
+  "mobile-cart-bar",
+  "landing-netflix",
+  "landing-spotify",
+  "landing-crunchyroll",
+  "aura_marketing_attribution",
   "marketing_consent_version",
   "META_CONSENT_VERSION",
   "forgot-password-form",
   "reset-password-form",
   "data-custom-select",
   "warmApiConnection",
+  "refreshAuthSession",
+  "aura_refresh_token",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -86,6 +95,18 @@ if (!robots.includes("https://www.aura-stream.com/sitemap.xml")) {
 }
 if (!sitemap.includes("https://www.aura-stream.com/")) {
   throw new Error("URL principale absente du sitemap");
+}
+if (/serveur se r[eé]veille/i.test(source)) {
+  throw new Error("Un message trompeur de réveil serveur est encore présent");
+}
+for (const landingUrl of [
+  "https://www.aura-stream.com/netflix-algerie",
+  "https://www.aura-stream.com/spotify-family-algerie",
+  "https://www.aura-stream.com/crunchyroll-mega-fan-algerie",
+]) {
+  if (!sitemap.includes(landingUrl) || !serializedVercel.includes(new URL(landingUrl).pathname)) {
+    throw new Error(`Landing page absente du sitemap ou des rewrites: ${landingUrl}`);
+  }
 }
 if (!distHtml.includes('type="module" crossorigin src="/assets/')) {
   throw new Error("Bundle Vite absent de dist/index.html");
