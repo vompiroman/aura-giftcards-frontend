@@ -10,6 +10,18 @@
   ],
   "rewrites": [
     {
+      "source": "/netflix-algerie",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/spotify-family-algerie",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/crunchyroll-mega-fan-algerie",
+      "destination": "/index.html"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://aura-giftcards-api.onrender.com/api/:path*"
     }

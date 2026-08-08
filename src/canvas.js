@@ -5,6 +5,12 @@ import {
   setMetaMarketingConsent,
   trackMeta,
 } from "./meta.js";
+import {
+  clearAuthSession,
+  loadAuthSession,
+  saveAuthSession,
+  sessionNeedsRefresh,
+} from "./session.js";
 
 const views = [...document.querySelectorAll("[data-view]")];
     const routeLinks = [...document.querySelectorAll(".route-link")];
@@ -24,7 +30,9 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     // the canonical API origin for every browser request.
     const API_BASE = "https://aura-giftcards-api.onrender.com/api";
     const authFeedback = document.getElementById("auth-feedback");
-    let authToken = sessionStorage.getItem("aura_access_token") || localStorage.getItem("aura_access_token") || "";
+    let authSession = loadAuthSession(sessionStorage, localStorage);
+    let authToken = authSession.accessToken;
+    let refreshPromise = null;
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
     let currentUser = null;
     let lastSavedProfile = "";
@@ -36,7 +44,7 @@ let adminLoaded = false;
 
     function warmApiConnection() {
       const controller = new AbortController();
-      const timer = window.setTimeout(() => controller.abort(), 5000);
+      const timer = window.setTimeout(() => controller.abort(), 20000);
       fetch(`${API_BASE}/healthz`, {
         method: "GET",
         cache: "no-store",
@@ -56,6 +64,7 @@ if (marketingConsentInput) {
   marketingConsentInput.checked = storedMarketingConsent?.status === "granted";
   marketingConsentInput.addEventListener("change", () => {
     setMetaMarketingConsent(marketingConsentInput.checked);
+    if (marketingConsentInput.checked) trackLandingView(activeRoute);
     marketingConsentBanner?.classList.add("hidden");
   });
 }
@@ -66,6 +75,7 @@ if (storedMarketingConsent) {
 }
 document.getElementById("accept-marketing")?.addEventListener("click", () => {
   setMetaMarketingConsent(true);
+  trackLandingView(activeRoute);
   if (marketingConsentInput) marketingConsentInput.checked = true;
   marketingConsentBanner?.classList.add("hidden");
 });
@@ -76,6 +86,90 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 });
 
     let cart = [];
+    let activeRoute = "home";
+    let lastTrackedLanding = "";
+    const landingRoutes = {
+      "landing-netflix": {
+        path: "/netflix-algerie",
+        title: "Netflix Premium en Algérie — Aura Stream",
+        description: "Accès à un profil Netflix Premium, livré automatiquement après confirmation du paiement.",
+        product: "Netflix Premium",
+        service: "Netflix",
+        price: 600,
+      },
+      "landing-spotify": {
+        path: "/spotify-family-algerie",
+        title: "Spotify Family en Algérie — Aura Stream",
+        description: "Accès Spotify Family activé sur ton compte avec accompagnement humain en Algérie.",
+        product: "Spotify Family",
+        service: "Spotify",
+        price: 500,
+      },
+      "landing-crunchyroll": {
+        path: "/crunchyroll-mega-fan-algerie",
+        title: "Crunchyroll Mega Fan en Algérie — Aura Stream",
+        description: "Crunchyroll Mega Fan activé sur ton compte avec suivi et support en Algérie.",
+        product: "Crunchyroll Mega Fan",
+        service: "Crunchyroll",
+        price: 500,
+      },
+    };
+    const routeNames = new Set([
+      "home", "products", "cart", "order", "login", "faq", "admin",
+      ...Object.keys(landingRoutes),
+    ]);
+
+    function routeFromLocation() {
+      const matchingLanding = Object.entries(landingRoutes).find(([, page]) => page.path === window.location.pathname);
+      if (matchingLanding) return matchingLanding[0];
+      const hashRoute = window.location.hash.replace("#", "");
+      return routeNames.has(hashRoute) ? hashRoute : "home";
+    }
+
+    function updateRouteMetadata(route) {
+      const landing = landingRoutes[route];
+      const title = landing?.title || "Aura Stream — Comptes streaming en Algérie";
+      const description = landing?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.";
+      const canonicalUrl = `https://www.aura-stream.com${landing?.path || "/"}`;
+      document.title = title;
+      document.querySelector('meta[name="description"]')?.setAttribute("content", description);
+      document.querySelector('meta[property="og:title"]')?.setAttribute("content", title);
+      document.querySelector('meta[property="og:description"]')?.setAttribute("content", description);
+      document.querySelector('meta[property="og:url"]')?.setAttribute("content", canonicalUrl);
+      document.querySelector('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
+    }
+
+    function trackLandingView(route) {
+      const landing = landingRoutes[route];
+      if (!landing || lastTrackedLanding === route) return false;
+      const tracked = trackMeta("ViewContent", {
+        content_name: landing.product,
+        content_category: "Streaming",
+        content_type: "product",
+        content_ids: [landing.product],
+        value: landing.price,
+        currency: "DZD",
+      });
+      if (tracked) lastTrackedLanding = route;
+      return tracked;
+    }
+
+    function updateMobileCartBar() {
+      const bar = document.getElementById("mobile-cart-bar");
+      if (!bar) return;
+      const visibleRoutes = new Set(["home", "products", ...Object.keys(landingRoutes)]);
+      const shouldShow = cart.length > 0 && visibleRoutes.has(activeRoute);
+      const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
+      const discount = activePromo ? Math.min(Number(activePromo.discount_amount || 0), subtotal) : 0;
+      const total = Math.max(0, subtotal - discount);
+      const summary = document.getElementById("mobile-cart-summary");
+      const totalLabel = document.getElementById("mobile-cart-total");
+      if (summary) summary.textContent = `${cart.length} article${cart.length > 1 ? "s" : ""} · ${formatPrice(total)}`;
+      if (totalLabel) totalLabel.textContent = discount > 0 ? `Remise incluse · −${formatPrice(discount)}` : "Paiement CIB / Edahabia";
+      bar.classList.toggle("hidden", !shouldShow);
+      bar.setAttribute("aria-hidden", String(!shouldShow));
+      document.body.classList.toggle("has-mobile-cart-bar", shouldShow);
+    }
 
     function pendingCredentialsKey(orderId) {
       return `aura_pending_credentials_${orderId}`;
@@ -119,30 +213,120 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       authFeedback.classList.add(isError ? "bg-red-50" : "bg-green-50", isError ? "text-red-800" : "text-green-800");
     }
 
+    const publicAuthPaths = new Set([
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/reset-password",
+      "/refresh-session",
+    ]);
+
+    function clearCurrentAuthSession() {
+      clearAuthSession(sessionStorage, localStorage);
+      authSession = loadAuthSession(sessionStorage, localStorage);
+      authToken = "";
+      setAccountState(null);
+      adminLoaded = false;
+      if (["admin", "order"].includes(activeRoute)) showRoute("login");
+    }
+
+    function persistCurrentAuthSession(payload, remember = authSession.remember) {
+      authSession = saveAuthSession(payload, remember, sessionStorage, localStorage);
+      authToken = authSession.accessToken;
+      return authSession;
+    }
+
+    async function refreshAuthSession() {
+      if (refreshPromise) return refreshPromise;
+      if (!authSession.refreshToken) {
+        clearCurrentAuthSession();
+        return false;
+      }
+
+      const refreshToken = authSession.refreshToken;
+      const remember = authSession.remember;
+      refreshPromise = (async () => {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+        try {
+          const response = await fetch(`${API_BASE}/refresh-session`, {
+            method: "POST",
+            cache: "no-store",
+            credentials: "omit",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh_token: refreshToken }),
+            signal: controller.signal,
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok) {
+            if ([400, 401].includes(response.status)) {
+              clearCurrentAuthSession();
+              return false;
+            }
+            throw new Error(payload?.error || "Le renouvellement de session est momentanément indisponible.");
+          }
+          persistCurrentAuthSession(payload, remember);
+          if (payload.user) {
+            saveCachedUser(payload.user, remember);
+            setAccountState(payload.user);
+          }
+          return true;
+        } catch (error) {
+          if (error?.name === "AbortError") {
+            throw new Error("Le renouvellement de session prend trop de temps. Réessaie dans quelques instants.");
+          }
+          if (error instanceof TypeError) {
+            throw new Error("Impossible de vérifier ta session pour le moment. Vérifie ta connexion.");
+          }
+          throw error;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      })();
+
+      try {
+        return await refreshPromise;
+      } finally {
+        refreshPromise = null;
+      }
+    }
+
     async function apiRequest(path, options = {}) {
+      const { __retried = false, ...requestOptions } = options;
+      const usesPublicAuth = publicAuthPaths.has(path);
+      if (
+        authToken
+        && !usesPublicAuth
+        && !__retried
+        && sessionNeedsRefresh(authSession)
+      ) {
+        const refreshed = await refreshAuthSession();
+        if (!refreshed) throw new Error("Ta session a expiré. Reconnecte-toi pour continuer.");
+      }
+
       const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 45000);
-      const slowRequestId = window.setTimeout(() => {
-        showToast(path === "/login"
-          ? "Connexion en cours — le serveur se réveille…"
-          : "Le serveur se réveille — encore quelques secondes…");
-      }, 8000);
-      const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
-      if (authToken) headers.Authorization = `Bearer ${authToken}`;
+      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+      const headers = { "Content-Type": "application/json", ...(requestOptions.headers || {}) };
+      const requestAuthToken = authToken;
+      if (requestAuthToken && !usesPublicAuth) headers.Authorization = `Bearer ${requestAuthToken}`;
       try {
         const response = await fetch(`${API_BASE}${path}`, {
-          ...options,
+          ...requestOptions,
           headers,
           credentials: "omit",
-          signal: options.signal || controller.signal
+          signal: requestOptions.signal || controller.signal
         });
         let payload = null;
         try { payload = await response.json(); } catch { payload = null; }
         if (!response.ok) {
-          if (response.status === 401) {
-            saveAuthToken("", false);
-            setAccountState(null);
+          if (response.status === 401 && !usesPublicAuth && !__retried) {
+            if (authToken && authToken !== requestAuthToken) {
+              return apiRequest(path, { ...requestOptions, __retried: true });
+            }
+            const refreshed = await refreshAuthSession();
+            if (refreshed) return apiRequest(path, { ...requestOptions, __retried: true });
           }
+          if (response.status === 401 && !usesPublicAuth) clearCurrentAuthSession();
           const message = typeof payload?.error === "string"
             ? payload.error
             : typeof payload?.message === "string"
@@ -153,15 +337,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return payload;
       } catch (error) {
         if (error?.name === "AbortError") {
-          throw new Error("Le serveur met trop de temps à répondre. Réessaie dans quelques secondes.");
+          throw new Error("Le service met plus de temps que prévu. Réessaie dans quelques instants.");
         }
         if (error instanceof TypeError) {
-          throw new Error("Impossible de joindre le serveur. Vérifie ta connexion puis réessaie.");
+          throw new Error("Impossible de joindre le service. Vérifie ta connexion puis réessaie.");
         }
         throw error;
       } finally {
         window.clearTimeout(timeoutId);
-        window.clearTimeout(slowRequestId);
       }
     }
 
@@ -174,17 +357,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         "Crunchyroll Mega Fan|1 an": "Crunchyroll Mega Fan 1 an"
       };
       return names[`${item.name}|${item.duration}`] || `${item.service} ${item.duration}`;
-    }
-
-    function saveAuthToken(token, remember) {
-      authToken = token || "";
-      sessionStorage.removeItem("aura_access_token");
-      localStorage.removeItem("aura_access_token");
-      if (authToken) (remember ? localStorage : sessionStorage).setItem("aura_access_token", authToken);
-      if (!authToken) {
-        sessionStorage.removeItem("aura_cached_user");
-        localStorage.removeItem("aura_cached_user");
-      }
     }
 
     function saveCachedUser(user, remember = false) {
@@ -300,9 +472,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
       try {
         const result = await apiRequest("/me");
-        saveCachedUser(result.user, Boolean(localStorage.getItem("aura_access_token")));
+        saveCachedUser(result.user, authSession.remember);
         setAccountState(result.user);
-        if (result.user?.is_admin === true && window.location.hash === "#admin") {
+        if (result.user?.is_admin === true && activeRoute === "admin") {
           await loadAdminDashboard();
         }
         const loginView = document.querySelector('[data-view="login"]');
@@ -310,8 +482,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           showRoute(result.user?.is_admin === true ? "admin" : "order");
         }
         return true;
-      } catch {
-        if (!cachedUser || !authToken) setAccountState(null);
+      } catch (error) {
+        if (!authToken) {
+          setAccountState(null);
+          adminLoaded = false;
+          if (["admin", "order"].includes(activeRoute)) showRoute("login");
+          setAuthFeedback("Ta session a expiré. Reconnecte-toi pour continuer.");
+        } else if (cachedUser?.is_admin === true && activeRoute === "admin") {
+          setAdminFeedback("Connexion momentanément indisponible. Tes données restent intactes ; utilise Actualiser dans quelques instants.");
+        }
         return false;
       }
     }
@@ -661,6 +840,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function showRoute(route, scrollTarget) {
+      if (!routeNames.has(route)) route = "home";
       if (route === "admin" && currentUser && currentUser.is_admin !== true) {
         showToast("Accès administrateur requis");
         route = "home";
@@ -673,7 +853,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
       mobileMenu.classList.add("hidden");
       mobileToggle.setAttribute("aria-expanded", "false");
-      window.history.replaceState(null, "", "#" + route);
+      activeRoute = route;
+      const landing = landingRoutes[route];
+      const nextUrl = landing?.path || (route === "home" ? "/" : `/#${route}`);
+      window.history.replaceState({ route }, "", nextUrl);
+      updateRouteMetadata(route);
+      updateMobileCartBar();
+
+      trackLandingView(route);
       if (route === "order") loadMyOrders();
       if (route === "cart") setCheckoutStep(1);
       if (route === "admin" && currentUser?.is_admin === true) loadAdminDashboard();
@@ -693,11 +880,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     window.addEventListener("hashchange", () => {
-      const route = window.location.hash.replace("#", "");
-      if (["home", "products", "cart", "order", "login", "faq", "admin"].includes(route)) {
-        showRoute(route);
-      }
+      showRoute(routeFromLocation());
     });
+
+    window.addEventListener("popstate", () => showRoute(routeFromLocation()));
 
     mobileToggle.addEventListener("click", () => {
       const expanded = mobileToggle.getAttribute("aria-expanded") === "true";
@@ -777,16 +963,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     });
 
-    document.querySelectorAll(".add-product").forEach(button => {
-      button.addEventListener("click", () => {
-        const card = button.closest(".product-card");
-        const activeDuration = card.querySelector('.duration-btn[aria-pressed="true"]');
-        const item = {
-          name: card.dataset.product,
-          service: card.dataset.service[0].toUpperCase() + card.dataset.service.slice(1),
-          duration: activeDuration.dataset.duration,
-          price: Number(activeDuration.dataset.price)
-        };
+    function addItemToCart(item, button) {
       cart.push(item);
       clearPromo();
       updateCart();
@@ -798,9 +975,34 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         content_ids: [apiProductName(item)],
         contents: [{ id: apiProductName(item), quantity: 1 }],
       });
+      if (button) {
         const original = button.textContent;
         button.textContent = "Ajouté !";
         window.setTimeout(() => button.textContent = original, 1500);
+      }
+    }
+
+    document.querySelectorAll(".add-product").forEach(button => {
+      button.addEventListener("click", () => {
+        const card = button.closest(".product-card");
+        const activeDuration = card.querySelector('.duration-btn[aria-pressed="true"]');
+        addItemToCart({
+          name: card.dataset.product,
+          service: card.dataset.service[0].toUpperCase() + card.dataset.service.slice(1),
+          duration: activeDuration.dataset.duration,
+          price: Number(activeDuration.dataset.price)
+        }, button);
+      });
+    });
+
+    document.querySelectorAll(".landing-add-product").forEach(button => {
+      button.addEventListener("click", () => {
+        addItemToCart({
+          name: button.dataset.product,
+          service: button.dataset.service,
+          duration: button.dataset.duration,
+          price: Number(button.dataset.price),
+        }, button);
       });
     });
 
@@ -878,7 +1080,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           showToast("Article retiré du panier");
         });
       });
+      updateMobileCartBar();
     }
+
+    document.getElementById("mobile-cart-button")?.addEventListener("click", () => {
+      showRoute("cart");
+      setCheckoutStep(1);
+    });
 
     document.getElementById("promo-apply")?.addEventListener("click", applyPromoCode);
     document.getElementById("promo-code")?.addEventListener("keydown", event => {
@@ -1035,6 +1243,33 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       })[status] || status || "Inconnu";
     }
 
+    function adminOrderFollowUp(order) {
+      if (order.payment_status !== "paid") {
+        return { label: "Paiement non confirmé", className: "bg-amber-50 text-amber-700", disconnect: false };
+      }
+      if (order.status === "completed") {
+        return { label: "Déconnecté / clôturé", className: "bg-black/5 text-black/55", disconnect: false };
+      }
+      if (order.status === "cancelled") {
+        return { label: "Annulé", className: "bg-red-50 text-red-700", disconnect: false };
+      }
+      if (order.status === "pending") {
+        return { label: "Activation en attente", className: "bg-amber-50 text-amber-700", disconnect: false };
+      }
+      const expiresAt = new Date(order.expires_at || "");
+      if (!Number.isFinite(expiresAt.getTime())) {
+        return { label: "Date à vérifier", className: "bg-amber-50 text-amber-700", disconnect: false };
+      }
+      const remaining = expiresAt.getTime() - Date.now();
+      if (remaining <= 0) {
+        return { label: "À déconnecter", className: "bg-red-50 text-red-700", disconnect: true };
+      }
+      if (remaining <= 3 * 24 * 60 * 60 * 1000) {
+        return { label: "Expire sous 3 jours", className: "bg-amber-50 text-amber-700", disconnect: false };
+      }
+      return { label: "Actif", className: "bg-green-50 text-green-700", disconnect: false };
+    }
+
     function activateAdminTab(name) {
       document.querySelectorAll(".admin-tab").forEach(button => {
         const active = button.dataset.adminTab === name;
@@ -1115,15 +1350,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             : order.payment_status === "failed"
               ? "bg-red-50 text-red-700"
               : "bg-amber-50 text-amber-700";
+          const followUp = adminOrderFollowUp(order);
           return `<article class="rounded-2xl border border-black/10 p-4 sm:p-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(order.payment_status || "unpaid")}</span></div>
                 <p class="mt-2 truncate text-sm text-black/65">${escapeHTML(order.assigned_email || "Sans e-mail")}</p>
                 <p class="mt-1 text-xs text-black/45">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${followUp.className}">${followUp.label}</span>${order.expires_at ? `<span class="text-xs text-black/45">Expiration : ${formatDateTime(order.expires_at)}</span>` : ""}</div>
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
+                ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-10 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
                 <select class="admin-order-status-select min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
                   ${["pending", "active", "completed", "cancelled"].map(status =>
                     `<option value="${status}" ${order.status === status ? "selected" : ""}>${adminOrderStatusLabel(status)}</option>`
@@ -1149,8 +1387,67 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             }
           });
         });
+        list.querySelectorAll(".admin-mark-disconnected").forEach(button => {
+          button.addEventListener("click", async () => {
+            const confirmed = window.confirm("Confirmer que l’accès a bien été retiré avant de clôturer cette commande ?");
+            if (!confirmed) return;
+            button.disabled = true;
+            try {
+              await apiRequest("/admin/update-order-status", {
+                method: "POST",
+                body: JSON.stringify({ order_id: button.dataset.orderId, status: "completed" })
+              });
+              showToast("Commande marquée comme déconnectée");
+              await Promise.all([loadAdminOrders(), loadAdminOverview(), loadAdminAudit()]);
+            } catch (error) {
+              button.disabled = false;
+              showToast(error.message || "Mise à jour impossible");
+            }
+          });
+        });
       } catch (error) {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
+      }
+    }
+
+    async function downloadAdminOrdersExport() {
+      const button = document.getElementById("admin-orders-export");
+      if (!button || currentUser?.is_admin !== true) return;
+      const originalLabel = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
+      try {
+        if (sessionNeedsRefresh(authSession)) await refreshAuthSession();
+        const requestExport = () => fetch(`${API_BASE}/admin/orders-export.csv`, {
+          method: "GET",
+          cache: "no-store",
+          credentials: "omit",
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        let response = await requestExport();
+        if (response.status === 401 && authRefreshToken && await refreshAuthSession()) {
+          response = await requestExport();
+        }
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({}));
+          throw new Error(payload.error || "Export impossible.");
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `suivi-abonnements-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast("Le fichier Excel est prêt");
+        loadAdminAudit();
+      } catch (error) {
+        showToast(error.message || "Export impossible");
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalLabel;
       }
     }
 
@@ -1275,6 +1572,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       adminOrdersPage = 1;
       loadAdminOrders();
     });
+    document.getElementById("admin-orders-export")?.addEventListener("click", downloadAdminOrdersExport);
     document.getElementById("admin-orders-prev")?.addEventListener("click", () => {
       if (adminOrdersPage <= 1) return;
       adminOrdersPage -= 1;
@@ -1336,8 +1634,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     });
     document.getElementById("admin-signout")?.addEventListener("click", () => {
-      saveAuthToken("", false);
-      setAccountState(null);
+      clearCurrentAuthSession();
       adminLoaded = false;
       showRoute("home");
       showToast("Déconnexion réussie");
@@ -1466,7 +1763,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           })
         });
         const remember = document.getElementById("remember-me").checked;
-        saveAuthToken(result.access_token, remember);
+        persistCurrentAuthSession(result, remember);
         saveCachedUser(result.user, remember);
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
@@ -1504,7 +1801,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           })
         });
         if (result.access_token) {
-          saveAuthToken(result.access_token, true);
+          persistCurrentAuthSession(result, true);
           saveCachedUser(result.user, true);
           setAccountState(result.user);
           showRoute("cart");
@@ -1559,9 +1856,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     updateCart();
     const recoveryMode = new URLSearchParams(window.location.search).get("type") === "recovery" || Boolean(recoveryAccessToken());
-    const initialRoute = recoveryMode ? "login" : window.location.hash.replace("#", "");
-    if (["home", "products", "cart", "order", "login", "faq", "admin"].includes(initialRoute)) {
-      showRoute(initialRoute);
-    }
+    const initialRoute = recoveryMode ? "login" : routeFromLocation();
+    showRoute(initialRoute);
     if (recoveryMode) showAuthPanel("reset");
     restoreSession().then(() => verifyPaymentReturn());

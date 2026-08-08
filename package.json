@@ -8,7 +8,8 @@
     "build": "tailwindcss -i ./src/canvas.css -o ./public/canvas.css --minify && vite build",
     "preview": "vite preview",
     "test:meta": "node scripts/test-meta.mjs",
-    "check": "npm run build && npm run test:meta && node scripts/validate-site.mjs"
+    "test:session": "node scripts/test-session.mjs",
+    "check": "npm run build && npm run test:meta && npm run test:session && node scripts/validate-site.mjs"
   },
   "dependencies": {},
   "devDependencies": {

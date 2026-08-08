@@ -5,6 +5,17 @@
 html { scroll-behavior: smooth; }
 body { background: #F6F2EC; color: #23242A; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+.brand-logo {
+  filter: drop-shadow(0 6px 10px rgb(217 54 70 / .18));
+}
+.mobile-cart-bar {
+  position: fixed; z-index: 45; right: 0; bottom: 0; left: 0;
+  border-top: 1px solid rgb(35 36 42 / .12); background: rgb(246 242 236 / .96);
+  padding: .75rem 1rem calc(.75rem + env(safe-area-inset-bottom));
+  box-shadow: 0 -14px 35px rgb(25 26 31 / .13); backdrop-filter: blur(18px);
+}
+.mobile-cart-bar:not(.hidden) { display: block; }
+.whatsapp-float { transition: bottom .2s ease, transform .2s ease; }
 .styled-select { position: relative; display: block; min-width: 0; }
 .styled-select select {
   width: 100%; min-height: 2.75rem; appearance: none; border: 1px solid rgb(35 36 42 / .15);
@@ -77,4 +88,13 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
+}
+
+@media (max-width: 767px) {
+  body.has-mobile-cart-bar { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+  body.has-mobile-cart-bar .whatsapp-float { bottom: calc(6rem + env(safe-area-inset-bottom)); }
+}
+
+@media (min-width: 768px) {
+  .mobile-cart-bar { display: none !important; }
 }

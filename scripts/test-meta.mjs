@@ -15,11 +15,15 @@ globalThis.document = {
   },
 };
 globalThis.window = {
-  location: { hash: "" },
+  location: {
+    hash: "",
+    search: "?utm_source=meta&utm_medium=paid_social&utm_campaign=launch&fbclid=test-click",
+  },
 };
 
 const {
   META_CONSENT_VERSION,
+  getMarketingAttribution,
   getMetaMarketingConsent,
   initializeMetaPixel,
   setMetaMarketingConsent,
@@ -40,6 +44,12 @@ const granted = setMetaMarketingConsent(true);
 assert.equal(granted.status, "granted");
 assert.equal(getMetaMarketingConsent().version, META_CONSENT_VERSION);
 assert.equal(appendedScripts.length, 1, "Le consentement doit charger Meta une seule fois");
+assert.deepEqual(getMarketingAttribution(), {
+  utm_source: "meta",
+  utm_medium: "paid_social",
+  utm_campaign: "launch",
+  fbclid: "test-click",
+});
 initializeMetaPixel();
 assert.equal(appendedScripts.length, 1, "L’initialisation doit rester unique");
 
@@ -67,6 +77,9 @@ const purchaseCall = window.fbq.queue.find(
 );
 assert.ok(purchaseCall, "Purchase absent de la file Meta");
 assert.equal(purchaseCall[2].value, 800);
+assert.equal(purchaseCall[2].utm_source, "meta");
+assert.equal(purchaseCall[2].utm_campaign, "launch");
+assert.equal(purchaseCall[2].fbclid, "test-click");
 assert.equal(purchaseCall[3].eventID, "purchase_ORD-test");
 
 console.log("Tests Meta consentement et déduplication réussis.");
