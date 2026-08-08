@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Crunchyroll</title>
+  <circle cx="32" cy="32" r="30" fill="#f47521"/>
+  <path fill="#fff" d="M48.8 39.8A21 21 0 1 1 39.1 12a17 17 0 1 0 9.7 27.8Z"/>
+  <circle cx="43.5" cy="24.5" r="9.5" fill="#f47521"/>
+</svg>

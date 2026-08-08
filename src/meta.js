@@ -28,10 +28,24 @@ const attributionFromUrl = () => {
 // writing marketing identifiers to storage before the visitor chooses.
 const pendingAttribution = attributionFromUrl();
 
-const hasSensitiveAuthFragment = () =>
-  /(?:^|[&#])(access_token|refresh_token|provider_token|type=recovery)=/i.test(
-    window.location.hash || "",
-  );
+const hasAuthenticatedSession = () => {
+  try {
+    return [localStorage, sessionStorage].some((storage) => (
+      Boolean(storage.getItem("aura_access_token") || storage.getItem("aura_refresh_token"))
+    ));
+  } catch {
+    return true;
+  }
+};
+
+const hasSensitiveAuthContext = () => {
+  const combinedUrlState = `${window.location.search || ""}&${window.location.hash || ""}`;
+  return window.__auraSensitiveAuthFlow === true
+    || /(?:^|[?&#])(access_token|refresh_token|provider_token|token|type=recovery)=/i.test(combinedUrlState)
+    || /(?:^|#)(login|order|admin)(?:$|[?&])/i.test(window.location.hash || "")
+    || new URLSearchParams(window.location.search || "").get("account") === "1"
+    || hasAuthenticatedSession();
+};
 
 export const getMetaMarketingConsent = () => {
   try {
@@ -114,7 +128,7 @@ const installMetaQueue = () => {
 
 export const initializeMetaPixel = () => {
   if (window.__metaPixelInitialized) return true;
-  if (!marketingAllowed() || hasSensitiveAuthFragment()) return false;
+  if (!marketingAllowed() || hasSensitiveAuthContext()) return false;
 
   installMetaQueue();
   captureMarketingAttribution();
