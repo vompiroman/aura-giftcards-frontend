@@ -12,6 +12,24 @@ import {
   sessionNeedsRefresh,
 } from "./session.js";
 
+const initialQueryParams = new URLSearchParams(window.location.search);
+const initialHash = window.location.hash.replace(/^#/, "");
+const initialHashParams = initialHash.includes("=") ? new URLSearchParams(initialHash) : new URLSearchParams();
+let capturedRecoveryToken = initialHashParams.get("type") === "recovery"
+  ? String(initialHashParams.get("access_token") || "")
+  : "";
+const recoveryRequested = initialQueryParams.get("type") === "recovery"
+  || initialHashParams.get("type") === "recovery"
+  || Boolean(capturedRecoveryToken);
+const sensitiveTokenInUrl = recoveryRequested
+  || ["access_token", "refresh_token", "provider_token", "token"].some((key) => (
+    initialQueryParams.has(key) || initialHashParams.has(key)
+  ));
+if (sensitiveTokenInUrl) {
+  window.__auraSensitiveAuthFlow = true;
+  window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
+}
+
 const views = [...document.querySelectorAll("[data-view]")];
     const routeLinks = [...document.querySelectorAll(".route-link")];
     const navLinks = [...document.querySelectorAll(".nav-link")];
@@ -85,7 +103,38 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
   marketingConsentBanner?.classList.add("hidden");
 });
 
-    let cart = [];
+    const CART_STORAGE_KEY = "aura_checkout_cart";
+    const allowedCartPrices = new Map([
+      ["Netflix|Netflix Premium|1 mois", 600],
+      ["Spotify|Spotify Family|1 mois", 500],
+      ["Spotify|Spotify Family|1 an", 4000],
+      ["Crunchyroll|Crunchyroll Mega Fan|1 mois", 500],
+      ["Crunchyroll|Crunchyroll Mega Fan|1 an", 3000],
+    ]);
+
+    function loadSavedCart() {
+      try {
+        const stored = JSON.parse(sessionStorage.getItem(CART_STORAGE_KEY) || "[]");
+        if (!Array.isArray(stored)) return [];
+        return stored.slice(0, 20).flatMap((item) => {
+          const name = String(item?.name || "");
+          const service = String(item?.service || "");
+          const duration = String(item?.duration || "");
+          const price = allowedCartPrices.get(`${service}|${name}|${duration}`);
+          return price === undefined ? [] : [{ name, service, duration, price }];
+        });
+      } catch {
+        sessionStorage.removeItem(CART_STORAGE_KEY);
+        return [];
+      }
+    }
+
+    function persistCart() {
+      if (cart.length > 0) sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+      else sessionStorage.removeItem(CART_STORAGE_KEY);
+    }
+
+    let cart = loadSavedCart();
     let activeRoute = "home";
     let lastTrackedLanding = "";
     const landingRoutes = {
@@ -169,41 +218,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       bar.classList.toggle("hidden", !shouldShow);
       bar.setAttribute("aria-hidden", String(!shouldShow));
       document.body.classList.toggle("has-mobile-cart-bar", shouldShow);
-    }
-
-    function pendingCredentialsKey(orderId) {
-      return `aura_pending_credentials_${orderId}`;
-    }
-
-    function savePendingCredentials(orderId, credentials) {
-      if (!orderId || credentials.length === 0) return;
-      sessionStorage.setItem(pendingCredentialsKey(orderId), JSON.stringify(credentials));
-    }
-
-    async function submitPendingCredentials(orderId) {
-      const key = pendingCredentialsKey(orderId);
-      const raw = sessionStorage.getItem(key);
-      if (!raw) return false;
-      let credentials = [];
-      try {
-        credentials = JSON.parse(raw);
-      } catch {
-        sessionStorage.removeItem(key);
-        return false;
-      }
-      while (credentials.length > 0) {
-        const credential = credentials[0];
-        await apiRequest("/client-credentials", {
-          method: "POST",
-          body: JSON.stringify({ order_id: orderId, ...credential })
-        });
-        credentials.shift();
-        if (credentials.length > 0) {
-          sessionStorage.setItem(key, JSON.stringify(credentials));
-        }
-      }
-      sessionStorage.removeItem(key);
-      return true;
     }
 
     function setAuthFeedback(message, isError = true) {
@@ -841,6 +855,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function showRoute(route, scrollTarget) {
       if (!routeNames.has(route)) route = "home";
+      if (
+        ["login", "order", "admin"].includes(route)
+        && window.__metaPixelInitialized
+        && !window.__auraSensitiveAuthFlow
+      ) {
+        window.__auraSensitiveAuthFlow = true;
+        persistCart();
+        const privateUrl = new URL(window.location.origin + window.location.pathname);
+        privateUrl.searchParams.set("account", "1");
+        privateUrl.hash = route;
+        window.location.replace(privateUrl.toString());
+        return;
+      }
       if (route === "admin" && currentUser && currentUser.is_admin !== true) {
         showToast("Accès administrateur requis");
         route = "home";
@@ -1007,6 +1034,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     function updateCart() {
+      persistCart();
       cartCount.textContent = String(cart.length);
       const hasNetflix = cart.some(item => item.service === "Netflix");
       const hasSpotify = cart.some(item => item.service === "Spotify");
@@ -1020,12 +1048,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         "hidden",
         !hasCrunchyroll
       );
-      ["spotify-email", "spotify-password"].forEach(id => {
-        document.getElementById(id).required = hasSpotify;
-      });
-      ["crunchyroll-email", "crunchyroll-password"].forEach(id => {
-        document.getElementById(id).required = hasCrunchyroll;
-      });
       document.getElementById("netflix-delivery-note")?.classList.toggle("hidden", !hasNetflix);
       const customerInfoDescription = document.getElementById("customer-info-description");
       if (customerInfoDescription) {
@@ -1155,19 +1177,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
       try {
-        const spotify = cart.find(item => item.service === "Spotify");
-        const crunchyroll = cart.find(item => item.service === "Crunchyroll");
-        const spotifyEmail = document.getElementById("spotify-email").value.trim();
-        const spotifyPassword = document.getElementById("spotify-password").value;
-        const crunchyrollEmail = document.getElementById("crunchyroll-email").value.trim();
-        const crunchyrollPassword = document.getElementById("crunchyroll-password").value;
-        const whatsapp = document.getElementById("customer-whatsapp").value.trim();
-        if (spotify && (!spotifyEmail || !spotifyPassword || !whatsapp)) {
-          throw new Error("Renseigne les identifiants Spotify et ton numéro WhatsApp avant de payer.");
-        }
-        if (crunchyroll && (!crunchyrollEmail || !crunchyrollPassword || !whatsapp)) {
-          throw new Error("Renseigne les identifiants Crunchyroll et ton numéro WhatsApp avant de payer.");
-        }
         const order = await apiRequest("/create-order", {
           method: "POST",
           body: JSON.stringify({
@@ -1181,15 +1190,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         if (!activeOrderId) throw new Error("La commande n’a pas reçu d’identifiant.");
         sessionStorage.setItem("aura_order_id", activeOrderId);
 
-        const pendingCredentials = [];
-        if (spotify) {
-          pendingCredentials.push({ service: "spotify", email: spotifyEmail, password: spotifyPassword, whatsapp });
-        }
-        if (crunchyroll) {
-          pendingCredentials.push({ service: "crunchyroll", email: crunchyrollEmail, password: crunchyrollPassword, whatsapp });
-        }
-        savePendingCredentials(activeOrderId, pendingCredentials);
-
         const invoice = await apiRequest("/create-invoice", {
           method: "POST",
           body: JSON.stringify({ order_id: activeOrderId })
@@ -1197,18 +1197,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         if (!invoice?.payment_url) throw new Error("Le prestataire de paiement n’a pas renvoyé de lien.");
         window.location.assign(invoice.payment_url);
       } catch (error) {
-        if (activeOrderId) sessionStorage.removeItem(pendingCredentialsKey(activeOrderId));
         showToast(error.message || "Impossible de préparer le paiement");
         button.disabled = false;
         button.innerHTML = originalLabel;
       }
-    });
-
-    document.getElementById("toggle-password").addEventListener("click", () => {
-      const input = document.getElementById("spotify-password");
-      const visible = input.type === "text";
-      input.type = visible ? "password" : "text";
-      document.getElementById("toggle-password").setAttribute("aria-label", visible ? "Afficher le mot de passe" : "Masquer le mot de passe");
     });
 
     function setAdminFeedback(message = "", isError = true) {
@@ -1425,7 +1417,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         let response = await requestExport();
-        if (response.status === 401 && authRefreshToken && await refreshAuthSession()) {
+        if (response.status === 401 && authSession.refreshToken && await refreshAuthSession()) {
           response = await requestExport();
         }
         if (!response.ok) {
@@ -1633,11 +1625,24 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         button.disabled = false;
       }
     });
-    document.getElementById("admin-signout")?.addEventListener("click", () => {
-      clearCurrentAuthSession();
-      adminLoaded = false;
-      showRoute("home");
-      showToast("Déconnexion réussie");
+    async function signOutCurrentSession(button) {
+      if (button) button.disabled = true;
+      try {
+        if (authToken) await apiRequest("/logout", { method: "POST" });
+      } catch {
+        // Local sign-out still completes if the API is temporarily unavailable.
+      } finally {
+        clearCurrentAuthSession();
+        adminLoaded = false;
+        sessionStorage.removeItem("aura_order_id");
+        window.location.replace(window.location.origin + window.location.pathname);
+      }
+    }
+
+    ["admin-signout", "customer-signout"].forEach((id) => {
+      document.getElementById(id)?.addEventListener("click", (event) => {
+        void signOutCurrentSession(event.currentTarget);
+      });
     });
 
     function showAuthPanel(name) {
@@ -1696,12 +1701,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     function recoveryAccessToken() {
-      const values = new URLSearchParams(window.location.search);
-      const hash = window.location.hash.replace(/^#/, "");
-      if (hash.includes("=")) {
-        new URLSearchParams(hash).forEach((value, key) => values.set(key, value));
-      }
-      return values.get("access_token") || values.get("token") || "";
+      return capturedRecoveryToken;
     }
 
     document.getElementById("forgot-password-form")?.addEventListener("submit", async event => {
@@ -1737,6 +1737,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           method: "POST",
           body: JSON.stringify({ token, password })
         });
+        capturedRecoveryToken = "";
         setAuthFeedback(result.message || "Mot de passe mis à jour. Tu peux te connecter.", false);
         showAuthPanel("signin");
         window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
@@ -1841,13 +1842,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       sessionStorage.setItem("aura_order_id", orderId);
       try {
         await apiRequest("/verify-payment", { method: "POST", body: JSON.stringify({ order_id: orderId }) });
+        cart = [];
+        activePromo = null;
+        updateCart();
         showRoute("order");
-        try {
-          const credentialsSubmitted = await submitPendingCredentials(orderId);
-          showToast(credentialsSubmitted ? "Paiement vérifié et activation transmise" : "Paiement vérifié");
-        } catch {
-          showToast("Paiement vérifié — finalise l’activation dans Mes commandes");
-        }
+        showToast("Paiement vérifié — finalise l’activation dans Mes commandes si nécessaire");
       } catch {
         showRoute("order");
         showToast("Paiement en cours de vérification");
@@ -1855,7 +1854,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     updateCart();
-    const recoveryMode = new URLSearchParams(window.location.search).get("type") === "recovery" || Boolean(recoveryAccessToken());
+    const recoveryMode = recoveryRequested;
     const initialRoute = recoveryMode ? "login" : routeFromLocation();
     showRoute(initialRoute);
     if (recoveryMode) showAuthPanel("reset");

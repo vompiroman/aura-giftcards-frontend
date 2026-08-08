@@ -1,10 +1,16 @@
 import assert from "node:assert/strict";
 
 const values = new Map();
+const sessionValues = new Map();
 globalThis.localStorage = {
   getItem: (key) => values.get(key) ?? null,
   setItem: (key, value) => values.set(key, String(value)),
   removeItem: (key) => values.delete(key),
+};
+globalThis.sessionStorage = {
+  getItem: (key) => sessionValues.get(key) ?? null,
+  setItem: (key, value) => sessionValues.set(key, String(value)),
+  removeItem: (key) => sessionValues.delete(key),
 };
 
 const appendedScripts = [];
@@ -40,9 +46,13 @@ assert.ok(denied.updated_at);
 assert.equal(initializeMetaPixel(), false);
 assert.equal(appendedScripts.length, 0, "Le refus doit produire zéro requête Meta");
 
+sessionValues.set("aura_access_token", "authenticated-user-token");
 const granted = setMetaMarketingConsent(true);
 assert.equal(granted.status, "granted");
 assert.equal(getMetaMarketingConsent().version, META_CONSENT_VERSION);
+assert.equal(appendedScripts.length, 0, "Meta doit rester absent tant qu'une session utilisateur est ouverte");
+sessionValues.delete("aura_access_token");
+initializeMetaPixel();
 assert.equal(appendedScripts.length, 1, "Le consentement doit charger Meta une seule fois");
 assert.deepEqual(getMarketingAttribution(), {
   utm_source: "meta",

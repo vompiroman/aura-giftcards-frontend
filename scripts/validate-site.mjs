@@ -19,7 +19,6 @@ const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
 for (const marker of [
-  "submitPendingCredentials",
   "activation-credentials-form",
   "waiting_for_stock",
   "InitiateCheckout",
@@ -38,6 +37,11 @@ for (const marker of [
   "warmApiConnection",
   "refreshAuthSession",
   "aura_refresh_token",
+  "capturedRecoveryToken",
+  'apiRequest("/logout"',
+  'src="/netflix.svg"',
+  'src="/spotify.svg"',
+  'src="/crunchyroll.svg"',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -63,6 +67,9 @@ for (const forbidden of [
   "aura-stream.netlify.app",
   "SUPABASE_SERVICE_ROLE_KEY",
   "SUPABASE_SECRET_KEY",
+  "aura_pending_credentials_",
+  "upload.wikimedia.org",
+  "commons.wikimedia.org",
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }
