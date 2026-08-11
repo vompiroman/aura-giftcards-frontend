@@ -42,6 +42,10 @@ for (const marker of [
   'src="/netflix.svg"',
   'src="/spotify.svg"',
   'src="/crunchyroll.svg"',
+  'src="/aura-logo-dark.png"',
+  "session-signout",
+  "revenue-chart-inner",
+  "grid min-w-0 gap-6",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -123,6 +127,9 @@ if (!distHtml.includes('type="module" crossorigin src="/assets/')) {
 }
 if (!distHtml.includes('href="/canvas.css"') || distCss.length < 10_000) {
   throw new Error("CSS Tailwind compilé absent ou incomplet");
+}
+if (!distCss.includes(".revenue-chart-scroll") || !distCss.includes(".revenue-chart-inner")) {
+  throw new Error("Styles du graphique administrateur absents");
 }
 
 const distAssets = await readdir(new URL("../dist/assets/", import.meta.url));
