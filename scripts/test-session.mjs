@@ -1,14 +1,9 @@
 import assert from "node:assert/strict";
-
-globalThis.atob = (value) => Buffer.from(value, "base64").toString("utf8");
+import { readFile } from "node:fs/promises";
 
 const {
-  AUTH_STORAGE_KEYS,
-  accessTokenExpiry,
+  LEGACY_AUTH_STORAGE_KEYS,
   clearAuthSession,
-  loadAuthSession,
-  saveAuthSession,
-  sessionNeedsRefresh,
 } = await import("../src/session.js");
 
 const makeStore = () => {
@@ -21,36 +16,35 @@ const makeStore = () => {
   };
 };
 
-const jwt = (exp) => {
-  const payload = Buffer.from(JSON.stringify({ exp })).toString("base64url");
-  return `header.${payload}.signature`;
-};
-
 const sessionStore = makeStore();
 const localStore = makeStore();
-const expiresAt = 1_800_000_000;
 
-assert.equal(accessTokenExpiry(jwt(expiresAt)), expiresAt);
-const saved = saveAuthSession({
-  access_token: jwt(expiresAt),
-  refresh_token: "rotating-refresh-token",
-  expires_at: expiresAt,
-}, true, sessionStore, localStore);
-assert.equal(saved.remember, true);
-assert.equal(loadAuthSession(sessionStore, localStore).refreshToken, "rotating-refresh-token");
-assert.equal(localStore.getItem(AUTH_STORAGE_KEYS.expiresAt), String(expiresAt));
-assert.equal(sessionNeedsRefresh(saved, (expiresAt - 60) * 1000), true);
-assert.equal(sessionNeedsRefresh(saved, (expiresAt - 600) * 1000), false);
-
-saveAuthSession({
-  access_token: jwt(expiresAt + 3600),
-  refresh_token: "new-refresh-token",
-  expires_at: expiresAt + 3600,
-}, false, sessionStore, localStore);
-assert.equal(localStore.getItem(AUTH_STORAGE_KEYS.accessToken), null);
-assert.equal(sessionStore.getItem(AUTH_STORAGE_KEYS.refreshToken), "new-refresh-token");
+for (const key of LEGACY_AUTH_STORAGE_KEYS) {
+  sessionStore.setItem(key, `session-${key}`);
+  localStore.setItem(key, `local-${key}`);
+}
+sessionStore.setItem("aura_checkout_cart", "[]");
 
 clearAuthSession(sessionStore, localStore);
-assert.equal(loadAuthSession(sessionStore, localStore).accessToken, "");
+for (const key of LEGACY_AUTH_STORAGE_KEYS) {
+  assert.equal(sessionStore.getItem(key), null);
+  assert.equal(localStore.getItem(key), null);
+}
+assert.equal(sessionStore.getItem("aura_checkout_cart"), "[]");
 
-console.log("Tests de persistance, expiration et rotation de session réussis.");
+const app = await readFile(new URL("../src/canvas.js", import.meta.url), "utf8");
+for (const forbidden of [
+  "authToken",
+  "loadAuthSession",
+  "saveAuthSession",
+  "sessionNeedsRefresh",
+  'credentials: "omit"',
+  "headers.Authorization",
+]) {
+  assert.equal(app.includes(forbidden), false, `Jeton navigateur encore présent: ${forbidden}`);
+}
+assert.equal(app.includes('const API_BASE = "/api"'), true);
+assert.equal(app.includes('credentials: "include"'), true);
+assert.equal(app.includes("remember,"), true);
+
+console.log("Tests de purge des anciens jetons et de session HttpOnly réussis.");
