@@ -52,6 +52,9 @@ for (const marker of [
   'showRoute("home")',
   "home-tracking-example-button",
   "order-tracking-example",
+  "tracking-step-line",
+  "left-[12.5%] right-[12.5%] top-4 z-0",
+  "relative z-10 text-center",
   "tracking-example-highlight",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);

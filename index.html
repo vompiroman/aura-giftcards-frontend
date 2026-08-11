@@ -310,28 +310,28 @@
               <button id="home-tracking-example-button" type="button" class="mt-6 min-h-12 rounded-xl border border-graphite px-5 font-title text-sm font-bold transition hover:bg-graphite hover:text-white" aria-controls="order-tracking-example">Voir un exemple de suivi</button>
             </div>
             <div id="order-tracking-example" class="rounded-2xl border border-black/10 bg-white p-6 shadow-soft outline-none sm:p-8" tabindex="-1">
-              <div class="grid grid-cols-4 gap-2">
-                <div class="text-center">
+              <div class="tracking-steps relative grid grid-cols-4 gap-2">
+                <div class="tracking-step-line absolute left-[12.5%] right-[12.5%] top-4 z-0 h-px bg-black/10" aria-hidden="true">
+                  <div class="h-px w-2/3 bg-sand"></div>
+                </div>
+                <div class="relative z-10 text-center">
                   <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
                   <p class="mt-3 text-[11px] font-semibold sm:text-xs">Paiement</p>
                 </div>
-                <div class="text-center">
+                <div class="relative z-10 text-center">
                   <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
                   <p class="mt-3 text-[11px] font-semibold sm:text-xs">Confirmé</p>
                 </div>
-                <div class="text-center">
+                <div class="relative z-10 text-center">
                   <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-sand text-xs text-graphite"><i class="fa-solid fa-bolt" aria-hidden="true"></i></span>
                   <p class="mt-3 text-[11px] font-semibold text-[#9A7137] sm:text-xs">Activation</p>
                 </div>
-                <div class="text-center">
+                <div class="relative z-10 text-center">
                   <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-black/10 text-xs text-black/35"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
                   <p class="mt-3 text-[11px] font-semibold text-black/35 sm:text-xs">Activé</p>
                 </div>
               </div>
-              <div class="relative mt-[-52px] h-px bg-black/10" aria-hidden="true">
-                <div class="h-px w-2/3 bg-sand"></div>
-              </div>
-              <div class="mt-16 flex items-center gap-3 rounded-xl bg-[#FBF4E9] p-4 text-sm text-[#7A6040]">
+              <div class="mt-6 flex items-center gap-3 rounded-xl bg-[#FBF4E9] p-4 text-sm text-[#7A6040]">
                 <i class="fa-solid fa-clock" aria-hidden="true"></i>
                 Activation Spotify en cours — confirmation sur WhatsApp.
               </div>
