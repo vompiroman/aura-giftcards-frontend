@@ -50,6 +50,9 @@ for (const marker of [
   "admin-revenue-end",
   "admin-revenue-export",
   'showRoute("home")',
+  "home-tracking-example-button",
+  "order-tracking-example",
+  "tracking-example-highlight",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -80,6 +83,7 @@ for (const forbidden of [
   "commons.wikimedia.org",
   "/aura-logo-dark.png",
   "window.location.replace(window.location.origin + window.location.pathname)",
+  'data-route="order">Voir un exemple de suivi',
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }

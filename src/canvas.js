@@ -839,6 +839,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       link.addEventListener("click", () => showRoute(link.dataset.route, link.dataset.scroll));
     });
 
+    document.getElementById("home-tracking-example-button")?.addEventListener("click", () => {
+      const example = document.getElementById("order-tracking-example");
+      if (!example) return;
+      example.classList.remove("tracking-example-highlight");
+      requestAnimationFrame(() => {
+        example.classList.add("tracking-example-highlight");
+        example.scrollIntoView({ behavior: "smooth", block: "center" });
+        example.focus({ preventScroll: true });
+      });
+      window.setTimeout(() => example.classList.remove("tracking-example-highlight"), 1400);
+    });
+
     window.addEventListener("hashchange", () => {
       showRoute(routeFromLocation());
     });

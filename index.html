@@ -163,8 +163,8 @@
 
               <div class="space-y-3">
                 <article class="flex items-center gap-4 rounded-2xl border border-[#E50914]/20 bg-[#E50914]/10 p-4 sm:p-5">
-                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
-                    <img src="/netflix.svg" alt="Netflix" class="w-8">
+                  <div class="h-12 w-12 shrink-0">
+                    <img src="/netflix.svg" alt="Netflix" class="h-12 w-12 rounded-xl shadow-lg shadow-black/20">
                   </div>
                   <div class="min-w-0 flex-1">
                     <h2 class="font-title text-lg font-bold">Netflix</h2>
@@ -174,8 +174,8 @@
                 </article>
 
                 <article class="ml-4 flex items-center gap-4 rounded-2xl border border-[#1ED760]/20 bg-[#1ED760]/10 p-4 sm:ml-8 sm:p-5">
-                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
-                    <img src="/spotify.svg" alt="Spotify" class="w-9">
+                  <div class="h-12 w-12 shrink-0">
+                    <img src="/spotify.svg" alt="Spotify" class="h-12 w-12 rounded-xl shadow-lg shadow-black/20">
                   </div>
                   <div class="min-w-0 flex-1">
                     <h2 class="font-title text-lg font-bold">Spotify</h2>
@@ -185,8 +185,8 @@
                 </article>
 
                 <article class="mr-4 flex items-center gap-4 rounded-2xl border border-[#F47521]/20 bg-[#F47521]/10 p-4 sm:mr-8 sm:p-5">
-                  <div class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white">
-                    <img src="/crunchyroll.svg" alt="Crunchyroll" class="w-9">
+                  <div class="h-12 w-12 shrink-0">
+                    <img src="/crunchyroll.svg" alt="Crunchyroll" class="h-12 w-12 rounded-xl shadow-lg shadow-black/20">
                   </div>
                   <div class="min-w-0 flex-1">
                     <h2 class="font-title text-lg font-bold">Crunchyroll</h2>
@@ -307,9 +307,9 @@
               <p class="text-xs font-bold uppercase tracking-[0.16em] text-aura">Suivi de commande</p>
               <h2 class="mt-3 font-title text-3xl font-extrabold tracking-tight sm:text-4xl">Suis chaque étape</h2>
               <p class="mt-4 leading-7 text-black/60">De la confirmation du paiement jusqu’à l’activation, tu sais toujours où en est ta commande.</p>
-              <button class="route-link mt-6 min-h-12 rounded-xl border border-graphite px-5 font-title text-sm font-bold transition hover:bg-graphite hover:text-white" data-route="order">Voir un exemple de suivi</button>
+              <button id="home-tracking-example-button" type="button" class="mt-6 min-h-12 rounded-xl border border-graphite px-5 font-title text-sm font-bold transition hover:bg-graphite hover:text-white" aria-controls="order-tracking-example">Voir un exemple de suivi</button>
             </div>
-            <div class="rounded-2xl border border-black/10 bg-white p-6 shadow-soft sm:p-8">
+            <div id="order-tracking-example" class="rounded-2xl border border-black/10 bg-white p-6 shadow-soft outline-none sm:p-8" tabindex="-1">
               <div class="grid grid-cols-4 gap-2">
                 <div class="text-center">
                   <span class="mx-auto grid h-8 w-8 place-items-center rounded-full bg-green-600 text-xs text-white"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
