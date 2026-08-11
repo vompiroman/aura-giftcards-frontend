@@ -2,9 +2,10 @@ import { readFile, readdir } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [html, app, meta, session, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
+const [html, app, styles, meta, session, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
   read("../index.html"),
   read("../src/canvas.js"),
+  read("../src/canvas.css"),
   read("../src/meta.js"),
   read("../src/session.js"),
   read("../vercel.json"),
@@ -14,7 +15,7 @@ const [html, app, meta, session, vercel, robots, sitemap, distHtml, distCss] = a
   read("../dist/canvas.css"),
 ]);
 
-const source = [html, app, meta, session, vercel, robots, sitemap].join("\n");
+const source = [html, app, styles, meta, session, vercel, robots, sitemap].join("\n");
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
@@ -54,8 +55,19 @@ for (const marker of [
   "order-tracking-example",
   "tracking-step-line",
   "left-[12.5%] right-[12.5%] top-4 z-0",
-  "relative z-10 text-center",
+  "tracking-step relative text-center",
+  "tracking-step-marker",
+  "box-shadow: 0 0 0 4px #fff",
   "tracking-example-highlight",
+  'data-view="legal"',
+  'path: "/legal"',
+  "document.body.dataset.route",
+  'document.getElementById("signup-phone")',
+  "currentUser?.user_metadata?.phone",
+  "grid cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)]",
+  '.admin-tabs-scroll::-webkit-scrollbar',
+  '.faq-category[aria-pressed="true"]',
+  'body[data-route="admin"] .whatsapp-float',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -87,6 +99,8 @@ for (const forbidden of [
   "/aura-logo-dark.png",
   "window.location.replace(window.location.origin + window.location.pathname)",
   'data-route="order">Voir un exemple de suivi',
+  'href="#"',
+  'currentUser?.phone || ""',
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }
@@ -130,6 +144,7 @@ for (const landingUrl of [
   "https://www.aura-stream.com/netflix-algerie",
   "https://www.aura-stream.com/spotify-family-algerie",
   "https://www.aura-stream.com/crunchyroll-mega-fan-algerie",
+  "https://www.aura-stream.com/legal",
 ]) {
   if (!sitemap.includes(landingUrl) || !serializedVercel.includes(new URL(landingUrl).pathname)) {
     throw new Error(`Landing page absente du sitemap ou des rewrites: ${landingUrl}`);
