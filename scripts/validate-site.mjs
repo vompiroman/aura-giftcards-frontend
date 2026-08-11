@@ -42,10 +42,14 @@ for (const marker of [
   'src="/netflix.svg"',
   'src="/spotify.svg"',
   'src="/crunchyroll.svg"',
-  'src="/aura-logo-dark.png"',
+  'src="/aura-logo-mark.png"',
   "session-signout",
   "revenue-chart-inner",
   "grid min-w-0 gap-6",
+  "admin-revenue-start",
+  "admin-revenue-end",
+  "admin-revenue-export",
+  'showRoute("home")',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -74,6 +78,8 @@ for (const forbidden of [
   "aura_pending_credentials_",
   "upload.wikimedia.org",
   "commons.wikimedia.org",
+  "/aura-logo-dark.png",
+  "window.location.replace(window.location.origin + window.location.pathname)",
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }

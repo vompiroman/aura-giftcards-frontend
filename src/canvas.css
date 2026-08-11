@@ -9,10 +9,10 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   filter: drop-shadow(0 6px 10px rgb(217 54 70 / .18));
 }
 .header-brand-logo {
-  border: 1px solid rgb(255 255 255 / .08);
+  filter: drop-shadow(0 7px 10px rgb(217 54 70 / .16));
 }
 .header-brand-logo-image {
-  transform: scale(1.03);
+  transform: scale(1.08);
 }
 .session-signout.hidden { display: none !important; }
 .header-session-signout { display: none; }
