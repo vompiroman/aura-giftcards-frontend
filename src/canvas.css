@@ -8,6 +8,89 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .brand-logo {
   filter: drop-shadow(0 6px 10px rgb(217 54 70 / .18));
 }
+.header-brand-logo {
+  border: 1px solid rgb(255 255 255 / .08);
+}
+.header-brand-logo-image {
+  transform: scale(1.03);
+}
+.session-signout.hidden { display: none !important; }
+.header-session-signout { display: none; }
+.revenue-chart-scroll {
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: rgb(217 54 70 / .55) rgb(35 36 42 / .08);
+  scrollbar-width: thin;
+}
+.revenue-chart-scroll:focus-visible {
+  border-radius: .75rem;
+  outline: 2px solid #D93646;
+  outline-offset: 3px;
+}
+.revenue-chart-inner {
+  display: grid;
+  min-width: max(100%, calc(var(--revenue-days, 1) * 4.4rem));
+  height: 15rem;
+  grid-template-columns: repeat(var(--revenue-days, 1), minmax(4rem, 1fr));
+  align-items: end;
+  gap: .35rem;
+  padding: .5rem .25rem .2rem;
+  background-image: repeating-linear-gradient(
+    to top,
+    transparent 0,
+    transparent calc(25% - 1px),
+    rgb(35 36 42 / .07) 25%
+  );
+}
+.revenue-chart-day {
+  display: grid;
+  height: 100%;
+  grid-template-rows: 2rem minmax(0, 1fr) 2.2rem;
+  align-items: end;
+  gap: .35rem;
+  text-align: center;
+}
+.revenue-chart-value {
+  overflow: hidden;
+  color: rgb(35 36 42 / .72);
+  font-size: .64rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.revenue-chart-track {
+  display: flex;
+  height: 100%;
+  align-items: flex-end;
+  justify-content: center;
+}
+.revenue-chart-bar {
+  width: min(1.75rem, 70%);
+  min-height: .35rem;
+  border-radius: .5rem .5rem .18rem .18rem;
+  background: linear-gradient(180deg, #EE5362 0%, #D93646 100%);
+  box-shadow: 0 7px 16px rgb(217 54 70 / .18);
+  transition: filter .2s ease, transform .2s ease;
+}
+.revenue-chart-day:hover .revenue-chart-bar,
+.revenue-chart-day:focus-within .revenue-chart-bar {
+  filter: saturate(1.16);
+  transform: scaleX(1.08);
+}
+.revenue-chart-date {
+  color: rgb(35 36 42 / .55);
+  font-size: .64rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.revenue-chart-sales {
+  display: block;
+  margin-top: .18rem;
+  color: rgb(35 36 42 / .38);
+  font-size: .58rem;
+  font-weight: 600;
+}
 .mobile-cart-bar {
   position: fixed; z-index: 45; right: 0; bottom: 0; left: 0;
   border-top: 1px solid rgb(35 36 42 / .12); background: rgb(246 242 236 / .96);
@@ -97,4 +180,8 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
 @media (min-width: 768px) {
   .mobile-cart-bar { display: none !important; }
+}
+
+@media (min-width: 640px) {
+  .header-session-signout:not(.hidden) { display: inline-flex; }
 }

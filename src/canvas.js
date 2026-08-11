@@ -35,6 +35,7 @@ const views = [...document.querySelectorAll("[data-view]")];
     const toastMessage = document.getElementById("toast-message");
     const accountLinks = [...document.querySelectorAll(".account-link")];
     const adminLinks = [...document.querySelectorAll(".admin-link")];
+    const sessionSignoutButtons = [...document.querySelectorAll(".session-signout")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
@@ -357,6 +358,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         link.dataset.route = authenticated ? "order" : "login";
         link.textContent = authenticated ? "Mes commandes" : "Se connecter";
       });
+      sessionSignoutButtons.forEach(button => button.classList.toggle("hidden", !authenticated));
       adminLinks.forEach(link => link.classList.toggle("hidden", !isAdminUser));
       const adminIdentity = document.getElementById("admin-identity");
       if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || "administrateur"}` : "";
@@ -1155,6 +1157,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }).format(date);
     }
 
+    function formatRevenueChartDate(value) {
+      const date = new Date(`${value}T12:00:00`);
+      if (Number.isNaN(date.getTime())) return String(value || "—");
+      return new Intl.DateTimeFormat("fr-DZ", {
+        day: "2-digit",
+        month: "short"
+      }).format(date).replace(".", "");
+    }
+
     function adminOrderStatusLabel(status) {
       return ({
         pending: "En attente",
@@ -1223,14 +1234,22 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const daily = Array.isArray(result.revenue_by_day) ? result.revenue_by_day : [];
       const chart = document.getElementById("admin-revenue-chart");
       const maxRevenue = Math.max(1, ...daily.map(row => Number(row.revenue || 0)));
-      chart.innerHTML = daily.map(row => {
+      const chartDays = daily.map(row => {
         const revenue = Number(row.revenue || 0);
-        const height = revenue > 0 ? Math.max(12, Math.round((revenue / maxRevenue) * 100)) : 4;
-        return `<div class="group relative flex h-full min-w-1 flex-1 items-end" title="${escapeHTML(row.date)} · ${formatPrice(revenue)}">
-          <span class="absolute bottom-full left-1/2 z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-graphite px-2 py-1 text-[10px] font-bold text-white group-hover:block">${formatPrice(revenue)} · ${Number(row.sales || 0)} vente(s)</span>
-          <span class="w-full rounded-t bg-aura/75 transition group-hover:bg-aura" style="height:${height}%"></span>
-        </div>`;
-      }).join("") || '<p class="m-auto text-sm text-black/45">Aucune vente sur cette période.</p>';
+        const sales = Number(row.sales || 0);
+        const height = revenue > 0 ? Math.max(8, Math.round((revenue / maxRevenue) * 100)) : 3;
+        const dateLabel = formatRevenueChartDate(row.date);
+        const priceLabel = formatPrice(revenue);
+        const salesLabel = `${sales} vente${sales > 1 ? "s" : ""}`;
+        return `<article class="revenue-chart-day" role="listitem" aria-label="${escapeHTML(`${dateLabel} : ${priceLabel}, ${salesLabel}`)}" title="${escapeHTML(`${dateLabel} · ${priceLabel} · ${salesLabel}`)}">
+          <span class="revenue-chart-value">${escapeHTML(priceLabel)}</span>
+          <span class="revenue-chart-track" aria-hidden="true"><span class="revenue-chart-bar" style="height:${height}%"></span></span>
+          <span class="revenue-chart-date">${escapeHTML(dateLabel)}<small class="revenue-chart-sales">${escapeHTML(salesLabel)}</small></span>
+        </article>`;
+      }).join("");
+      chart.innerHTML = chartDays
+        ? `<div class="revenue-chart-inner" role="list" style="--revenue-days:${daily.length}">${chartDays}</div>`
+        : '<p class="grid min-h-56 place-items-center text-sm text-black/45">Aucune vente sur cette période.</p>';
 
       const stock = Array.isArray(result.stock) ? result.stock : [];
       document.getElementById("admin-stock-summary").innerHTML = stock.map(item => {
@@ -1566,8 +1585,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
-    ["admin-signout", "customer-signout"].forEach((id) => {
-      document.getElementById(id)?.addEventListener("click", (event) => {
+    [
+      document.getElementById("admin-signout"),
+      document.getElementById("customer-signout"),
+      ...sessionSignoutButtons
+    ].filter(Boolean).forEach((button) => {
+      button.addEventListener("click", (event) => {
         void signOutCurrentSession(event.currentTarget);
       });
     });
