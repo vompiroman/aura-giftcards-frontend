@@ -17,6 +17,9 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .session-signout.hidden { display: none !important; }
 .header-session-signout { display: none; }
 .revenue-chart-scroll {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   scrollbar-color: rgb(217 54 70 / .55) rgb(35 36 42 / .08);
