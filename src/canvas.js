@@ -5,12 +5,7 @@ import {
   setMetaMarketingConsent,
   trackMeta,
 } from "./meta.js";
-import {
-  clearAuthSession,
-  loadAuthSession,
-  saveAuthSession,
-  sessionNeedsRefresh,
-} from "./session.js";
+import { clearAuthSession } from "./session.js";
 
 const initialQueryParams = new URLSearchParams(window.location.search);
 const initialHash = window.location.hash.replace(/^#/, "");
@@ -43,13 +38,10 @@ const views = [...document.querySelectorAll("[data-view]")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
-    // Vercel deployment protection can intercept same-origin /api rewrites.
-    // The Render API explicitly allows the production site through CORS, so use
-    // the canonical API origin for every browser request.
-    const API_BASE = "https://aura-giftcards-api.onrender.com/api";
+    // Keep authentication same-origin. Vercel and the local Vite server proxy
+    // /api to Render, so HttpOnly cookies never become third-party cookies.
+    const API_BASE = "/api";
     const authFeedback = document.getElementById("auth-feedback");
-    let authSession = loadAuthSession(sessionStorage, localStorage);
-    let authToken = authSession.accessToken;
     let refreshPromise = null;
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
     let currentUser = null;
@@ -60,13 +52,16 @@ let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
 
+    // Purge tokens and cached profile data left by pre-cookie deployments.
+    clearAuthSession(sessionStorage, localStorage);
+
     function warmApiConnection() {
       const controller = new AbortController();
       const timer = window.setTimeout(() => controller.abort(), 20000);
       fetch(`${API_BASE}/healthz`, {
         method: "GET",
         cache: "no-store",
-        credentials: "omit",
+        credentials: "include",
         signal: controller.signal
       }).catch(() => {}).finally(() => window.clearTimeout(timer));
     }
@@ -237,28 +232,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function clearCurrentAuthSession() {
       clearAuthSession(sessionStorage, localStorage);
-      authSession = loadAuthSession(sessionStorage, localStorage);
-      authToken = "";
       setAccountState(null);
       adminLoaded = false;
       if (["admin", "order"].includes(activeRoute)) showRoute("login");
     }
 
-    function persistCurrentAuthSession(payload, remember = authSession.remember) {
-      authSession = saveAuthSession(payload, remember, sessionStorage, localStorage);
-      authToken = authSession.accessToken;
-      return authSession;
-    }
-
     async function refreshAuthSession() {
       if (refreshPromise) return refreshPromise;
-      if (!authSession.refreshToken) {
-        clearCurrentAuthSession();
-        return false;
-      }
-
-      const refreshToken = authSession.refreshToken;
-      const remember = authSession.remember;
       refreshPromise = (async () => {
         const controller = new AbortController();
         const timeoutId = window.setTimeout(() => controller.abort(), 20000);
@@ -266,9 +246,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const response = await fetch(`${API_BASE}/refresh-session`, {
             method: "POST",
             cache: "no-store",
-            credentials: "omit",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh_token: refreshToken }),
+            body: JSON.stringify({}),
             signal: controller.signal,
           });
           const payload = await response.json().catch(() => null);
@@ -279,9 +259,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             }
             throw new Error(payload?.error || "Le renouvellement de session est momentanément indisponible.");
           }
-          persistCurrentAuthSession(payload, remember);
           if (payload.user) {
-            saveCachedUser(payload.user, remember);
             setAccountState(payload.user);
           }
           return true;
@@ -308,35 +286,21 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function apiRequest(path, options = {}) {
       const { __retried = false, ...requestOptions } = options;
       const usesPublicAuth = publicAuthPaths.has(path);
-      if (
-        authToken
-        && !usesPublicAuth
-        && !__retried
-        && sessionNeedsRefresh(authSession)
-      ) {
-        const refreshed = await refreshAuthSession();
-        if (!refreshed) throw new Error("Ta session a expiré. Reconnecte-toi pour continuer.");
-      }
 
       const controller = new AbortController();
       const timeoutId = window.setTimeout(() => controller.abort(), 30000);
       const headers = { "Content-Type": "application/json", ...(requestOptions.headers || {}) };
-      const requestAuthToken = authToken;
-      if (requestAuthToken && !usesPublicAuth) headers.Authorization = `Bearer ${requestAuthToken}`;
       try {
         const response = await fetch(`${API_BASE}${path}`, {
           ...requestOptions,
           headers,
-          credentials: "omit",
+          credentials: "include",
           signal: requestOptions.signal || controller.signal
         });
         let payload = null;
         try { payload = await response.json(); } catch { payload = null; }
         if (!response.ok) {
           if (response.status === 401 && !usesPublicAuth && !__retried) {
-            if (authToken && authToken !== requestAuthToken) {
-              return apiRequest(path, { ...requestOptions, __retried: true });
-            }
             const refreshed = await refreshAuthSession();
             if (refreshed) return apiRequest(path, { ...requestOptions, __retried: true });
           }
@@ -373,25 +337,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return names[`${item.name}|${item.duration}`] || `${item.service} ${item.duration}`;
     }
 
-    function saveCachedUser(user, remember = false) {
-      sessionStorage.removeItem("aura_cached_user");
-      localStorage.removeItem("aura_cached_user");
-      if (!user) return;
-      (remember ? localStorage : sessionStorage).setItem("aura_cached_user", JSON.stringify(user));
-    }
-
-    function readCachedUser() {
-      for (const storage of [sessionStorage, localStorage]) {
-        try {
-          const raw = storage.getItem("aura_cached_user");
-          if (raw) return JSON.parse(raw);
-        } catch {
-          storage.removeItem("aura_cached_user");
-        }
-      }
-      return null;
-    }
-
     function profileNames(metadata = {}) {
       let firstName = String(metadata.first_name || "").trim();
       let lastName = String(metadata.last_name || "").trim();
@@ -406,7 +351,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function setAccountState(user) {
       currentUser = user || null;
-      const authenticated = Boolean(currentUser && authToken);
+      const authenticated = Boolean(currentUser);
       const isAdminUser = authenticated && currentUser.is_admin === true;
       accountLinks.forEach(link => {
         link.dataset.route = authenticated ? "order" : "login";
@@ -445,7 +390,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     async function saveCheckoutProfile({ quiet = false } = {}) {
-      if (!authToken || !currentUser) return false;
+      if (!currentUser) return false;
       const profile = checkoutProfileData();
       if (!profile.first_name && !profile.last_name && !profile.phone) return false;
       const signature = JSON.stringify(profile);
@@ -472,39 +417,23 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     async function restoreSession() {
-      if (!authToken) {
-        setAccountState(null);
-        return false;
-      }
-      const cachedUser = readCachedUser();
-      if (cachedUser) {
-        setAccountState(cachedUser);
-        const loginView = document.querySelector('[data-view="login"]');
-        if (loginView && !loginView.classList.contains("hidden")) {
-          showRoute(cachedUser.is_admin === true ? "admin" : "order");
-        }
-      }
       try {
         const result = await apiRequest("/me");
-        saveCachedUser(result.user, authSession.remember);
         setAccountState(result.user);
         if (result.user?.is_admin === true && activeRoute === "admin") {
           await loadAdminDashboard();
+        } else if (activeRoute === "order") {
+          await loadMyOrders();
         }
         const loginView = document.querySelector('[data-view="login"]');
         if (loginView && !loginView.classList.contains("hidden")) {
           showRoute(result.user?.is_admin === true ? "admin" : "order");
         }
         return true;
-      } catch (error) {
-        if (!authToken) {
-          setAccountState(null);
-          adminLoaded = false;
-          if (["admin", "order"].includes(activeRoute)) showRoute("login");
-          setAuthFeedback("Ta session a expiré. Reconnecte-toi pour continuer.");
-        } else if (cachedUser?.is_admin === true && activeRoute === "admin") {
-          setAdminFeedback("Connexion momentanément indisponible. Tes données restent intactes ; utilise Actualiser dans quelques instants.");
-        }
+      } catch {
+        setAccountState(null);
+        adminLoaded = false;
+        if (["admin", "order"].includes(activeRoute)) showRoute("login");
         return false;
       }
     }
@@ -614,7 +543,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function loadMyOrders() {
       const container = document.getElementById("my-orders-content");
       if (!container) return;
-      if (!authToken) {
+      if (!currentUser) {
         container.innerHTML = `
           <div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft">
             <h2 class="font-title text-xl font-bold">Connecte-toi pour voir tes commandes</h2>
@@ -806,7 +735,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const input = document.getElementById("promo-code");
       const button = document.getElementById("promo-apply");
       const code = String(input?.value || "").trim().toUpperCase();
-      if (!authToken) {
+      if (!currentUser) {
         setPromoFeedback("Connecte-toi pour utiliser un code promo.", true);
         showRoute("login");
         return;
@@ -1135,7 +1064,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     document.getElementById("to-payment").addEventListener("click", async () => {
       const form = document.getElementById("customer-form");
       if (!form.reportValidity()) return;
-      if (!authToken) {
+      if (!currentUser) {
         showToast("Connecte-toi avant de continuer");
         showRoute("login");
         setAuthFeedback("Connecte-toi pour associer cette commande à ton compte.");
@@ -1163,7 +1092,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("pay-button").addEventListener("click", async event => {
       const button = event.currentTarget;
-      if (!authToken) {
+      if (!currentUser) {
         showRoute("login");
         setAuthFeedback("Connecte-toi pour lancer le paiement.");
         return;
@@ -1409,15 +1338,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
       try {
-        if (sessionNeedsRefresh(authSession)) await refreshAuthSession();
         const requestExport = () => fetch(`${API_BASE}/admin/orders-export.csv`, {
           method: "GET",
           cache: "no-store",
-          credentials: "omit",
-          headers: { Authorization: `Bearer ${authToken}` },
+          credentials: "include",
         });
         let response = await requestExport();
-        if (response.status === 401 && authSession.refreshToken && await refreshAuthSession()) {
+        if (response.status === 401 && await refreshAuthSession()) {
           response = await requestExport();
         }
         if (!response.ok) {
@@ -1628,7 +1555,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function signOutCurrentSession(button) {
       if (button) button.disabled = true;
       try {
-        if (authToken) await apiRequest("/logout", { method: "POST" });
+        if (currentUser) await apiRequest("/logout", { method: "POST" });
       } catch {
         // Local sign-out still completes if the API is temporarily unavailable.
       } finally {
@@ -1756,16 +1683,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       submitButton.disabled = true;
       submitButton.textContent = "Connexion…";
       try {
+        const remember = document.getElementById("remember-me").checked;
         const result = await apiRequest("/login", {
           method: "POST",
           body: JSON.stringify({
             email: document.getElementById("signin-email").value.trim(),
-            password: document.getElementById("signin-password").value
+            password: document.getElementById("signin-password").value,
+            remember,
           })
         });
-        const remember = document.getElementById("remember-me").checked;
-        persistCurrentAuthSession(result, remember);
-        saveCachedUser(result.user, remember);
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
@@ -1801,9 +1727,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             full_name: `${firstName} ${lastName}`.trim()
           })
         });
-        if (result.access_token) {
-          persistCurrentAuthSession(result, true);
-          saveCachedUser(result.user, true);
+        if (result.authenticated === true && result.user) {
           setAccountState(result.user);
           showRoute("cart");
           setCheckoutStep(1);
@@ -1837,7 +1761,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function verifyPaymentReturn() {
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get("order_id") || params.get("orderId");
-      if (!orderId || !authToken) return;
+      if (!orderId || !currentUser) return;
       activeOrderId = orderId;
       sessionStorage.setItem("aura_order_id", orderId);
       try {

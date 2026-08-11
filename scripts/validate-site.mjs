@@ -93,8 +93,11 @@ if (serializedVercel.includes("unsafe-inline") || serializedVercel.includes("uns
 if (!serializedVercel.includes("https://aura-giftcards-api.onrender.com/api/:path*")) {
   throw new Error("Le proxy API Vercel est absent");
 }
-if (!app.includes('const API_BASE = "https://aura-giftcards-api.onrender.com/api"')) {
+if (!app.includes('const API_BASE = "/api"')) {
   throw new Error("Le frontend ne passe pas par le proxy API de même origine");
+}
+for (const forbidden of ["authToken", "loadAuthSession", "saveAuthSession", 'credentials: "omit"']) {
+  if (app.includes(forbidden)) throw new Error(`Ancienne session navigateur encore présente: ${forbidden}`);
 }
 
 if (!robots.includes("https://www.aura-stream.com/sitemap.xml")) {
