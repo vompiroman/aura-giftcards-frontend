@@ -52,6 +52,7 @@ let activePromo = null;
 let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
+let adminRevenueReport = null;
 
     // Purge tokens and cached profile data left by pre-cookie deployments.
     clearAuthSession(sessionStorage, localStorage);
@@ -231,11 +232,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       "/refresh-session",
     ]);
 
-    function clearCurrentAuthSession() {
+    function clearCurrentAuthSession({ redirectToLogin = true } = {}) {
       clearAuthSession(sessionStorage, localStorage);
       setAccountState(null);
       adminLoaded = false;
-      if (["admin", "order"].includes(activeRoute)) showRoute("login");
+      adminRevenueReport = null;
+      if (redirectToLogin && ["admin", "order"].includes(activeRoute)) showRoute("login");
     }
 
     async function refreshAuthSession() {
@@ -1166,6 +1168,85 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }).format(date).replace(".", "");
     }
 
+    function localDateInputValue(date = new Date()) {
+      const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+      return localDate.toISOString().slice(0, 10);
+    }
+
+    function initializeAdminRevenueRange() {
+      const startInput = document.getElementById("admin-revenue-start");
+      const endInput = document.getElementById("admin-revenue-end");
+      if (!startInput || !endInput) return;
+      const today = new Date();
+      const firstDay = new Date(today.getTime() - 29 * 24 * 60 * 60 * 1000);
+      const maximum = localDateInputValue(today);
+      startInput.max = maximum;
+      endInput.max = maximum;
+      if (!startInput.value) startInput.value = localDateInputValue(firstDay);
+      if (!endInput.value) endInput.value = maximum;
+    }
+
+    function selectedAdminRevenueRange() {
+      initializeAdminRevenueRange();
+      const startDate = document.getElementById("admin-revenue-start")?.value || "";
+      const endDate = document.getElementById("admin-revenue-end")?.value || "";
+      const startTime = Date.parse(`${startDate}T00:00:00Z`);
+      const endTime = Date.parse(`${endDate}T00:00:00Z`);
+      const days = Math.floor((endTime - startTime) / (24 * 60 * 60 * 1000)) + 1;
+      if (!startDate || !endDate || !Number.isFinite(days)) {
+        throw new Error("Sélectionnez une date de début et une date de fin.");
+      }
+      if (days < 1) throw new Error("La date de fin doit être postérieure à la date de début.");
+      if (days > 366) throw new Error("La période ne peut pas dépasser 366 jours.");
+      return { startDate, endDate, days };
+    }
+
+    function formatRevenuePeriod(startDate, endDate) {
+      const formatter = new Intl.DateTimeFormat("fr-DZ", { day: "numeric", month: "short", year: "numeric" });
+      return `Du ${formatter.format(new Date(`${startDate}T12:00:00`))} au ${formatter.format(new Date(`${endDate}T12:00:00`))}`;
+    }
+
+    function setAdminRevenueFeedback(message = "", isError = false) {
+      const feedback = document.getElementById("admin-revenue-feedback");
+      if (!feedback) return;
+      feedback.textContent = message;
+      feedback.classList.toggle("hidden", !message);
+      feedback.classList.toggle("text-red-700", Boolean(message) && isError);
+      feedback.classList.toggle("text-green-700", Boolean(message) && !isError);
+    }
+
+    function csvCell(value) {
+      return `"${String(value ?? "").replaceAll('"', '""')}"`;
+    }
+
+    function downloadAdminRevenueExport() {
+      if (!adminRevenueReport) return;
+      const daily = Array.isArray(adminRevenueReport.daily) ? adminRevenueReport.daily : [];
+      const totalRevenue = daily.reduce((sum, row) => sum + Number(row.revenue || 0), 0);
+      const totalSales = daily.reduce((sum, row) => sum + Number(row.sales || 0), 0);
+      const rows = [
+        ["Rapport Aura Stream — Revenus encaissés"],
+        ["Date de début", adminRevenueReport.startDate],
+        ["Date de fin", adminRevenueReport.endDate],
+        ["Généré le", new Date().toLocaleString("fr-DZ")],
+        [],
+        ["Date", "Ventes payées", "Revenus encaissés (DA)"],
+        ...daily.map(row => [row.date, Number(row.sales || 0), Number(row.revenue || 0)]),
+        [],
+        ["TOTAL", totalSales, totalRevenue]
+      ];
+      const csv = `\uFEFF${rows.map(row => row.map(csvCell).join(";")).join("\r\n")}`;
+      const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `revenus-aura-${adminRevenueReport.startDate}-${adminRevenueReport.endDate}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("Le fichier Excel est prêt");
+    }
+
     function adminOrderStatusLabel(status) {
       return ({
         pending: "En attente",
@@ -1220,7 +1301,20 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     async function loadAdminOverview() {
-      const result = await apiRequest("/admin/dashboard?days=30");
+      const range = selectedAdminRevenueRange();
+      const exportButton = document.getElementById("admin-revenue-export");
+      const chart = document.getElementById("admin-revenue-chart");
+      adminRevenueReport = null;
+      if (exportButton) exportButton.disabled = true;
+      setAdminRevenueFeedback("");
+      if (chart) {
+        chart.innerHTML = '<p class="grid min-h-56 place-items-center text-sm font-semibold text-black/45"><i class="fa-solid fa-spinner fa-spin mr-2 text-aura" aria-hidden="true"></i>Calcul des revenus…</p>';
+      }
+      const params = new URLSearchParams({
+        start_date: range.startDate,
+        end_date: range.endDate
+      });
+      const result = await apiRequest(`/admin/dashboard?${params}`);
       const summary = result.summary || {};
       document.getElementById("admin-revenue-total").textContent = formatPrice(Number(summary.revenue_total || 0));
       document.getElementById("admin-revenue-period").textContent = formatPrice(Number(summary.revenue_period || 0));
@@ -1230,9 +1324,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.getElementById("admin-payment-alerts").textContent =
         `Non payées : ${Number(summary.unpaid_orders || 0)} · Échouées : ${Number(summary.failed_payments || 0)}`;
       document.getElementById("admin-generated-at").textContent = `Mis à jour ${formatDateTime(result.generated_at)}`;
+      document.getElementById("admin-period-label").textContent = formatRevenuePeriod(
+        result.period_start || range.startDate,
+        result.period_end || range.endDate
+      );
 
       const daily = Array.isArray(result.revenue_by_day) ? result.revenue_by_day : [];
-      const chart = document.getElementById("admin-revenue-chart");
       const maxRevenue = Math.max(1, ...daily.map(row => Number(row.revenue || 0)));
       const chartDays = daily.map(row => {
         const revenue = Number(row.revenue || 0);
@@ -1250,6 +1347,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       chart.innerHTML = chartDays
         ? `<div class="revenue-chart-inner" role="list" style="--revenue-days:${daily.length}">${chartDays}</div>`
         : '<p class="grid min-h-56 place-items-center text-sm text-black/45">Aucune vente sur cette période.</p>';
+      adminRevenueReport = {
+        startDate: result.period_start || range.startDate,
+        endDate: result.period_end || range.endDate,
+        daily
+      };
+      if (exportButton) exportButton.disabled = false;
 
       const stock = Array.isArray(result.stock) ? result.stock : [];
       document.getElementById("admin-stock-summary").innerHTML = stock.map(item => {
@@ -1505,6 +1608,30 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         button.disabled = false;
       }
     });
+    document.getElementById("admin-revenue-filter")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = document.getElementById("admin-revenue-apply");
+      if (button) button.disabled = true;
+      try {
+        await loadAdminOverview();
+        setAdminRevenueFeedback("Période actualisée.");
+      } catch (error) {
+        setAdminRevenueFeedback(error.message || "Impossible de charger cette période.", true);
+        const chart = document.getElementById("admin-revenue-chart");
+        if (chart) chart.innerHTML = '<p class="grid min-h-56 place-items-center text-sm text-red-700">Impossible de charger les revenus.</p>';
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+    ["admin-revenue-start", "admin-revenue-end"].forEach((id) => {
+      document.getElementById(id)?.addEventListener("input", () => {
+        adminRevenueReport = null;
+        const exportButton = document.getElementById("admin-revenue-export");
+        if (exportButton) exportButton.disabled = true;
+        setAdminRevenueFeedback("Cliquez sur Afficher pour appliquer cette période.");
+      });
+    });
+    document.getElementById("admin-revenue-export")?.addEventListener("click", downloadAdminRevenueExport);
     document.getElementById("admin-order-filters")?.addEventListener("submit", event => {
       event.preventDefault();
       adminOrdersPage = 1;
@@ -1578,10 +1705,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       } catch {
         // Local sign-out still completes if the API is temporarily unavailable.
       } finally {
-        clearCurrentAuthSession();
-        adminLoaded = false;
+        clearCurrentAuthSession({ redirectToLogin: false });
         sessionStorage.removeItem("aura_order_id");
-        window.location.replace(window.location.origin + window.location.pathname);
+        activeOrderId = "";
+        showRoute("home");
       }
     }
 

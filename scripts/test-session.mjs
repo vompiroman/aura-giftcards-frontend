@@ -46,5 +46,15 @@ for (const forbidden of [
 assert.equal(app.includes('const API_BASE = "/api"'), true);
 assert.equal(app.includes('credentials: "include"'), true);
 assert.equal(app.includes("remember,"), true);
+assert.equal(
+  app.includes("clearCurrentAuthSession({ redirectToLogin: false });"),
+  true,
+  "La déconnexion doit ignorer la page de connexion intermédiaire.",
+);
+assert.equal(
+  app.includes('window.location.replace(window.location.origin + window.location.pathname)'),
+  false,
+  "La déconnexion ne doit plus recharger la page avant le retour à l’accueil.",
+);
 
 console.log("Tests de purge des anciens jetons et de session HttpOnly réussis.");
