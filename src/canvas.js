@@ -1376,6 +1376,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return { label: "Actif", className: "bg-green-50 text-green-700", disconnect: false };
     }
 
+    function adminOrdersPageLabel(total) {
+      if (getLanguage() === "ar") {
+        const count = total === 1 ? "طلب واحد" : total === 2 ? "طلبان" : total >= 11 ? `${total} طلباً` : `${total} طلبات`;
+        return `الصفحة ${adminOrdersPage} من ${adminOrdersTotalPages} · ${count}`;
+      }
+      if (getLanguage() === "en") {
+        return `Page ${adminOrdersPage} of ${adminOrdersTotalPages} · ${total} order${total === 1 ? "" : "s"}`;
+      }
+      return `Page ${adminOrdersPage} sur ${adminOrdersTotalPages} · ${total} commande${total === 1 ? "" : "s"}`;
+    }
+
     function activateAdminTab(name) {
       document.querySelectorAll(".admin-tab").forEach(button => {
         const active = button.dataset.adminTab === name;
@@ -1431,10 +1442,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const dateLabel = formatRevenueChartDate(row.date);
         const priceLabel = formatPrice(revenue);
         const salesLabel = getLanguage() === "ar"
-          ? `${sales} مبيعات`
+          ? sales === 1
+            ? "عملية بيع واحدة"
+            : sales === 2
+              ? "عمليتا بيع"
+              : `${sales} مبيعات`
           : getLanguage() === "en"
             ? `${sales} sale${sales === 1 ? "" : "s"}`
-            : `${sales} vente${sales > 1 ? "s" : ""}`;
+            : `${sales} vente${sales === 1 ? "" : "s"}`;
         return `<article class="revenue-chart-day" role="listitem" aria-label="${escapeHTML(`${dateLabel} : ${priceLabel}, ${salesLabel}`)}" title="${escapeHTML(`${dateLabel} · ${priceLabel} · ${salesLabel}`)}">
           <span class="revenue-chart-value">${escapeHTML(priceLabel)}</span>
           <span class="revenue-chart-track" aria-hidden="true"><span class="revenue-chart-bar" style="height:${height}%"></span></span>
@@ -1477,8 +1492,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const result = await apiRequest(`/admin/all-orders?${params}`);
         const orders = Array.isArray(result.orders) ? result.orders : [];
         adminOrdersTotalPages = Math.max(1, Number(result.total_pages || 1));
-        document.getElementById("admin-orders-page").textContent =
-          `Page ${adminOrdersPage} sur ${adminOrdersTotalPages} · ${Number(result.total || 0)} commande(s)`;
+        document.getElementById("admin-orders-page").textContent = adminOrdersPageLabel(Number(result.total || 0));
         document.getElementById("admin-orders-prev").disabled = adminOrdersPage <= 1;
         document.getElementById("admin-orders-next").disabled = adminOrdersPage >= adminOrdersTotalPages;
         list.innerHTML = orders.map(order => {
