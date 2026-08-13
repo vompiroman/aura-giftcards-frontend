@@ -5,6 +5,57 @@
 html { scroll-behavior: smooth; }
 body { background: #F6F2EC; color: #23242A; }
 button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+
+/* Arabic is a first-class layout, not a mirrored afterthought. */
+html[lang="ar"] body,
+html[lang="ar"] .font-body,
+html[lang="ar"] .font-title {
+  font-family: "Tajawal", sans-serif;
+}
+html[lang="ar"] body { line-height: 1.65; }
+html[lang="ar"] .uppercase {
+  letter-spacing: 0 !important;
+  text-transform: none;
+}
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3 { letter-spacing: -.018em !important; }
+html[dir="rtl"] .text-left { text-align: right; }
+html[dir="rtl"] .text-right { text-align: left; }
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[name="code"],
+html[dir="rtl"] code,
+html[dir="rtl"] .revenue-chart-inner {
+  direction: ltr;
+  text-align: left;
+}
+html[dir="rtl"] [type="email"]::placeholder,
+html[dir="rtl"] [type="tel"]::placeholder { text-align: left; }
+html[dir="rtl"] strong,
+html[dir="rtl"] .product-price,
+html[dir="rtl"] [data-order-id] { unicode-bidi: plaintext; }
+html[dir="rtl"] i.mr-1,
+html[dir="rtl"] i.mr-1\.5,
+html[dir="rtl"] i.mr-2 { margin-right: 0; margin-left: .5rem; }
+html[dir="rtl"] i.ml-2 { margin-left: 0; margin-right: .5rem; }
+html[dir="rtl"] .language-picker > .fa-globe { left: auto; right: .75rem; }
+html[dir="rtl"] .language-picker > .fa-chevron-down { right: auto; left: .625rem; }
+html[dir="rtl"] .language-picker select { padding-right: 2rem; padding-left: 1.75rem; }
+html[dir="rtl"] .styled-select select { padding-right: .875rem; padding-left: 2.5rem; text-align: right; }
+html[dir="rtl"] .styled-select i { right: auto; left: .9rem; }
+html[dir="rtl"] .custom-select-trigger,
+html[dir="rtl"] .custom-select-options button { text-align: right; }
+html[dir="rtl"] #faq-search { padding-right: 3rem; padding-left: 1rem; }
+html[dir="rtl"] #faq-search + * { direction: rtl; }
+html[dir="rtl"] #faq-search { text-align: right; }
+html[dir="rtl"] .fa-magnifying-glass.left-4 { left: auto; right: 1rem; }
+html[dir="rtl"] .whatsapp-float { right: auto; left: 1.25rem; }
+html[dir="rtl"] .product-card > .right-4 { right: auto; left: 1rem; }
+html[dir="rtl"] .hero-grid { background-position: right top; }
 .brand-logo {
   filter: drop-shadow(0 6px 10px rgb(217 54 70 / .18));
 }
