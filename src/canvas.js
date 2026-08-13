@@ -6,6 +6,7 @@ import {
   trackMeta,
 } from "./meta.js";
 import { clearAuthSession } from "./session.js";
+import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 
 const initialQueryParams = new URLSearchParams(window.location.search);
 const initialHash = window.location.hash.replace(/^#/, "");
@@ -1917,7 +1918,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const firstName = document.getElementById("signup-first-name").value.trim();
         const lastName = document.getElementById("signup-last-name").value.trim();
-        const phone = document.getElementById("signup-phone").value.trim();
+        const phone = normalizeAlgerianPhone(document.getElementById("signup-phone").value);
         const result = await apiRequest("/register", {
           method: "POST",
           body: JSON.stringify({
@@ -1945,6 +1946,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         submitButton.textContent = originalLabel;
       }
     });
+
+    const signupPhoneInput = document.getElementById("signup-phone");
+    const formatSignupPhone = () => {
+      signupPhoneInput.value = formatAlgerianPhoneInput(signupPhoneInput.value);
+    };
+    signupPhoneInput.addEventListener("input", formatSignupPhone);
+    signupPhoneInput.addEventListener("blur", formatSignupPhone);
+    formatSignupPhone();
 
     document.getElementById("support-form").addEventListener("submit", event => {
       event.preventDefault();
