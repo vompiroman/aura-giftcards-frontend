@@ -180,7 +180,10 @@ export function formatLocalizedNumber(value, options = {}) {
 export function formatLocalizedDate(value, options = {}) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat(getLocale(), options).format(date);
+  const localizedOptions = currentLanguage === "fr" && options.hour12 === undefined && (options.timeStyle || options.hour)
+    ? { ...options, hour12: false }
+    : options;
+  return new Intl.DateTimeFormat(getLocale(), localizedOptions).format(date);
 }
 
 function translateTextNode(node, force = false) {

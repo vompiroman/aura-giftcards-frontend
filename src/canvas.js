@@ -926,6 +926,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (restoreFocus) trigger?.focus();
     }
 
+    function syncCustomSelectLabels() {
+      document.querySelectorAll("[data-custom-select]").forEach(root => {
+        const input = root.querySelector('input[type="hidden"]');
+        const triggerLabel = root.querySelector(".custom-select-trigger span");
+        const options = [...root.querySelectorAll('[role="option"]')];
+        if (!input || !triggerLabel || options.length === 0) return;
+
+        const selected = options.find(option => (option.dataset.value || "") === input.value) || options[0];
+        options.forEach(option => option.setAttribute("aria-selected", String(option === selected)));
+        triggerLabel.textContent = selected.textContent.trim();
+      });
+    }
+
     document.querySelectorAll("[data-custom-select]").forEach(root => {
       const trigger = root.querySelector(".custom-select-trigger");
       const options = root.querySelector(".custom-select-options");
@@ -1211,10 +1224,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!value) return "—";
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "—";
-      return new Intl.DateTimeFormat(getLocale(), {
+      return formatLocalizedDate(date, {
         dateStyle: "medium",
         timeStyle: "short"
-      }).format(date);
+      });
+    }
+
+    function adminPaymentStatusLabel(status) {
+      return t(({
+        paid: "Payé",
+        unpaid: "Non payé",
+        failed: "Échoué"
+      })[status] || "Statut de paiement inconnu");
     }
 
     function formatRevenueChartDate(value) {
@@ -1508,7 +1529,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           return `<article class="rounded-2xl border border-black/10 p-4 sm:p-5">
             <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div class="min-w-0">
-                <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(order.payment_status || "unpaid")}</span></div>
+                <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(adminPaymentStatusLabel(order.payment_status || "unpaid"))}</span></div>
                 <p class="mt-2 truncate text-sm text-black/65">${escapeHTML(order.assigned_email || "Sans e-mail")}</p>
                 <p class="mt-1 text-xs text-black/45">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
                 <div class="mt-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${followUp.className}">${followUp.label}</span>${order.expires_at ? `<span class="text-xs text-black/45">Expiration : ${formatDateTime(order.expires_at)}</span>` : ""}</div>
@@ -2102,6 +2123,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     document.addEventListener("aura:languagechange", () => {
       updateRouteMetadata(activeRoute);
       updateCart();
+      syncCustomSelectLabels();
       if (activeRoute === "order" && currentUser) loadMyOrders();
       if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });
     });
