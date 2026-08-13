@@ -87,5 +87,6 @@ const canvasStyles = fs.readFileSync(new URL("../src/canvas.css", import.meta.ur
 assert.match(canvasStyles, /html\[dir="rtl"\] \.hero-grid article\.ml-4/, "Asymmetric hero cards must mirror in RTL");
 assert.match(canvasStyles, /html\[dir="rtl"\] \.route-link \.fa-arrow-right/, "Directional action arrows must mirror in RTL");
 assert.match(canvasStyles, /html\[dir="rtl"\] \[data-view="login"\] \.border-r/, "Login panel borders must mirror in RTL");
+assert.match(canvasStyles, /html\[dir="rtl"\] #view-home article > \.absolute\.right-4/, "Home card badges must not overlap service logos in RTL");
 
 console.log(`Trilingual coverage validated: ${TRANSLATIONS.en.size} phrases in French, English and Arabic.`);
