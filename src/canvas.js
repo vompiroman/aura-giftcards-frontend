@@ -26,7 +26,6 @@ if (sensitiveTokenInUrl) {
 }
 
 const views = [...document.querySelectorAll("[data-view]")];
-    const routeLinks = [...document.querySelectorAll(".route-link")];
     const navLinks = [...document.querySelectorAll(".nav-link")];
     const mobileMenu = document.getElementById("mobile-menu");
     const mobileToggle = document.getElementById("mobile-menu-toggle");
@@ -160,25 +159,37 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         price: 500,
       },
     };
+    const contentRoutes = {
+      legal: {
+        path: "/legal",
+        title: "Conditions, confidentialité et remboursements — Aura Stream",
+        description: "Consulte les conditions de vente, la politique de confidentialité et les règles de remboursement d’Aura Stream.",
+      },
+    };
     const routeNames = new Set([
       "home", "products", "cart", "order", "login", "faq", "admin",
       ...Object.keys(landingRoutes),
+      ...Object.keys(contentRoutes),
     ]);
 
     function routeFromLocation() {
       const matchingLanding = Object.entries(landingRoutes).find(([, page]) => page.path === window.location.pathname);
       if (matchingLanding) return matchingLanding[0];
+      const matchingContent = Object.entries(contentRoutes).find(([, page]) => page.path === window.location.pathname);
+      if (matchingContent) return matchingContent[0];
       const hashRoute = window.location.hash.replace("#", "");
       return routeNames.has(hashRoute) ? hashRoute : "home";
     }
 
     function updateRouteMetadata(route) {
-      const landing = landingRoutes[route];
-      const title = landing?.title || "Aura Stream — Comptes streaming en Algérie";
-      const description = landing?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.";
-      const canonicalUrl = `https://www.aura-stream.com${landing?.path || "/"}`;
+      const page = landingRoutes[route] || contentRoutes[route];
+      const title = page?.title || "Aura Stream — Comptes streaming en Algérie";
+      const description = page?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.";
+      const canonicalUrl = `https://www.aura-stream.com${page?.path || "/"}`;
+      const privateRoute = ["cart", "order", "login", "admin"].includes(route);
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute("content", description);
+      document.querySelector('meta[name="robots"]')?.setAttribute("content", privateRoute ? "noindex,nofollow" : "index,follow");
       document.querySelector('meta[property="og:title"]')?.setAttribute("content", title);
       document.querySelector('meta[property="og:description"]')?.setAttribute("content", description);
       document.querySelector('meta[property="og:url"]')?.setAttribute("content", canonicalUrl);
@@ -431,7 +442,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         }
         const loginView = document.querySelector('[data-view="login"]');
         if (loginView && !loginView.classList.contains("hidden")) {
-          showRoute(result.user?.is_admin === true ? "admin" : "order");
+          const nextRoute = cart.length
+            ? "cart"
+            : result.user?.is_admin === true
+              ? "admin"
+              : "order";
+          showRoute(nextRoute);
+          if (nextRoute === "cart") setCheckoutStep(1);
         }
         return true;
       } catch {
@@ -533,7 +550,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         if (!result.code && !safeLink) throw new Error("Aucun code Netflix récent n’a été trouvé.");
         resultContainer.innerHTML = `
           ${result.code ? `<p>Code Netflix : <strong class="ml-2 font-title text-xl tracking-[0.2em]">${escapeHTML(result.code)}</strong></p>` : ""}
-          ${safeLink ? `<a class="mt-3 inline-flex min-h-10 items-center rounded-lg bg-[#E50914] px-4 font-bold text-white" href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer">Ouvrir le lien Netflix</a>` : ""}`;
+          ${safeLink ? `<a class="mt-3 inline-flex min-h-11 items-center rounded-lg bg-[#E50914] px-4 font-bold text-white" href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer">Ouvrir le lien Netflix</a>` : ""}`;
         resultContainer.classList.remove("hidden");
       } catch (error) {
         resultContainer.textContent = error.message || "Impossible de récupérer le code Netflix.";
@@ -634,7 +651,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
                         <input name="password" type="password" required autocomplete="current-password" class="mt-2 min-h-11 w-full rounded-xl border border-black/15 bg-white px-4 text-sm font-normal outline-none focus:border-aura">
                       </label>
                       <label class="text-xs font-bold sm:col-span-2">Numéro WhatsApp
-                        <input name="whatsapp" type="tel" required autocomplete="tel" value="${escapeHTML(currentUser?.phone || "")}" class="mt-2 min-h-11 w-full rounded-xl border border-black/15 bg-white px-4 text-sm font-normal outline-none focus:border-aura">
+                        <input name="whatsapp" type="tel" required autocomplete="tel" value="${escapeHTML(currentUser?.user_metadata?.phone || "")}" class="mt-2 min-h-11 w-full rounded-xl border border-black/15 bg-white px-4 text-sm font-normal outline-none focus:border-aura">
                       </label>
                     </div>
                     <button type="submit" class="mt-4 min-h-11 rounded-xl bg-aura px-5 font-title text-sm font-bold text-white transition hover:bg-[#BE2E3D]">Envoyer mes informations ${label}</button>
@@ -788,6 +805,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function showRoute(route, scrollTarget) {
       if (!routeNames.has(route)) route = "home";
+      if (route === "login" && !recoveryRequested) showAuthPanel("signin");
       if (
         ["login", "order", "admin"].includes(route)
         && window.__metaPixelInitialized
@@ -814,8 +832,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       mobileMenu.classList.add("hidden");
       mobileToggle.setAttribute("aria-expanded", "false");
       activeRoute = route;
+      document.body.dataset.route = route;
       const landing = landingRoutes[route];
-      const nextUrl = landing?.path || (route === "home" ? "/" : `/#${route}`);
+      const content = contentRoutes[route];
+      const nextUrl = landing?.path || content?.path || (route === "home" ? "/" : `/#${route}`);
       window.history.replaceState({ route }, "", nextUrl);
       updateRouteMetadata(route);
       updateMobileCartBar();
@@ -835,8 +855,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
-    routeLinks.forEach(link => {
-      link.addEventListener("click", () => showRoute(link.dataset.route, link.dataset.scroll));
+    document.addEventListener("click", event => {
+      const link = event.target.closest(".route-link");
+      if (!link) return;
+      showRoute(link.dataset.route, link.dataset.scroll);
     });
 
     document.getElementById("home-tracking-example-button")?.addEventListener("click", () => {
@@ -1019,7 +1041,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             </div>
             <div class="text-right">
               <p class="font-title text-sm font-extrabold">${formatPrice(item.price)}</p>
-              <button class="remove-cart mt-1 text-xs font-semibold text-aura hover:underline" data-index="${index}">Supprimer</button>
+              <button class="remove-cart mt-1 inline-flex min-h-11 items-center text-xs font-semibold text-aura hover:underline" data-index="${index}">Supprimer</button>
             </div>
           </article>
         `).join("");
@@ -1416,8 +1438,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
-                ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-10 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
-                <select class="admin-order-status-select min-h-10 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
+                ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-11 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
+                <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
                   ${["pending", "active", "completed", "cancelled"].map(status =>
                     `<option value="${status}" ${order.status === status ? "selected" : ""}>${adminOrderStatusLabel(status)}</option>`
                   ).join("")}
@@ -1513,7 +1535,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         document.getElementById("admin-stock-count").textContent = `${inventory.filter(item => !item.is_used).length} disponible(s)`;
         list.innerHTML = inventory.map(item => `<article class="flex flex-col gap-3 rounded-2xl border border-black/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm capitalize">${escapeHTML(item.service)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-black/5 text-black/55" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span></div><p class="mt-2 truncate text-sm text-black/65">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")} · Ajouté ${formatDateTime(item.created_at)}</p></div>
-          ${item.is_used ? "" : `<button class="admin-delete-stock min-h-10 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}">Supprimer</button>`}
+          ${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}">Supprimer</button>`}
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-delete-stock").forEach(button => {
           button.addEventListener("click", async () => {
@@ -1543,7 +1565,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         list.innerHTML = promos.map(promo => `<article class="rounded-2xl border border-black/10 p-5">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-lg tracking-[0.12em]">${escapeHTML(promo.masked_code)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${promo.active ? "bg-green-50 text-green-700" : "bg-black/5 text-black/50"}">${promo.active ? "Actif" : "Inactif"}</span></div><p class="mt-2 text-sm text-black/50">${Number(promo.discount_value || 0)} % · ${(promo.services || []).map(escapeHTML).join(", ") || "Toute la boutique"}</p></div>
-            <button class="admin-toggle-promo min-h-10 rounded-xl border border-black/15 px-4 text-xs font-bold hover:border-aura hover:text-aura" type="button" data-promo-id="${escapeHTML(promo.id)}" data-active="${promo.active}">${promo.active ? "Désactiver" : "Réactiver"}</button>
+            <button class="admin-toggle-promo min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold hover:border-aura hover:text-aura" type="button" data-promo-id="${escapeHTML(promo.id)}" data-active="${promo.active}">${promo.active ? "Désactiver" : "Réactiver"}</button>
           </div>
           <div class="mt-5 grid grid-cols-2 gap-3 border-t border-black/10 pt-5 sm:grid-cols-4">
             <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Ventes</p><p class="mt-1 font-title text-xl font-extrabold">${Number(promo.sales_count || 0)}</p></div>
@@ -1780,11 +1802,24 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     }
 
-    document.getElementById("faq-search").addEventListener("input", event => filterFaq(event.target.value));
-    document.querySelectorAll(".faq-category").forEach(button => {
+    const faqCategories = [...document.querySelectorAll(".faq-category")];
+
+    function setFaqCategoryState(term = "") {
+      const selected = normalizeSearch(term);
+      faqCategories.forEach(button => {
+        button.setAttribute("aria-pressed", String(Boolean(selected) && normalizeSearch(button.textContent) === selected));
+      });
+    }
+
+    document.getElementById("faq-search").addEventListener("input", event => {
+      setFaqCategoryState("");
+      filterFaq(event.target.value);
+    });
+    faqCategories.forEach(button => {
       button.addEventListener("click", () => {
         const term = button.textContent.trim();
         document.getElementById("faq-search").value = term;
+        setFaqCategoryState(term);
         filterFaq(term);
       });
     });
@@ -1857,12 +1892,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
-        if (result.user?.is_admin === true) {
-          showRoute("admin");
-        } else {
-          showRoute(cart.length ? "cart" : "order");
-          if (cart.length) setCheckoutStep(1);
-        }
+        const nextRoute = cart.length
+          ? "cart"
+          : result.user?.is_admin === true
+            ? "admin"
+            : "order";
+        showRoute(nextRoute);
+        if (nextRoute === "cart") setCheckoutStep(1);
       } catch (error) {
         setAuthFeedback(error.message || "Connexion impossible.");
       } finally {
@@ -1881,12 +1917,16 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const firstName = document.getElementById("signup-first-name").value.trim();
         const lastName = document.getElementById("signup-last-name").value.trim();
+        const phone = document.getElementById("signup-phone").value.trim();
         const result = await apiRequest("/register", {
           method: "POST",
           body: JSON.stringify({
             email: document.getElementById("signup-email").value.trim(),
             password: document.getElementById("signup-password").value,
-            full_name: `${firstName} ${lastName}`.trim()
+            full_name: `${firstName} ${lastName}`.trim(),
+            first_name: firstName,
+            last_name: lastName,
+            phone,
           })
         });
         if (result.authenticated === true && result.user) {

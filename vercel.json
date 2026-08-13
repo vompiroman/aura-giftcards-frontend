@@ -22,6 +22,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/legal",
+      "destination": "/index.html"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://aura-giftcards-api.onrender.com/api/:path*"
     }
