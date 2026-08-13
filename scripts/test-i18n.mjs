@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { formatLocalizedDate } from "../src/i18n.js";
 import { TRANSLATIONS, TRANSLATION_PHRASES } from "../src/translations.js";
 
 const html = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8")
@@ -61,6 +62,10 @@ const requiredDynamicMessages = [
   "Authentification",
   "Code promo",
   "Système",
+  "Payé",
+  "Non payé",
+  "Échoué",
+  "Statut de paiement inconnu",
 ];
 
 for (const message of requiredDynamicMessages) {
@@ -70,5 +75,12 @@ for (const message of requiredDynamicMessages) {
 
 assert.match(html, /data-language-select/g, "Language controls are required");
 assert.match(html, /data-filter="sécurité données"/, "FAQ filters must use language-independent values");
+
+const frenchDateTime = formatLocalizedDate("2026-07-29T13:46:00Z", { dateStyle: "medium", timeStyle: "short" });
+assert.doesNotMatch(frenchDateTime, /\b(?:AM|PM)\b/, "French dates must use a 24-hour time format");
+
+const canvasSource = fs.readFileSync(new URL("../src/canvas.js", import.meta.url), "utf8");
+assert.match(canvasSource, /syncCustomSelectLabels\(\)/, "Custom select labels must be synchronized after language changes");
+assert.match(canvasSource, /adminPaymentStatusLabel\(order\.payment_status/, "Payment statuses must use localized labels");
 
 console.log(`Trilingual coverage validated: ${TRANSLATIONS.en.size} phrases in French, English and Arabic.`);
