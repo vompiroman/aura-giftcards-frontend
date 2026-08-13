@@ -362,6 +362,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return names[`${item.name}|${item.duration}`] || `${item.service} ${item.duration}`;
     }
 
+    function localizedSubscriptionName(value) {
+      return String(value || "")
+        .replaceAll("1 mois", t("1 mois"))
+        .replaceAll("1 an", t("1 an"));
+    }
+
     function profileNames(metadata = {}) {
       let firstName = String(metadata.first_name || "").trim();
       let lastName = String(metadata.last_name || "").trim();
@@ -612,7 +618,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const hasValidExpiration = expirationDate && !Number.isNaN(expirationDate.getTime());
           const isExpired = hasValidExpiration && expirationDate.getTime() <= Date.now();
           const items = Array.isArray(order.items) ? order.items : [];
-          const itemNames = items.map(item => escapeHTML(item.name || item.service || "Abonnement")).join(" · ");
+          const itemNames = items
+            .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
+            .join(" · ");
           const hasNetflix = items.some(item => String(item.name || item.service || "").toLowerCase().includes("netflix"));
           const waitingForStock = Boolean(order.waiting_for_stock) ||
             (order.payment_status === "paid" && hasNetflix && !order.account);
@@ -629,7 +637,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             : "";
           const expiration = hasValidExpiration
             ? formatLocalizedDate(expirationDate, { dateStyle: "long" })
-            : "Définie après l’activation";
+            : t("Définie après l’activation");
           const canGetNetflixCode = hasNetflix && Boolean(order.account) && !waitingForStock &&
             order.status === "active" && order.payment_status === "paid" && !isExpired;
           const canRenew = hasValidExpiration && !isExpired &&
@@ -1475,7 +1483,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         document.getElementById("admin-orders-next").disabled = adminOrdersPage >= adminOrdersTotalPages;
         list.innerHTML = orders.map(order => {
           const items = (Array.isArray(order.items) ? order.items : [])
-            .map(item => escapeHTML(item.name || item.service || "Abonnement"))
+            .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
             .join(" · ");
           const paymentClass = order.payment_status === "paid"
             ? "bg-green-50 text-green-700"

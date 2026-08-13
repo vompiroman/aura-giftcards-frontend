@@ -652,6 +652,7 @@ const phrases = [
   ["Proposer le renouvellement au client", "Offer renewal to the customer", "اقترح التجديد على العميل"],
   ["paid", "Paid", "مدفوع"],
   ["unpaid", "Unpaid", "غير مدفوع"],
+  ["failed", "Failed", "فاشل"],
   ["pending", "Pending", "قيد الانتظار"],
   ["active", "Active", "نشط"],
   ["completed", "Completed", "مكتمل"],
