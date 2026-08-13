@@ -7,6 +7,16 @@ import {
 } from "./meta.js";
 import { clearAuthSession } from "./session.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
+import {
+  formatLocalizedDate,
+  formatLocalizedNumber,
+  getLanguage,
+  getLocale,
+  initializeI18n,
+  t,
+} from "./i18n.js";
+
+initializeI18n();
 
 const initialQueryParams = new URLSearchParams(window.location.search);
 const initialHash = window.location.hash.replace(/^#/, "");
@@ -184,8 +194,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function updateRouteMetadata(route) {
       const page = landingRoutes[route] || contentRoutes[route];
-      const title = page?.title || "Aura Stream — Comptes streaming en Algérie";
-      const description = page?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.";
+      const title = t(page?.title || "Aura Stream — Comptes streaming en Algérie");
+      const description = t(page?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.");
       const canonicalUrl = `https://www.aura-stream.com${page?.path || "/"}`;
       const privateRoute = ["cart", "order", "login", "admin"].includes(route);
       document.title = title;
@@ -231,7 +241,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function setAuthFeedback(message, isError = true) {
       if (!authFeedback) return;
-      authFeedback.textContent = message;
+      authFeedback.textContent = t(message);
       authFeedback.classList.remove("hidden", "bg-red-50", "text-red-800", "bg-green-50", "text-green-800");
       authFeedback.classList.add(isError ? "bg-red-50" : "bg-green-50", isError ? "text-red-800" : "text-green-800");
     }
@@ -262,7 +272,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             method: "POST",
             cache: "no-store",
             credentials: "include",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "Accept-Language": getLanguage() },
             body: JSON.stringify({}),
             signal: controller.signal,
           });
@@ -304,7 +314,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
       const controller = new AbortController();
       const timeoutId = window.setTimeout(() => controller.abort(), 30000);
-      const headers = { "Content-Type": "application/json", ...(requestOptions.headers || {}) };
+      const headers = { "Content-Type": "application/json", "Accept-Language": getLanguage(), ...(requestOptions.headers || {}) };
       try {
         const response = await fetch(`${API_BASE}${path}`, {
           ...requestOptions,
@@ -325,7 +335,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             : typeof payload?.message === "string"
               ? payload.message
               : `Erreur API (${response.status})`;
-          throw new Error(message);
+          throw new Error(t(message));
         }
         return payload;
       } catch (error) {
@@ -461,7 +471,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function formatPrice(value) {
-      return new Intl.NumberFormat("fr-DZ").format(value) + " DA";
+      const currency = getLanguage() === "ar" ? "دج" : getLanguage() === "en" ? "DZD" : "DA";
+      return `${formatLocalizedNumber(value)} ${currency}`;
     }
 
     function escapeHTML(value) {
@@ -614,10 +625,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               : { label: "Activation en cours", style: "bg-[#FBF4E9] text-[#8A632E]" };
           const orderId = escapeHTML(order.order_id || order.id || "");
           const date = order.created_at
-            ? new Intl.DateTimeFormat("fr-DZ", { dateStyle: "medium", timeStyle: "short" }).format(new Date(order.created_at))
+            ? formatLocalizedDate(order.created_at, { dateStyle: "medium", timeStyle: "short" })
             : "";
           const expiration = hasValidExpiration
-            ? new Intl.DateTimeFormat("fr-DZ", { dateStyle: "long" }).format(expirationDate)
+            ? formatLocalizedDate(expirationDate, { dateStyle: "long" })
             : "Définie après l’activation";
           const canGetNetflixCode = hasNetflix && Boolean(order.account) && !waitingForStock &&
             order.status === "active" && order.payment_status === "paid" && !isExpired;
@@ -727,7 +738,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function showToast(message) {
-      toastMessage.textContent = message;
+      toastMessage.textContent = t(message);
       toast.classList.add("toast-show");
       window.clearTimeout(showToast.timeout);
       showToast.timeout = window.setTimeout(() => toast.classList.remove("toast-show"), 2600);
@@ -742,7 +753,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       feedback.classList.toggle("flex", Boolean(message));
       feedback.classList.toggle("text-red-700", Boolean(message) && isError);
       feedback.classList.toggle("text-green-700", Boolean(message) && !isError);
-      feedbackMessage.textContent = message;
+      feedbackMessage.textContent = t(message);
       removeButton.classList.toggle("hidden", !activePromo);
     }
 
@@ -891,7 +902,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const card = button.closest(".product-card");
         card.querySelectorAll(".duration-btn").forEach(item => item.setAttribute("aria-pressed", "false"));
         button.setAttribute("aria-pressed", "true");
-        card.querySelector(".price-value").innerHTML = `${formatPrice(Number(button.dataset.price)).replace(" DA", "")} <span class="text-sm">DA</span>`;
+        const formattedPrice = formatPrice(Number(button.dataset.price));
+        const separator = formattedPrice.lastIndexOf(" ");
+        const amount = separator > 0 ? formattedPrice.slice(0, separator) : formattedPrice;
+        const currency = separator > 0 ? formattedPrice.slice(separator + 1) : "";
+        card.querySelector(".price-value").innerHTML = `${escapeHTML(amount)} <span class="text-sm">${escapeHTML(currency)}</span>`;
       });
     });
 
@@ -1174,7 +1189,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function setAdminFeedback(message = "", isError = true) {
       const box = document.getElementById("admin-global-feedback");
       if (!box) return;
-      box.textContent = message;
+      box.textContent = t(message);
       box.classList.toggle("hidden", !message);
       box.classList.toggle("border-red-200", Boolean(message) && isError);
       box.classList.toggle("bg-red-50", Boolean(message) && isError);
@@ -1188,7 +1203,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!value) return "—";
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return "—";
-      return new Intl.DateTimeFormat("fr-DZ", {
+      return new Intl.DateTimeFormat(getLocale(), {
         dateStyle: "medium",
         timeStyle: "short"
       }).format(date);
@@ -1197,7 +1212,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function formatRevenueChartDate(value) {
       const date = new Date(`${value}T12:00:00`);
       if (Number.isNaN(date.getTime())) return String(value || "—");
-      return new Intl.DateTimeFormat("fr-DZ", {
+      return new Intl.DateTimeFormat(getLocale(), {
         day: "2-digit",
         month: "short"
       }).format(date).replace(".", "");
@@ -1237,14 +1252,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function formatRevenuePeriod(startDate, endDate) {
-      const formatter = new Intl.DateTimeFormat("fr-DZ", { day: "numeric", month: "short", year: "numeric" });
-      return `Du ${formatter.format(new Date(`${startDate}T12:00:00`))} au ${formatter.format(new Date(`${endDate}T12:00:00`))}`;
+      const formatter = new Intl.DateTimeFormat(getLocale(), { day: "numeric", month: "short", year: "numeric" });
+      const start = formatter.format(new Date(`${startDate}T12:00:00`));
+      const end = formatter.format(new Date(`${endDate}T12:00:00`));
+      if (getLanguage() === "ar") return `من ${start} إلى ${end}`;
+      if (getLanguage() === "en") return `From ${start} to ${end}`;
+      return `Du ${start} au ${end}`;
     }
 
     function setAdminRevenueFeedback(message = "", isError = false) {
       const feedback = document.getElementById("admin-revenue-feedback");
       if (!feedback) return;
-      feedback.textContent = message;
+      feedback.textContent = t(message);
       feedback.classList.toggle("hidden", !message);
       feedback.classList.toggle("text-red-700", Boolean(message) && isError);
       feedback.classList.toggle("text-green-700", Boolean(message) && !isError);
@@ -1263,7 +1282,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         ["Rapport Aura Stream — Revenus encaissés"],
         ["Date de début", adminRevenueReport.startDate],
         ["Date de fin", adminRevenueReport.endDate],
-        ["Généré le", new Date().toLocaleString("fr-DZ")],
+        ["Généré le", new Date().toLocaleString(getLocale())],
         [],
         ["Date", "Ventes payées", "Revenus encaissés (DA)"],
         ...daily.map(row => [row.date, Number(row.sales || 0), Number(row.revenue || 0)]),
@@ -1467,7 +1486,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
         list.querySelectorAll(".admin-mark-disconnected").forEach(button => {
           button.addEventListener("click", async () => {
-            const confirmed = window.confirm("Confirmer que l’accès a bien été retiré avant de clôturer cette commande ?");
+            const confirmed = window.confirm(t("Confirmer que l’accès a bien été retiré avant de clôturer cette commande ?"));
             if (!confirmed) return;
             button.disabled = true;
             try {
@@ -1540,7 +1559,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-delete-stock").forEach(button => {
           button.addEventListener("click", async () => {
-            if (!window.confirm("Supprimer ce compte non attribué du stock ?")) return;
+            if (!window.confirm(t("Supprimer ce compte non attribué du stock ?"))) return;
             button.disabled = true;
             try {
               await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}`, { method: "DELETE" });
@@ -1787,12 +1806,16 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     function normalizeSearch(value) {
-      return value
+      const normalized = value
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/gi, " ")
+        .replace(/\p{M}/gu, "")
+        .replace(/[^\p{L}\p{N}]+/gu, " ")
         .trim()
         .toLowerCase();
+      return normalized
+        .split(/\s+/)
+        .map(token => token.startsWith("ال") && token.length > 3 ? token.slice(2) : token)
+        .join(" ");
     }
 
     function filterFaq(term) {
@@ -1808,7 +1831,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function setFaqCategoryState(term = "") {
       const selected = normalizeSearch(term);
       faqCategories.forEach(button => {
-        button.setAttribute("aria-pressed", String(Boolean(selected) && normalizeSearch(button.textContent) === selected));
+        button.setAttribute("aria-pressed", String(Boolean(selected) && normalizeSearch(button.dataset.filter || button.textContent) === selected));
       });
     }
 
@@ -1818,10 +1841,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
     faqCategories.forEach(button => {
       button.addEventListener("click", () => {
-        const term = button.textContent.trim();
-        document.getElementById("faq-search").value = term;
-        setFaqCategoryState(term);
-        filterFaq(term);
+        const filter = button.dataset.filter || button.textContent.trim();
+        document.getElementById("faq-search").value = button.textContent.trim();
+        setFaqCategoryState(filter);
+        filterFaq(filter);
       });
     });
 
@@ -1960,7 +1983,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const name = document.getElementById("support-name").value.trim();
       const email = document.getElementById("support-email").value.trim();
       const message = document.getElementById("support-message").value.trim();
-      const text = `Bonjour Aura Stream,\n\nNom : ${name}\nE-mail : ${email}\n\nMa demande :\n${message}`;
+      const text = getLanguage() === "ar"
+        ? `مرحباً Aura Stream،\n\nالاسم: ${name}\nالبريد الإلكتروني: ${email}\n\nطلبي:\n${message}`
+        : getLanguage() === "en"
+          ? `Hello Aura Stream,\n\nName: ${name}\nEmail: ${email}\n\nMy request:\n${message}`
+          : `Bonjour Aura Stream,\n\nNom : ${name}\nE-mail : ${email}\n\nMa demande :\n${message}`;
       window.open(`https://wa.me/213557828812?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
       showToast("WhatsApp est ouvert avec ton message prêt à envoyer.");
     });
@@ -1987,6 +2014,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showToast("Paiement en cours de vérification");
       }
     }
+
+    document.addEventListener("aura:languagechange", () => {
+      updateRouteMetadata(activeRoute);
+      updateCart();
+      if (activeRoute === "order" && currentUser) loadMyOrders();
+      if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });
+    });
 
     updateCart();
     const recoveryMode = recoveryRequested;

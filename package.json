@@ -10,7 +10,8 @@
     "test:meta": "node scripts/test-meta.mjs",
     "test:session": "node scripts/test-session.mjs",
     "test:phone": "node scripts/test-phone.mjs",
-    "check": "npm run build && npm run test:meta && npm run test:session && npm run test:phone && node scripts/validate-site.mjs"
+    "test:i18n": "node scripts/test-i18n.mjs",
+    "check": "npm run build && npm run test:meta && npm run test:session && npm run test:phone && npm run test:i18n && node scripts/validate-site.mjs"
   },
   "dependencies": {},
   "devDependencies": {
