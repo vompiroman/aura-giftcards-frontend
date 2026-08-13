@@ -26,7 +26,6 @@ if (sensitiveTokenInUrl) {
 }
 
 const views = [...document.querySelectorAll("[data-view]")];
-    const routeLinks = [...document.querySelectorAll(".route-link")];
     const navLinks = [...document.querySelectorAll(".nav-link")];
     const mobileMenu = document.getElementById("mobile-menu");
     const mobileToggle = document.getElementById("mobile-menu-toggle");
@@ -856,8 +855,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
-    routeLinks.forEach(link => {
-      link.addEventListener("click", () => showRoute(link.dataset.route, link.dataset.scroll));
+    document.addEventListener("click", event => {
+      const link = event.target.closest(".route-link");
+      if (!link) return;
+      showRoute(link.dataset.route, link.dataset.scroll);
     });
 
     document.getElementById("home-tracking-example-button")?.addEventListener("click", () => {

@@ -62,6 +62,7 @@ for (const marker of [
   'data-view="legal"',
   'path: "/legal"',
   "document.body.dataset.route",
+  'event.target.closest(".route-link")',
   'document.getElementById("signup-phone")',
   "currentUser?.user_metadata?.phone",
   "grid cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)]",
