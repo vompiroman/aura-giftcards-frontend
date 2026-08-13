@@ -83,4 +83,9 @@ const canvasSource = fs.readFileSync(new URL("../src/canvas.js", import.meta.url
 assert.match(canvasSource, /syncCustomSelectLabels\(\)/, "Custom select labels must be synchronized after language changes");
 assert.match(canvasSource, /adminPaymentStatusLabel\(order\.payment_status/, "Payment statuses must use localized labels");
 
+const canvasStyles = fs.readFileSync(new URL("../src/canvas.css", import.meta.url), "utf8");
+assert.match(canvasStyles, /html\[dir="rtl"\] \.hero-grid article\.ml-4/, "Asymmetric hero cards must mirror in RTL");
+assert.match(canvasStyles, /html\[dir="rtl"\] \.route-link \.fa-arrow-right/, "Directional action arrows must mirror in RTL");
+assert.match(canvasStyles, /html\[dir="rtl"\] \[data-view="login"\] \.border-r/, "Login panel borders must mirror in RTL");
+
 console.log(`Trilingual coverage validated: ${TRANSLATIONS.en.size} phrases in French, English and Arabic.`);
