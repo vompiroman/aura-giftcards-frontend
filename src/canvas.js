@@ -385,7 +385,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       sessionSignoutButtons.forEach(button => button.classList.toggle("hidden", !authenticated));
       adminLinks.forEach(link => link.classList.toggle("hidden", !isAdminUser));
       const adminIdentity = document.getElementById("admin-identity");
-      if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || "administrateur"}` : "";
+      if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || t("administrateur")}` : "";
       if (!authenticated) return;
 
       const metadata = currentUser.user_metadata || {};
@@ -1273,18 +1273,49 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return `"${String(value ?? "").replaceAll('"', '""')}"`;
     }
 
+    function parseCsvRow(row) {
+      const cells = [];
+      let value = "";
+      let quoted = false;
+      for (let index = 0; index < row.length; index += 1) {
+        const character = row[index];
+        if (character === '"' && quoted && row[index + 1] === '"') {
+          value += '"';
+          index += 1;
+        } else if (character === '"') {
+          quoted = !quoted;
+        } else if (character === ";" && !quoted) {
+          cells.push(value);
+          value = "";
+        } else {
+          value += character;
+        }
+      }
+      cells.push(value);
+      return cells;
+    }
+
+    function localizeCsv(csv) {
+      if (getLanguage() === "fr") return csv;
+      const withoutBom = String(csv || "").replace(/^\uFEFF/, "");
+      const rows = withoutBom.split(/\r?\n/).map(row => (
+        parseCsvRow(row).map(cell => csvCell(t(cell))).join(";")
+      ));
+      return `\uFEFF${rows.join("\r\n")}`;
+    }
+
     function downloadAdminRevenueExport() {
       if (!adminRevenueReport) return;
       const daily = Array.isArray(adminRevenueReport.daily) ? adminRevenueReport.daily : [];
       const totalRevenue = daily.reduce((sum, row) => sum + Number(row.revenue || 0), 0);
       const totalSales = daily.reduce((sum, row) => sum + Number(row.sales || 0), 0);
       const rows = [
-        ["Rapport Aura Stream — Revenus encaissés"],
-        ["Date de début", adminRevenueReport.startDate],
-        ["Date de fin", adminRevenueReport.endDate],
-        ["Généré le", new Date().toLocaleString(getLocale())],
+        [t("Rapport Aura Stream — Revenus encaissés")],
+        [t("Date de début"), adminRevenueReport.startDate],
+        [t("Date de fin"), adminRevenueReport.endDate],
+        [t("Généré le"), new Date().toLocaleString(getLocale())],
         [],
-        ["Date", "Ventes payées", "Revenus encaissés (DA)"],
+        [t("Date"), t("Ventes payées"), t("Revenus encaissés (DA)")],
         ...daily.map(row => [row.date, Number(row.sales || 0), Number(row.revenue || 0)]),
         [],
         ["TOTAL", totalSales, totalRevenue]
@@ -1391,7 +1422,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const height = revenue > 0 ? Math.max(8, Math.round((revenue / maxRevenue) * 100)) : 3;
         const dateLabel = formatRevenueChartDate(row.date);
         const priceLabel = formatPrice(revenue);
-        const salesLabel = `${sales} vente${sales > 1 ? "s" : ""}`;
+        const salesLabel = getLanguage() === "ar"
+          ? `${sales} مبيعات`
+          : getLanguage() === "en"
+            ? `${sales} sale${sales === 1 ? "" : "s"}`
+            : `${sales} vente${sales > 1 ? "s" : ""}`;
         return `<article class="revenue-chart-day" role="listitem" aria-label="${escapeHTML(`${dateLabel} : ${priceLabel}, ${salesLabel}`)}" title="${escapeHTML(`${dateLabel} · ${priceLabel} · ${salesLabel}`)}">
           <span class="revenue-chart-value">${escapeHTML(priceLabel)}</span>
           <span class="revenue-chart-track" aria-hidden="true"><span class="revenue-chart-bar" style="height:${height}%"></span></span>
@@ -1518,6 +1553,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           method: "GET",
           cache: "no-store",
           credentials: "include",
+          headers: { "Accept-Language": getLanguage() },
         });
         let response = await requestExport();
         if (response.status === 401 && await refreshAuthSession()) {
@@ -1527,7 +1563,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const payload = await response.json().catch(() => ({}));
           throw new Error(payload.error || "Export impossible.");
         }
-        const blob = await response.blob();
+        const blob = new Blob([localizeCsv(await response.text())], { type: "text/csv;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;

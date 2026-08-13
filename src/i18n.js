@@ -77,6 +77,10 @@ const dynamicPatterns = {
     [/^Envoyer mes informations (.+)$/, "Submit my $1 information"],
     [/^Finaliser l’activation (.+)$/, "Complete $1 activation"],
     [/^(.+) disponible\(s\) · (.+) attribué\(s\)$/, "$1 available · $2 assigned"],
+    [/^Connecté en tant que (.+)$/, "Signed in as $1"],
+    [/^(.+) · Ajouté (.+)$/, "$1 · Added $2"],
+    [/^([0-9]+) % · Toute la boutique$/, "$1% · Entire shop"],
+    [/^(.+) : (.+), ([0-9]+) ventes?$/, "$1: $2, $3 sales"],
   ],
   ar: [
     [/^([0-9][0-9\s]*) DA$/, "$1 دج"],
@@ -116,6 +120,10 @@ const dynamicPatterns = {
     [/^Envoyer mes informations (.+)$/, "إرسال معلومات $1"],
     [/^Finaliser l’activation (.+)$/, "إكمال تفعيل $1"],
     [/^(.+) disponible\(s\) · (.+) attribué\(s\)$/, "$1 متوفر · $2 مخصّص"],
+    [/^Connecté en tant que (.+)$/, "تم تسجيل الدخول باسم $1"],
+    [/^(.+) · Ajouté (.+)$/, "$1 · أضيف في $2"],
+    [/^([0-9]+) % · Toute la boutique$/, "$1% · كل المتجر"],
+    [/^(.+) : (.+), ([0-9]+) ventes?$/, "$1: $2، $3 مبيعات"],
   ],
 };
 
