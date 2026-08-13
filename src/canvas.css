@@ -55,6 +55,7 @@ html[dir="rtl"] #faq-search { text-align: right; }
 html[dir="rtl"] .fa-magnifying-glass.left-4 { left: auto; right: 1rem; }
 html[dir="rtl"] .whatsapp-float { right: auto; left: 1.25rem; }
 html[dir="rtl"] .product-card > .right-4 { right: auto; left: 1rem; }
+html[dir="rtl"] #view-home article > .absolute.right-4 { right: auto; left: 1rem; }
 html[dir="rtl"] .hero-grid { background-position: right top; }
 html[dir="rtl"] .hero-grid article.ml-4 { margin-left: 0; margin-right: 1rem; }
 html[dir="rtl"] .hero-grid article.mr-4 { margin-right: 0; margin-left: 1rem; }
