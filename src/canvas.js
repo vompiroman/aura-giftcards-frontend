@@ -1650,6 +1650,32 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
+    function adminAuditActionLabel(action) {
+      const labels = {
+        admin_login: "Connexion administrateur",
+        admin_orders_export: "Export du suivi des commandes",
+        admin_order_status_update: "Mise à jour du statut d’une commande",
+        admin_inventory_create: "Ajout de comptes au stock",
+        admin_inventory_delete: "Suppression d’un compte du stock",
+        admin_inventory_update: "Modification d’un compte en stock",
+        admin_promo_create: "Création d’un code promo",
+        admin_promo_update: "Modification d’un code promo",
+        admin_promo_deactivate: "Désactivation d’un code promo",
+      };
+      return t(labels[action] || "Action administrative");
+    }
+
+    function adminAuditTargetLabel(targetType) {
+      const labels = {
+        auth: "Authentification",
+        orders: "Commandes",
+        order: "Commande",
+        inventory: "Stock",
+        promo_code: "Code promo",
+      };
+      return t(labels[targetType] || "Système");
+    }
+
     async function loadAdminAudit() {
       const list = document.getElementById("admin-audit-list");
       if (!list || currentUser?.is_admin !== true) return;
@@ -1658,7 +1684,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const events = Array.isArray(result.events) ? result.events : [];
         list.innerHTML = events.map(event => `<article class="flex gap-4 rounded-2xl border border-black/10 p-4">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-black/55"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
-          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(String(event.action || "").replaceAll("_", " "))}</p><p class="mt-1 truncate text-xs text-black/45">${escapeHTML(event.target_type || "système")} ${event.target_id ? `· ${escapeHTML(event.target_id)}` : ""}</p><p class="mt-1 text-[11px] text-black/35">${formatDateTime(event.created_at)}</p></div>
+          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(adminAuditActionLabel(event.action))}</p><p class="mt-1 truncate text-xs text-black/45">${escapeHTML(adminAuditTargetLabel(event.target_type))}${event.target_id ? ` · <bdi dir="ltr">${escapeHTML(event.target_id)}</bdi>` : ""}</p><p class="mt-1 text-[11px] text-black/35">${formatDateTime(event.created_at)}</p></div>
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucune activité récente.</p>';
       } catch (error) {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;

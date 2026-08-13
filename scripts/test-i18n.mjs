@@ -49,6 +49,18 @@ const requiredDynamicMessages = [
   "Statut de la commande mis à jour",
   "Aucune vente sur cette période.",
   "WhatsApp est ouvert avec ton message prêt à envoyer.",
+  "Connexion administrateur",
+  "Export du suivi des commandes",
+  "Mise à jour du statut d’une commande",
+  "Ajout de comptes au stock",
+  "Suppression d’un compte du stock",
+  "Modification d’un compte en stock",
+  "Création d’un code promo",
+  "Modification d’un code promo",
+  "Désactivation d’un code promo",
+  "Authentification",
+  "Code promo",
+  "Système",
 ];
 
 for (const message of requiredDynamicMessages) {
