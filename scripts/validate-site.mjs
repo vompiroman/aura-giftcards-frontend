@@ -73,11 +73,17 @@ for (const marker of [
   '.admin-tabs-scroll::-webkit-scrollbar',
   '.faq-category[aria-pressed="true"]',
   'body[data-route="admin"] .whatsapp-float',
+  "pendingPaymentAttempt",
+  "const profileSaved = await saveCheckoutProfile",
+  "Array.isArray(order.accounts)",
+  'data-duration="2 mois" data-price="1100"',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
 
 for (const offer of [
+  '"Netflix|1 mois": 600',
+  '"Netflix|2 mois": 1100',
   '"Spotify|1 mois": 500',
   '"Spotify|1 an": 4000',
   '"Crunchyroll|1 mois": 500',
