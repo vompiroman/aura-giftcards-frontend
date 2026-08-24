@@ -273,9 +273,11 @@ function syncLanguageControls() {
   for (const root of document.querySelectorAll("[data-language-menu]")) {
     const trigger = root.querySelector(".language-menu-trigger");
     const current = root.querySelector("[data-language-current]");
+    const code = root.querySelector("[data-language-code]");
     const panel = root.querySelector(".language-menu-panel");
     const activeName = LANGUAGE_NAMES[currentLanguage]?.[currentLanguage] || currentLanguage.toUpperCase();
     if (current) current.textContent = activeName;
+    if (code) code.textContent = currentLanguage.toUpperCase();
     trigger?.setAttribute("aria-label", `${t("Langue du site")} : ${activeName}`);
     panel?.setAttribute("aria-label", t("Langue du site"));
 
