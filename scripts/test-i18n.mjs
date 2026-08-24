@@ -20,7 +20,7 @@ const visibleText = [...html.matchAll(/>([^<>]+)</g)]
 const translatedAttributes = [...html.matchAll(/(?:placeholder|title|aria-label)="([^"]+)"/g)]
   .map((match) => decode(match[1]));
 
-const universalText = /^(Aura|Stream|Netflix|Spotify|Crunchyroll|Netflix Premium|Spotify Family|Crunchyroll Mega Fan|FAQ|WhatsApp|Instagram|PIN|Français|English|العربية|Nassym|Yaker|AURA10|\d+|\d+[\d\s]* DA|[+][0-9 ]+|[•]+|#AS-.*|−?0 DA)$/;
+const universalText = /^(Aura|Stream|Netflix|Spotify|Crunchyroll|Netflix Premium|Spotify Family|Crunchyroll Mega Fan|FAQ|WhatsApp|Instagram|PIN|FR|EN|AR|Français|English|العربية|Nassym|Yaker|AURA10|\d+|\d+[\d\s]* DA|[+][0-9 ]+|[•]+|#AS-.*|−?0 DA)$/;
 const missingStaticTranslations = [...new Set([...visibleText, ...translatedAttributes])]
   .filter((value) => !universalText.test(value) && !TRANSLATIONS.en.has(value));
 
