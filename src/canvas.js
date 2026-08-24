@@ -41,6 +41,7 @@ const views = [...document.querySelectorAll("[data-view]")];
     const mobileMenu = document.getElementById("mobile-menu");
     const mobileToggle = document.getElementById("mobile-menu-toggle");
     const cartCount = document.getElementById("cart-count");
+    const headerCartButton = document.getElementById("header-cart-button");
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toast-message");
     const accountLinks = [...document.querySelectorAll(".account-link")];
@@ -59,6 +60,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let lastSavedProfile = "";
 let loadedOrders = [];
 let activePromo = null;
+let pendingPaymentAttempt = null;
 let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
@@ -113,6 +115,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     const CART_STORAGE_KEY = "aura_checkout_cart";
     const allowedCartPrices = new Map([
       ["Netflix|Netflix Premium|1 mois", 600],
+      ["Netflix|Netflix Premium|2 mois", 1100],
       ["Spotify|Spotify Family|1 mois", 500],
       ["Spotify|Spotify Family|1 an", 4000],
       ["Crunchyroll|Crunchyroll Mega Fan|1 mois", 500],
@@ -354,6 +357,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function apiProductName(item) {
       const names = {
         "Netflix Premium|1 mois": "Netflix Premium 1 mois",
+        "Netflix Premium|2 mois": "Netflix Premium 2 mois",
         "Spotify Family|1 mois": "Spotify Family 1 mois",
         "Spotify Family|1 an": "Spotify Family 1 an",
         "Crunchyroll Mega Fan|1 mois": "Crunchyroll Mega Fan 1 mois",
@@ -364,6 +368,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function localizedSubscriptionName(value) {
       return String(value || "")
+        .replaceAll("2 mois", t("2 mois"))
         .replaceAll("1 mois", t("1 mois"))
         .replaceAll("1 an", t("1 an"));
     }
@@ -504,10 +509,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!service) return null;
 
       if (/\b(3 mois|6 mois)\b/.test(lowerName)) return null;
-      const durationMatch = lowerName.match(/\b(1 an|1 mois)\b/);
+      const durationMatch = lowerName.match(/\b(1 an|2 mois|1 mois)\b/);
       const duration = durationMatch?.[1] || "1 mois";
       const prices = {
         "Netflix|1 mois": 600,
+        "Netflix|2 mois": 1100,
         "Spotify|1 mois": 500,
         "Crunchyroll|1 mois": 500,
         "Crunchyroll|1 an": 3000,
@@ -548,6 +554,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     async function requestNetflixCode(button) {
       const orderId = button.dataset.orderId;
+      const inventoryId = button.dataset.inventoryId;
       const resultContainer = button.closest("article").querySelector(".netflix-code-result");
       const originalLabel = button.innerHTML;
       button.disabled = true;
@@ -556,7 +563,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const result = await apiRequest("/get-netflix-otp", {
           method: "POST",
-          body: JSON.stringify({ order_id: orderId })
+          body: JSON.stringify({ order_id: orderId, inventory_id: inventoryId || undefined })
         });
         let safeLink = "";
         if (result.link) {
@@ -622,8 +629,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
             .join(" · ");
           const hasNetflix = items.some(item => String(item.name || item.service || "").toLowerCase().includes("netflix"));
+          const assignedAccounts = Array.isArray(order.accounts) && order.accounts.length > 0
+            ? order.accounts
+            : order.account
+              ? [order.account]
+              : [];
           const waitingForStock = Boolean(order.waiting_for_stock) ||
-            (order.payment_status === "paid" && hasNetflix && !order.account);
+            (order.status === "pending" && order.payment_status === "paid" && hasNetflix && assignedAccounts.length === 0);
           const status = isExpired
             ? { label: "Expiré", style: "bg-red-100 text-red-800" }
             : waitingForStock
@@ -638,17 +650,20 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const expiration = hasValidExpiration
             ? formatLocalizedDate(expirationDate, { dateStyle: "long" })
             : t("Définie après l’activation");
-          const canGetNetflixCode = hasNetflix && Boolean(order.account) && !waitingForStock &&
-            order.status === "active" && order.payment_status === "paid" && !isExpired;
+          const canGetNetflixCode = hasNetflix && assignedAccounts.length > 0 && !waitingForStock &&
+            !["completed", "cancelled"].includes(order.status) && order.payment_status === "paid" && !isExpired;
           const canRenew = hasValidExpiration && !isExpired &&
             expirationDate.getTime() - Date.now() <= 3 * 24 * 60 * 60 * 1000;
-          const account = order.account ? `
+          const account = assignedAccounts.map((assignedAccount, accountIndex) => `
             <div class="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-900">
-              <p class="font-title font-bold">Accès attribué</p>
-              ${order.account.email ? `<p class="mt-2">E-mail : <strong>${escapeHTML(order.account.email)}</strong></p>` : ""}
-              ${order.account.profile_name ? `<p>Profil : <strong>${escapeHTML(order.account.profile_name)}</strong></p>` : ""}
-              ${order.account.profile_pin ? `<p>PIN : <strong>${escapeHTML(order.account.profile_pin)}</strong></p>` : ""}
-            </div>` : "";
+              <p class="font-title font-bold">${assignedAccounts.length > 1 ? `${t("Accès attribué")} ${formatLocalizedNumber(accountIndex + 1)}` : t("Accès attribué")}</p>
+              ${assignedAccount.email ? `<p class="mt-2">E-mail : <strong>${escapeHTML(assignedAccount.email)}</strong></p>` : ""}
+              ${assignedAccount.profile_name ? `<p>Profil : <strong>${escapeHTML(assignedAccount.profile_name)}</strong></p>` : ""}
+              ${assignedAccount.profile_pin ? `<p>PIN : <strong>${escapeHTML(assignedAccount.profile_pin)}</strong></p>` : ""}
+            </div>`).join("");
+          const netflixCodeButtons = canGetNetflixCode
+            ? assignedAccounts.map((assignedAccount, accountIndex) => `<button type="button" class="get-netflix-code min-h-11 rounded-xl bg-[#E50914] px-5 font-title text-sm font-bold text-white transition hover:bg-[#B8070F]" data-order-id="${orderId}" data-inventory-id="${escapeHTML(assignedAccount.id || "")}"><i class="fa-solid fa-key mr-2" aria-hidden="true"></i>${assignedAccounts.length > 1 ? `${t("Obtenir le code")} · ${t("Profil")} ${formatLocalizedNumber(accountIndex + 1)}` : t("Obtenir le code")}</button>`).join("")
+            : "";
           const manualActivationForms = order.payment_status === "paid" && !isExpired &&
             !["active", "completed"].includes(order.status)
             ? items.filter(item => {
@@ -695,7 +710,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               ${account}
               ${manualActivationForms}
               <div class="mt-5 flex flex-wrap gap-3 border-t border-black/10 pt-5">
-                ${canGetNetflixCode ? `<button type="button" class="get-netflix-code min-h-11 rounded-xl bg-[#E50914] px-5 font-title text-sm font-bold text-white transition hover:bg-[#B8070F]" data-order-id="${orderId}"><i class="fa-solid fa-key mr-2" aria-hidden="true"></i>Obtenir le code</button>` : ""}
+                ${netflixCodeButtons}
                 ${canRenew ? `<button type="button" class="renew-order min-h-11 rounded-xl border border-aura px-5 font-title text-sm font-bold text-aura transition hover:bg-aura hover:text-white" data-order-index="${orderIndex}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Renouveler</button>` : ""}
               </div>
               <div class="netflix-code-result mt-4 hidden rounded-xl bg-[#FFF1F2] p-4 text-sm text-[#8F0A16]" role="status" aria-live="polite"></div>
@@ -1040,6 +1055,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function updateCart() {
       persistCart();
       cartCount.textContent = String(cart.length);
+      if (headerCartButton) headerCartButton.setAttribute("aria-label", `${t("Panier")} (${cart.length})`);
       const hasNetflix = cart.some(item => item.service === "Netflix");
       const hasSpotify = cart.some(item => item.service === "Spotify");
       const hasCrunchyroll = cart.some(item => item.service === "Crunchyroll");
@@ -1150,7 +1166,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showRoute("products");
         return;
       }
-      await saveCheckoutProfile({ quiet: true });
+      const profileSaved = await saveCheckoutProfile({ quiet: true });
+      if (!profileSaved) {
+        showToast(profileSaveStatus?.textContent || "Impossible d’enregistrer ces informations.");
+        return;
+      }
       trackMeta("InitiateCheckout", {
         value: activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
         currency: "DZD",
@@ -1181,17 +1201,24 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
       try {
-        const order = await apiRequest("/create-order", {
-          method: "POST",
-          body: JSON.stringify({
-            items: cart.map(item => ({ name: apiProductName(item), quantity: 1 })),
-            marketing_consent: marketingConsentInput?.checked === true,
-            marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
-            promo_code: activePromo?.code || undefined,
-            customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined
-          })
-        });
-        activeOrderId = order.order_id || order.id;
+        const orderPayload = {
+          items: cart.map(item => ({ name: apiProductName(item), quantity: 1 })),
+          marketing_consent: marketingConsentInput?.checked === true,
+          marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
+          promo_code: activePromo?.code || undefined,
+          customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined
+        };
+        const fingerprint = JSON.stringify(orderPayload);
+        if (pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
+          activeOrderId = pendingPaymentAttempt.orderId;
+        } else {
+          const order = await apiRequest("/create-order", {
+            method: "POST",
+            body: JSON.stringify(orderPayload)
+          });
+          activeOrderId = order.order_id || order.id;
+          if (activeOrderId) pendingPaymentAttempt = { fingerprint, orderId: activeOrderId };
+        }
         if (!activeOrderId) throw new Error("La commande n’a pas reçu d’identifiant.");
         sessionStorage.setItem("aura_order_id", activeOrderId);
 

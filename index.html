@@ -97,7 +97,7 @@
           <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
           <span class="hidden xl:inline">Déconnexion</span>
         </button>
-        <button type="button" class="route-link relative flex min-h-11 items-center gap-2 rounded-xl bg-aura px-3.5 text-sm font-bold text-white shadow-lg shadow-aura/20 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2 sm:px-4" data-route="cart">
+        <button id="header-cart-button" type="button" class="route-link relative flex min-h-11 items-center gap-2 rounded-xl bg-aura px-3.5 text-sm font-bold text-white shadow-lg shadow-aura/20 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2 sm:px-4" data-route="cart" aria-label="Panier">
           <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
           <span class="hidden sm:inline">Panier</span>
           <span id="cart-count" class="grid h-5 min-w-5 place-items-center rounded-full bg-white px-1 text-[10px] font-extrabold text-aura">0</span>
@@ -389,8 +389,8 @@
             <p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Netflix Premium en Algérie</p>
             <h1 class="mt-4 max-w-2xl font-title text-4xl font-extrabold leading-tight tracking-tight sm:text-6xl">Ton profil Netflix Premium, simplement.</h1>
             <p class="mt-5 max-w-xl text-base leading-7 text-ivory/65">Un accès à un profil Netflix Premium, livré automatiquement après la confirmation du paiement.</p>
-            <div class="mt-8 flex flex-wrap items-center gap-4"><strong class="font-title text-3xl font-extrabold">600 DA</strong><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">1 mois · Livraison automatique</span></div>
-            <div class="mt-8 flex flex-wrap gap-3"><button class="landing-add-product min-h-12 rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]" data-service="Netflix" data-product="Netflix Premium" data-duration="1 mois" data-price="600">Ajouter au panier</button><button class="route-link min-h-12 rounded-xl border border-white/20 px-6 text-sm font-semibold text-ivory transition hover:border-white hover:bg-white/10" data-route="products">Voir toutes les offres</button></div>
+            <div class="mt-8 flex flex-wrap items-center gap-4"><strong class="font-title text-3xl font-extrabold">À partir de 600 DA</strong><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">1 ou 2 mois · Livraison automatique</span></div>
+            <div class="mt-8 flex flex-wrap gap-3"><button class="landing-add-product min-h-12 rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D]" data-service="Netflix" data-product="Netflix Premium" data-duration="1 mois" data-price="600">Choisir 1 mois</button><button class="landing-add-product min-h-12 rounded-xl border border-aura bg-white/5 px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-white/10" data-service="Netflix" data-product="Netflix Premium" data-duration="2 mois" data-price="1100">Choisir 2 mois</button><button class="route-link min-h-12 rounded-xl border border-white/20 px-6 text-sm font-semibold text-ivory transition hover:border-white hover:bg-white/10" data-route="products">Voir toutes les offres</button></div>
           </div>
           <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl"><p class="text-xs font-bold uppercase tracking-[0.16em] text-sand">Ce que tu reçois</p><ul class="mt-5 grid gap-4 text-sm text-ivory/75"><li class="flex gap-3"><span class="text-aura">✓</span> Un profil Netflix Premium</li><li class="flex gap-3"><span class="text-aura">✓</span> Une livraison automatique après paiement</li><li class="flex gap-3"><span class="text-aura">✓</span> Un suivi dans Mes commandes</li><li class="flex gap-3"><span class="text-aura">✓</span> Un support WhatsApp humain</li></ul></div>
         </div>
@@ -434,6 +434,7 @@
             <p class="mt-2 text-sm leading-6 text-black/55">Accès à un profil Netflix Premium</p>
             <div class="mt-5 flex flex-wrap gap-2">
               <button class="duration-btn min-h-11 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="true" data-price="600" data-duration="1 mois">1 mois</button>
+              <button class="duration-btn min-h-11 rounded-lg border border-black/15 px-3 text-xs font-semibold" aria-pressed="false" data-price="1100" data-duration="2 mois">2 mois</button>
             </div>
             <div class="mt-6 flex items-end justify-between">
               <p class="price-value font-title text-3xl font-extrabold">600 <span class="text-sm">DA</span></p>
