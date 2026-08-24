@@ -686,6 +686,15 @@ const phrases = [
   ["E-mail du compte Crunchyroll", "Crunchyroll account email", "بريد حساب Crunchyroll"],
   ["Mot de passe temporaire", "Temporary password", "كلمة مرور مؤقتة"],
   ["Utilise un mot de passe temporaire différent de tes autres services.", "Use a temporary password that is different from your other services.", "استخدم كلمة مرور مؤقتة ومختلفة عن خدماتك الأخرى."],
+  ["Identifiants d’activation", "Activation credentials", "بيانات التفعيل"],
+  ["E-mail :", "Email:", "البريد الإلكتروني:"],
+  ["WhatsApp :", "WhatsApp:", "واتساب:"],
+  ["Mot de passe temporaire :", "Temporary password:", "كلمة المرور المؤقتة:"],
+  ["WhatsApp non renseigné", "WhatsApp not provided", "رقم واتساب غير مُدخل"],
+  ["Confirmer payé", "Confirm paid", "تأكيد الدفع"],
+  ["Confirmer manuellement que le montant exact a bien été reçu sur SlickPay ?", "Manually confirm that the exact amount was received on SlickPay?", "هل تؤكد يدوياً استلام المبلغ الصحيح على SlickPay؟"],
+  ["Paiement confirmé et commande mise à jour", "Payment confirmed and order updated", "تم تأكيد الدفع وتحديث الطلب"],
+  ["Confirmation impossible", "Unable to confirm", "تعذر التأكيد"],
 ];
 
 export const TRANSLATIONS = {

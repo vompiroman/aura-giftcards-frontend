@@ -269,6 +269,94 @@ function syncLanguageControls() {
       option.textContent = LANGUAGE_NAMES[option.value]?.[currentLanguage] || option.value.toUpperCase();
     }
   }
+
+  for (const root of document.querySelectorAll("[data-language-menu]")) {
+    const trigger = root.querySelector(".language-menu-trigger");
+    const current = root.querySelector("[data-language-current]");
+    const panel = root.querySelector(".language-menu-panel");
+    const activeName = LANGUAGE_NAMES[currentLanguage]?.[currentLanguage] || currentLanguage.toUpperCase();
+    if (current) current.textContent = activeName;
+    trigger?.setAttribute("aria-label", `${t("Langue du site")} : ${activeName}`);
+    panel?.setAttribute("aria-label", t("Langue du site"));
+
+    for (const option of root.querySelectorAll("[data-language-option]")) {
+      const language = option.dataset.languageOption;
+      const name = option.querySelector("[data-language-option-name]");
+      if (name) name.textContent = LANGUAGE_NAMES[language]?.[currentLanguage] || language.toUpperCase();
+      option.setAttribute("aria-selected", String(language === currentLanguage));
+    }
+  }
+}
+
+function setLanguageMenuOpen(root, open, { focusOption = false, restoreFocus = false } = {}) {
+  const trigger = root?.querySelector(".language-menu-trigger");
+  const panel = root?.querySelector(".language-menu-panel");
+  if (!root || !trigger || !panel) return;
+  root.dataset.open = String(open);
+  trigger.setAttribute("aria-expanded", String(open));
+  panel.setAttribute("aria-hidden", String(!open));
+  if (open && focusOption) {
+    const selected = root.querySelector('[data-language-option][aria-selected="true"]');
+    (selected || root.querySelector("[data-language-option]"))?.focus();
+  } else if (!open && restoreFocus) {
+    trigger.focus();
+  }
+}
+
+function closeOtherLanguageMenus(activeRoot) {
+  for (const root of document.querySelectorAll("[data-language-menu]")) {
+    if (root !== activeRoot) setLanguageMenuOpen(root, false);
+  }
+}
+
+function initializeLanguageMenus() {
+  for (const root of document.querySelectorAll("[data-language-menu]")) {
+    const trigger = root.querySelector(".language-menu-trigger");
+    const options = [...root.querySelectorAll("[data-language-option]")];
+    if (!trigger || options.length === 0) continue;
+
+    setLanguageMenuOpen(root, false);
+    trigger.addEventListener("click", () => {
+      const open = root.dataset.open !== "true";
+      closeOtherLanguageMenus(root);
+      setLanguageMenuOpen(root, open);
+    });
+    trigger.addEventListener("keydown", event => {
+      if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+      event.preventDefault();
+      closeOtherLanguageMenus(root);
+      setLanguageMenuOpen(root, true, { focusOption: true });
+      if (event.key === "ArrowUp") options.at(-1)?.focus();
+    });
+
+    options.forEach((option, index) => {
+      option.addEventListener("click", () => {
+        setLanguage(option.dataset.languageOption);
+        setLanguageMenuOpen(root, false, { restoreFocus: true });
+      });
+      option.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setLanguageMenuOpen(root, false, { restoreFocus: true });
+          return;
+        }
+        const directions = { ArrowDown: 1, ArrowUp: -1 };
+        if (directions[event.key]) {
+          event.preventDefault();
+          options[(index + directions[event.key] + options.length) % options.length]?.focus();
+        } else if (event.key === "Home" || event.key === "End") {
+          event.preventDefault();
+          options[event.key === "Home" ? 0 : options.length - 1]?.focus();
+        }
+      });
+    });
+  }
+
+  document.addEventListener("click", event => {
+    for (const root of document.querySelectorAll("[data-language-menu]")) {
+      if (!root.contains(event.target)) setLanguageMenuOpen(root, false);
+    }
+  });
 }
 
 function updateDocumentLanguage() {
@@ -313,6 +401,7 @@ export function initializeI18n() {
   for (const select of document.querySelectorAll("[data-language-select]")) {
     select.addEventListener("change", () => setLanguage(select.value));
   }
+  initializeLanguageMenus();
   observeDocument();
 }
 

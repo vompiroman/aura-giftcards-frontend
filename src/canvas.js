@@ -1187,7 +1187,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             items: cart.map(item => ({ name: apiProductName(item), quantity: 1 })),
             marketing_consent: marketingConsentInput?.checked === true,
             marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
-            promo_code: activePromo?.code || undefined
+            promo_code: activePromo?.code || undefined,
+            customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined
           })
         });
         activeOrderId = order.order_id || order.id;
@@ -1517,9 +1518,26 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         document.getElementById("admin-orders-prev").disabled = adminOrdersPage <= 1;
         document.getElementById("admin-orders-next").disabled = adminOrdersPage >= adminOrdersTotalPages;
         list.innerHTML = orders.map(order => {
-          const items = (Array.isArray(order.items) ? order.items : [])
+          const rawItems = Array.isArray(order.items) ? order.items : [];
+          const items = rawItems
             .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
             .join(" · ");
+          const activationCredentials = rawItems
+            .filter(item => item?.client_credentials && typeof item.client_credentials === "object")
+            .map(item => {
+              const credentials = item.client_credentials;
+              const serviceName = localizedSubscriptionName(item.name || item.service || t("Abonnement"));
+              return `<details class="mt-3 rounded-xl border border-aura/15 bg-[#FFF7F3] p-3" open>
+                <summary class="cursor-pointer font-title text-xs font-bold text-graphite">Identifiants d’activation · ${escapeHTML(serviceName)}</summary>
+                <div class="mt-3 grid gap-2 text-xs text-black/65 sm:grid-cols-2">
+                  <p><span class="font-bold text-graphite">E-mail :</span> ${escapeHTML(credentials.email || "—")}</p>
+                  <p><span class="font-bold text-graphite">WhatsApp :</span> ${escapeHTML(credentials.whatsapp || order.customer_whatsapp || "—")}</p>
+                  <p class="sm:col-span-2"><span class="font-bold text-graphite">Mot de passe temporaire :</span> <code class="rounded bg-white px-2 py-1 font-mono text-graphite">${escapeHTML(credentials.password || "—")}</code></p>
+                </div>
+              </details>`;
+            }).join("");
+          const whatsapp = String(order.customer_whatsapp || "").trim();
+          const whatsappDigits = whatsapp.replace(/\D/g, "");
           const paymentClass = order.payment_status === "paid"
             ? "bg-green-50 text-green-700"
             : order.payment_status === "failed"
@@ -1531,11 +1549,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(adminPaymentStatusLabel(order.payment_status || "unpaid"))}</span></div>
                 <p class="mt-2 truncate text-sm text-black/65">${escapeHTML(order.assigned_email || "Sans e-mail")}</p>
+                ${whatsapp ? `<a class="mt-1 inline-flex items-center gap-2 text-sm font-bold text-[#148A45] hover:underline" href="https://wa.me/${escapeHTML(whatsappDigits)}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>${escapeHTML(whatsapp)}</a>` : '<p class="mt-1 text-xs text-black/40">WhatsApp non renseigné</p>'}
                 <p class="mt-1 text-xs text-black/45">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
                 <div class="mt-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${followUp.className}">${followUp.label}</span>${order.expires_at ? `<span class="text-xs text-black/45">Expiration : ${formatDateTime(order.expires_at)}</span>` : ""}</div>
+                ${activationCredentials}
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
+                ${order.payment_status !== "paid" ? `<button class="admin-confirm-payment min-h-11 rounded-xl bg-green-700 px-3 text-xs font-bold text-white transition hover:bg-green-800" type="button" data-order-id="${escapeHTML(order.order_id)}"><i class="fa-solid fa-check mr-2" aria-hidden="true"></i>Confirmer payé</button>` : ""}
                 ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-11 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
                 <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
                   ${["pending", "active", "completed", "cancelled"].map(status =>
@@ -1559,6 +1580,24 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             } catch (error) {
               showToast(error.message || "Mise à jour impossible");
               await loadAdminOrders();
+            }
+          });
+        });
+        list.querySelectorAll(".admin-confirm-payment").forEach(button => {
+          button.addEventListener("click", async () => {
+            const confirmed = window.confirm(t("Confirmer manuellement que le montant exact a bien été reçu sur SlickPay ?"));
+            if (!confirmed) return;
+            button.disabled = true;
+            try {
+              await apiRequest("/admin/update-order-status", {
+                method: "POST",
+                body: JSON.stringify({ order_id: button.dataset.orderId, confirm_payment: true })
+              });
+              showToast("Paiement confirmé et commande mise à jour");
+              await Promise.all([loadAdminOrders(), loadAdminOverview(), loadAdminAudit()]);
+            } catch (error) {
+              button.disabled = false;
+              showToast(error.message || "Confirmation impossible");
             }
           });
         });

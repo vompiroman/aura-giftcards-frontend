@@ -73,7 +73,8 @@ for (const message of requiredDynamicMessages) {
   assert.ok(TRANSLATIONS.ar.has(message), `Missing dynamic Arabic translation: ${message}`);
 }
 
-assert.match(html, /data-language-select/g, "Language controls are required");
+assert.equal((html.match(/data-language-menu/g) || []).length, 2, "Desktop and mobile language menus are required");
+assert.equal((html.match(/data-language-option=/g) || []).length, 6, "Each language menu must expose the three supported languages");
 assert.match(html, /data-filter="sécurité données"/, "FAQ filters must use language-independent values");
 
 const frenchDateTime = formatLocalizedDate("2026-07-29T13:46:00Z", { dateStyle: "medium", timeStyle: "short" });
@@ -82,6 +83,11 @@ assert.doesNotMatch(frenchDateTime, /\b(?:AM|PM)\b/, "French dates must use a 24
 const canvasSource = fs.readFileSync(new URL("../src/canvas.js", import.meta.url), "utf8");
 assert.match(canvasSource, /syncCustomSelectLabels\(\)/, "Custom select labels must be synchronized after language changes");
 assert.match(canvasSource, /adminPaymentStatusLabel\(order\.payment_status/, "Payment statuses must use localized labels");
+
+const i18nSource = fs.readFileSync(new URL("../src/i18n.js", import.meta.url), "utf8");
+assert.match(i18nSource, /initializeLanguageMenus\(\)/, "The custom language menus must be initialized");
+assert.match(i18nSource, /aria-selected/, "The active language must be exposed to assistive technologies");
+assert.match(i18nSource, /ArrowDown/, "The language menu must support keyboard navigation");
 
 const canvasStyles = fs.readFileSync(new URL("../src/canvas.css", import.meta.url), "utf8");
 assert.match(canvasStyles, /html\[dir="rtl"\] \.hero-grid article\.ml-4/, "Asymmetric hero cards must mirror in RTL");
