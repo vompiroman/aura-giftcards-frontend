@@ -56,6 +56,7 @@ const requiredDynamicMessages = [
   "Ajout de comptes au stock",
   "Suppression d’un compte du stock",
   "Modification d’un compte en stock",
+  "Test de connexion de la boîte Netflix",
   "Création d’un code promo",
   "Modification d’un code promo",
   "Désactivation d’un code promo",

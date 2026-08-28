@@ -65,6 +65,7 @@ let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
 let adminRevenueReport = null;
+let adminInventory = [];
 
     // Purge tokens and cached profile data left by pre-cookie deployments.
     clearAuthSession(sessionStorage, localStorage);
@@ -1696,12 +1697,33 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!list || currentUser?.is_admin !== true) return;
       try {
         const result = await apiRequest("/admin/inventory");
-        const inventory = Array.isArray(result.inventory) ? result.inventory : [];
-        document.getElementById("admin-stock-count").textContent = `${inventory.filter(item => !item.is_used).length} disponible(s)`;
-        list.innerHTML = inventory.map(item => `<article class="flex flex-col gap-3 rounded-2xl border border-black/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm capitalize">${escapeHTML(item.service)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-black/5 text-black/55" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span></div><p class="mt-2 truncate text-sm text-black/65">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")} · Ajouté ${formatDateTime(item.created_at)}</p></div>
-          ${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}">Supprimer</button>`}
+        adminInventory = Array.isArray(result.inventory) ? result.inventory : [];
+        document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
+        list.innerHTML = adminInventory.map(item => `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span>${item.has_imap_password ? '<span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">IMAP configuré</span>' : '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">Secret serveur</span>'}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}</p>` : ""}</div>
+            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`}</div>
+          </div>
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
+        list.querySelectorAll(".admin-edit-stock").forEach(button => {
+          button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
+        });
+        list.querySelectorAll(".admin-test-stock-mailbox").forEach(button => {
+          button.addEventListener("click", async () => {
+            const original = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2" aria-hidden="true"></i>Test en cours';
+            try {
+              const result = await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}/test-mailbox`, { method: "POST" });
+              showToast(`Boîte connectée · ${formatLocalizedNumber(Number(result.messages || 0))} message(s)`);
+            } catch (error) {
+              showToast(error.message || "Connexion à la boîte impossible");
+            } finally {
+              button.disabled = false;
+              button.innerHTML = original;
+            }
+          });
+        });
         list.querySelectorAll(".admin-delete-stock").forEach(button => {
           button.addEventListener("click", async () => {
             if (!window.confirm(t("Supprimer ce compte non attribué du stock ?"))) return;
@@ -1719,6 +1741,26 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       } catch (error) {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
       }
+    }
+
+    function openAdminStockEditor(stockId) {
+      const item = adminInventory.find(entry => String(entry.id) === String(stockId));
+      const dialog = document.getElementById("admin-stock-dialog");
+      const form = document.getElementById("admin-stock-edit-form");
+      if (!item || !dialog || !form) return;
+      form.reset();
+      form.elements.id.value = item.id;
+      form.elements.account_email.value = item.account_email || "";
+      form.elements.profile_name.value = item.profile_name || "";
+      form.elements.profile_pin.value = item.profile_pin || "";
+      form.elements.imap_host.value = item.imap_host || "imap.hostinger.com";
+      form.elements.imap_port.value = String(item.imap_port || 993);
+      form.elements.imap_user.value = item.imap_user || "admin@aura-stream.com";
+      const secretStatus = document.getElementById("admin-stock-secret-status");
+      if (secretStatus) secretStatus.textContent = `${item.has_account_password ? "Mot de passe Netflix enregistré" : "Mot de passe Netflix manquant"} · ${item.has_imap_password ? "mot de passe IMAP propre au compte" : "secret IMAP commun du serveur"}.`;
+      const feedback = document.getElementById("admin-stock-edit-feedback");
+      if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
+      dialog.showModal();
     }
 
     async function loadAdminPromos() {
@@ -1767,6 +1809,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         admin_inventory_create: "Ajout de comptes au stock",
         admin_inventory_delete: "Suppression d’un compte du stock",
         admin_inventory_update: "Modification d’un compte en stock",
+        admin_inventory_mailbox_test: "Test de connexion de la boîte Netflix",
         admin_promo_create: "Création d’un code promo",
         admin_promo_update: "Modification d’un code promo",
         admin_promo_deactivate: "Désactivation d’un code promo",
@@ -1889,6 +1932,43 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       } catch (error) {
         feedback.textContent = error.message || "Ajout impossible.";
         feedback.className = "mt-3 text-xs text-red-300";
+      } finally {
+        button.disabled = false;
+      }
+    });
+    const adminStockDialog = document.getElementById("admin-stock-dialog");
+    const closeAdminStockDialog = () => adminStockDialog?.open && adminStockDialog.close();
+    document.getElementById("admin-stock-dialog-close")?.addEventListener("click", closeAdminStockDialog);
+    document.getElementById("admin-stock-dialog-cancel")?.addEventListener("click", closeAdminStockDialog);
+    adminStockDialog?.addEventListener("click", event => {
+      if (event.target === adminStockDialog) closeAdminStockDialog();
+    });
+    document.getElementById("admin-stock-edit-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = form.querySelector('button[type="submit"]');
+      const feedback = document.getElementById("admin-stock-edit-feedback");
+      const values = Object.fromEntries(new FormData(form));
+      const stockId = String(values.id || "");
+      delete values.id;
+      button.disabled = true;
+      if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
+      try {
+        await apiRequest(`/admin/inventory/${encodeURIComponent(stockId)}`, {
+          method: "PUT",
+          body: JSON.stringify(values),
+        });
+        if (feedback) {
+          feedback.textContent = "Compte mis à jour.";
+          feedback.className = "mt-4 rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-800";
+        }
+        await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
+        window.setTimeout(closeAdminStockDialog, 450);
+      } catch (error) {
+        if (feedback) {
+          feedback.textContent = error.message || "Modification impossible.";
+          feedback.className = "mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-800";
+        }
       } finally {
         button.disabled = false;
       }
