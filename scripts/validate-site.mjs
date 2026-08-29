@@ -74,6 +74,14 @@ for (const marker of [
   '.faq-category[aria-pressed="true"]',
   'body[data-route="admin"] .whatsapp-float',
   "pendingPaymentAttempt",
+  "spotify-account-email",
+  "spotify-account-password",
+  "crunchyroll-account-email",
+  "crunchyroll-account-password",
+  "activation_credentials",
+  "checkoutPayloadFingerprint",
+  "clearCheckoutCredentialPasswords",
+  "setCheckoutCredentialRequirement",
   "const profileSaved = await saveCheckoutProfile",
   "Array.isArray(order.accounts)",
   'data-duration="2 mois" data-price="1100"',
@@ -112,6 +120,8 @@ for (const forbidden of [
   'data-route="order">Voir un exemple de suivi',
   'href="#"',
   'currentUser?.phone || ""',
+  "Après confirmation du paiement, tu transmettras tes informations depuis « Mes commandes ».",
+  "Tu renseignes ton compte Spotify après le paiement.",
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }

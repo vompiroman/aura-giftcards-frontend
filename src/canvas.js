@@ -427,6 +427,56 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       };
     }
 
+    const checkoutCredentialFields = {
+      spotify: {
+        email: "spotify-account-email",
+        password: "spotify-account-password",
+      },
+      crunchyroll: {
+        email: "crunchyroll-account-email",
+        password: "crunchyroll-account-password",
+      },
+    };
+
+    function setCheckoutCredentialRequirement(service, enabled) {
+      const config = checkoutCredentialFields[service];
+      if (!config) return;
+      for (const id of Object.values(config)) {
+        const input = document.getElementById(id);
+        if (!input) continue;
+        input.disabled = !enabled;
+        input.required = enabled;
+        if (!enabled) input.value = "";
+      }
+    }
+
+    function checkoutActivationCredentials() {
+      const payload = {};
+      for (const [service, config] of Object.entries(checkoutCredentialFields)) {
+        const serviceLabel = service[0].toUpperCase() + service.slice(1);
+        if (!cart.some(item => item.service === serviceLabel)) continue;
+        payload[service] = {
+          email: document.getElementById(config.email)?.value.trim() || "",
+          password: document.getElementById(config.password)?.value || "",
+        };
+      }
+      return Object.keys(payload).length > 0 ? payload : undefined;
+    }
+
+    async function checkoutPayloadFingerprint(payload) {
+      const encoded = new TextEncoder().encode(JSON.stringify(payload));
+      if (!globalThis.crypto?.subtle) return `no-cache-${Date.now()}-${Math.random()}`;
+      const digest = await globalThis.crypto.subtle.digest("SHA-256", encoded);
+      return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    }
+
+    function clearCheckoutCredentialPasswords() {
+      for (const config of Object.values(checkoutCredentialFields)) {
+        const input = document.getElementById(config.password);
+        if (input) input.value = "";
+      }
+    }
+
     async function saveCheckoutProfile({ quiet = false } = {}) {
       if (!currentUser) return false;
       const profile = checkoutProfileData();
@@ -1069,6 +1119,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         "hidden",
         !hasCrunchyroll
       );
+      setCheckoutCredentialRequirement("spotify", hasSpotify);
+      setCheckoutCredentialRequirement("crunchyroll", hasCrunchyroll);
       document.getElementById("netflix-delivery-note")?.classList.toggle("hidden", !hasNetflix);
       const customerInfoDescription = document.getElementById("customer-info-description");
       if (customerInfoDescription) {
@@ -1198,6 +1250,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showRoute("products");
         return;
       }
+      const checkoutForm = document.getElementById("customer-form");
+      if (!checkoutForm.reportValidity()) {
+        setCheckoutStep(1);
+        return;
+      }
       const originalLabel = button.innerHTML;
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
@@ -1207,9 +1264,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           marketing_consent: marketingConsentInput?.checked === true,
           marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
           promo_code: activePromo?.code || undefined,
-          customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined
+          customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined,
+          activation_credentials: checkoutActivationCredentials()
         };
-        const fingerprint = JSON.stringify(orderPayload);
+        const fingerprint = await checkoutPayloadFingerprint(orderPayload);
         if (pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
           activeOrderId = pendingPaymentAttempt.orderId;
         } else {
@@ -1228,6 +1286,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           body: JSON.stringify({ order_id: activeOrderId })
         });
         if (!invoice?.payment_url) throw new Error("Le prestataire de paiement n’a pas renvoyé de lien.");
+        clearCheckoutCredentialPasswords();
         window.location.assign(invoice.payment_url);
       } catch (error) {
         showToast(error.message || "Impossible de préparer le paiement");
