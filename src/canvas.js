@@ -1584,7 +1584,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               </div>
               <div class="flex flex-wrap items-center gap-3">
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
-                ${order.payment_status !== "paid" ? `<button class="admin-confirm-payment min-h-11 rounded-xl bg-green-700 px-3 text-xs font-bold text-white transition hover:bg-green-800" type="button" data-order-id="${escapeHTML(order.order_id)}"><i class="fa-solid fa-check mr-2" aria-hidden="true"></i>Confirmer payé</button>` : ""}
                 ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-11 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
                 <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
                   ${["pending", "active", "completed", "cancelled"].map(status =>
@@ -1608,24 +1607,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             } catch (error) {
               showToast(error.message || "Mise à jour impossible");
               await loadAdminOrders();
-            }
-          });
-        });
-        list.querySelectorAll(".admin-confirm-payment").forEach(button => {
-          button.addEventListener("click", async () => {
-            const confirmed = window.confirm(t("Confirmer manuellement que le montant exact a bien été reçu sur SlickPay ?"));
-            if (!confirmed) return;
-            button.disabled = true;
-            try {
-              await apiRequest("/admin/update-order-status", {
-                method: "POST",
-                body: JSON.stringify({ order_id: button.dataset.orderId, confirm_payment: true })
-              });
-              showToast("Paiement confirmé et commande mise à jour");
-              await Promise.all([loadAdminOrders(), loadAdminOverview(), loadAdminAudit()]);
-            } catch (error) {
-              button.disabled = false;
-              showToast(error.message || "Confirmation impossible");
             }
           });
         });
@@ -1701,7 +1682,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
         list.innerHTML = adminInventory.map(item => `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span>${item.has_imap_password ? '<span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">IMAP configuré</span>' : '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">Secret serveur</span>'}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}</p>` : ""}</div>
+            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span></div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}</p>` : ""}</div>
             <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`}</div>
           </div>
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
@@ -1753,11 +1734,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       form.elements.account_email.value = item.account_email || "";
       form.elements.profile_name.value = item.profile_name || "";
       form.elements.profile_pin.value = item.profile_pin || "";
-      form.elements.imap_host.value = item.imap_host || "imap.hostinger.com";
-      form.elements.imap_port.value = String(item.imap_port || 993);
-      form.elements.imap_user.value = item.imap_user || "admin@aura-stream.com";
-      const secretStatus = document.getElementById("admin-stock-secret-status");
-      if (secretStatus) secretStatus.textContent = `${item.has_account_password ? "Mot de passe Netflix enregistré" : "Mot de passe Netflix manquant"} · ${item.has_imap_password ? "mot de passe IMAP propre au compte" : "secret IMAP commun du serveur"}.`;
       const feedback = document.getElementById("admin-stock-edit-feedback");
       if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
       dialog.showModal();
