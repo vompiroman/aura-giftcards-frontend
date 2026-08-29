@@ -298,7 +298,7 @@
           <div class="mt-6 grid gap-5 rounded-2xl bg-graphite p-6 text-ivory shadow-soft sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <h3 class="font-title text-xl font-bold">Spotify et Crunchyroll : une activation accompagnée</h3>
-              <p class="mt-2 max-w-3xl text-sm leading-6 text-ivory/65">Après ton paiement, tu remplis un formulaire sécurisé pour transmettre les informations nécessaires. Notre équipe effectue l’activation et te confirme chaque étape sur WhatsApp.</p>
+              <p class="mt-2 max-w-3xl text-sm leading-6 text-ivory/65">Avant de payer, tu renseignes des identifiants temporaires dans le formulaire sécurisé. Notre équipe effectue l’activation après confirmation du paiement et te confirme chaque étape sur WhatsApp.</p>
             </div>
             <button class="route-link min-h-12 rounded-xl bg-sand px-5 font-title text-sm font-bold text-graphite transition hover:scale-[1.02]" data-route="faq">Voir le fonctionnement</button>
           </div>
@@ -530,16 +530,24 @@
                 <div id="spotify-credentials-panel" class="hidden rounded-2xl border border-[#D9C39F]/60 bg-[#FBF4E9] p-5 sm:col-span-2">
                   <div class="flex items-center gap-3">
                     <img src="/spotify.svg" alt="" class="h-7 w-7" aria-hidden="true">
-                    <p class="font-title text-sm font-bold">Activation Spotify après paiement</p>
+                    <p class="font-title text-sm font-bold">Identifiants Spotify requis avant paiement</p>
                   </div>
-                  <p class="mt-3 text-xs leading-5 text-[#7A6040]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Après confirmation du paiement, tu transmettras tes informations depuis « Mes commandes ». Elles ne sont jamais conservées dans ce navigateur.</p>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="grid gap-2 text-xs font-bold">E-mail du compte Spotify<input id="spotify-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="spotify@exemple.com"></label>
+                    <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="spotify-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                  </div>
+                  <p class="mt-3 text-xs leading-5 text-[#7A6040]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire et unique. Les informations sont chiffrées côté serveur, transmises à l’équipe uniquement après confirmation du paiement, puis supprimées après l’activation.</p>
                 </div>
                 <div id="crunchyroll-credentials-panel" class="hidden rounded-2xl border border-[#E7C8B0]/70 bg-[#FFF7F0] p-5 sm:col-span-2">
                   <div class="flex items-center gap-3">
                     <img src="/crunchyroll.svg" alt="" class="h-7 w-7" aria-hidden="true">
-                    <p class="font-title text-sm font-bold">Activation Crunchyroll après paiement</p>
+                    <p class="font-title text-sm font-bold">Identifiants Crunchyroll requis avant paiement</p>
                   </div>
-                  <p class="mt-3 text-xs leading-5 text-[#8B5436]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Après confirmation du paiement, tu transmettras tes informations depuis « Mes commandes ». Elles seront chiffrées côté serveur puis supprimées après l’activation.</p>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                    <label class="grid gap-2 text-xs font-bold">E-mail du compte Crunchyroll<input id="crunchyroll-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="crunchyroll@exemple.com"></label>
+                    <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="crunchyroll-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                  </div>
+                  <p class="mt-3 text-xs leading-5 text-[#8B5436]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire et unique. Les informations sont chiffrées côté serveur, transmises à l’équipe uniquement après confirmation du paiement, puis supprimées après l’activation.</p>
                 </div>
                 <label class="flex items-start gap-3 rounded-xl border border-black/10 bg-ivory p-4 text-xs leading-5 text-black/60 sm:col-span-2">
                   <input id="marketing-consent" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 accent-[#D93646]">
@@ -1046,14 +1054,14 @@
                 Comment se passe l’activation Spotify ?
                 <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
               </button>
-              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Tu renseignes ton compte Spotify après le paiement. Utilise un mot de passe temporaire unique. Notre équipe effectue l’activation puis les informations doivent être supprimées du système.</p></div></div>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Tu renseignes ton compte Spotify dans le checkout avant le paiement. Utilise un mot de passe temporaire unique. Les informations restent chiffrées et notre équipe ne les reçoit qu’après confirmation du paiement.</p></div></div>
             </article>
             <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="crunchyroll activation anime compte">
               <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
                 Comment se passe l’activation Crunchyroll ?
                 <i class="faq-icon fa-solid fa-plus shrink-0 text-aura transition" aria-hidden="true"></i>
               </button>
-              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Le fonctionnement est similaire à Spotify : l’abonnement est activé sur ton compte existant et une confirmation est envoyée lorsque l’opération est terminée.</p></div></div>
+              <div class="faq-answer"><div><p class="pb-5 text-sm leading-7 text-black/55">Comme pour Spotify, tu renseignes tes identifiants temporaires avant le paiement. L’abonnement est activé sur ton compte existant après confirmation du paiement.</p></div></div>
             </article>
             <article class="faq-item border-b border-black/10 px-5 sm:px-6" data-open="false" data-keywords="paiement cib edahabia slickpay sécurisé">
               <button class="faq-question flex min-h-16 w-full items-center justify-between gap-4 py-4 text-left font-title text-sm font-bold sm:text-base" aria-expanded="false">
