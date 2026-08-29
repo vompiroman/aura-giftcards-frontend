@@ -1682,8 +1682,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
         list.innerHTML = adminInventory.map(item => `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span></div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}</p>` : ""}</div>
-            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`}</div>
+            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
+            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`}</div>
           </div>
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
@@ -1715,6 +1715,24 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
             } catch (error) {
               showToast(error.message || "Suppression impossible");
+              button.disabled = false;
+            }
+          });
+        });
+        list.querySelectorAll(".admin-release-stock").forEach(button => {
+          button.addEventListener("click", async () => {
+            if (!window.confirm(t("Confirme que l’ancien client a été déconnecté de ce profil. Le profil pourra être réattribué immédiatement à la plus ancienne commande payée en attente."))) return;
+            button.disabled = true;
+            try {
+              const result = await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}/release`, {
+                method: "POST",
+                body: JSON.stringify({ confirm_disconnected: true })
+              });
+              const fulfilled = Number(result.stock_reconciliation?.fulfilled || 0);
+              showToast(fulfilled > 0 ? "Profil libéré et réattribué à une commande payée" : "Profil libéré et remis en stock");
+              await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit(), loadAdminOrders()]);
+            } catch (error) {
+              showToast(error.message || "Libération impossible");
               button.disabled = false;
             }
           });
@@ -1785,6 +1803,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         admin_inventory_create: "Ajout de comptes au stock",
         admin_inventory_delete: "Suppression d’un compte du stock",
         admin_inventory_update: "Modification d’un compte en stock",
+        admin_inventory_release: "Libération et réattribution d’un profil Netflix",
         admin_inventory_mailbox_test: "Test de connexion de la boîte Netflix",
         admin_promo_create: "Création d’un code promo",
         admin_promo_update: "Modification d’un code promo",
@@ -1900,9 +1919,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const values = Object.fromEntries(new FormData(form));
       button.disabled = true;
       try {
-        await apiRequest("/admin/inventory", { method: "POST", body: JSON.stringify(values) });
+        const result = await apiRequest("/admin/inventory", { method: "POST", body: JSON.stringify(values) });
+        const accountEmail = String(values.account_email || "");
         form.reset();
-        feedback.textContent = "Compte ajouté au stock.";
+        const emailInput = form.elements.namedItem("account_email");
+        if (emailInput) emailInput.value = accountEmail;
+        const fulfilled = Number(result.stock_reconciliation?.fulfilled || 0);
+        feedback.textContent = fulfilled > 0
+          ? "Profil ajouté et attribué automatiquement à une commande payée en attente."
+          : "Profil ajouté au stock.";
         feedback.className = "mt-3 text-xs text-green-300";
         await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
       } catch (error) {

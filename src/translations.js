@@ -735,6 +735,15 @@ const phrases = [
   ["L’accès au compte se fait uniquement par code OTP.", "The account is accessed exclusively with an OTP code.", "يتم الوصول إلى الحساب حصرياً باستخدام رمز OTP."],
   ["L’e-mail est utilisé comme sous-boîte Hostinger. Le serveur IMAP et son mot de passe commun restent configurés sur Render.", "The email address is used as the Hostinger sub-mailbox. The IMAP server and its shared password remain configured on Render.", "يُستخدم البريد الإلكتروني كصندوق Hostinger فرعي. يظل خادم IMAP وكلمة مروره المشتركة مضبوطين على Render."],
   ["Connexion OTP", "OTP sign-in", "تسجيل الدخول برمز OTP"],
+  ["Déconnecte d’abord l’ancien client avant de libérer un profil expiré ou annulé.", "Disconnect the previous customer before releasing an expired or cancelled profile.", "افصل العميل السابق أولاً قبل تحرير ملف منتهي أو ملغى."],
+  ["À libérer", "Ready to release", "جاهز للتحرير"],
+  ["Libérer", "Release", "تحرير"],
+  ["Confirme que l’ancien client a été déconnecté de ce profil. Le profil pourra être réattribué immédiatement à la plus ancienne commande payée en attente.", "Confirm that the previous customer has been disconnected from this profile. The profile may be reassigned immediately to the oldest paid order waiting.", "أكد أنه تم فصل العميل السابق عن هذا الملف. قد يُعاد تعيين الملف فوراً إلى أقدم طلب مدفوع قيد الانتظار."],
+  ["Profil libéré et réattribué à une commande payée", "Profile released and reassigned to a paid order", "تم تحرير الملف وإعادة تعيينه لطلب مدفوع"],
+  ["Profil libéré et remis en stock", "Profile released and returned to stock", "تم تحرير الملف وإعادته إلى المخزون"],
+  ["Libération impossible", "Unable to release profile", "تعذر تحرير الملف"],
+  ["Libération et réattribution d’un profil Netflix", "Netflix profile release and reassignment", "تحرير ملف نتفليكس وإعادة تعيينه"],
+  ["Profil ajouté et attribué automatiquement à une commande payée en attente.", "Profile added and automatically assigned to a paid order waiting.", "تمت إضافة الملف وتعيينه تلقائياً لطلب مدفوع قيد الانتظار."],
 ];
 
 export const TRANSLATIONS = {
