@@ -55,6 +55,8 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     const API_BASE = "/api";
     const authFeedback = document.getElementById("auth-feedback");
     let refreshPromise = null;
+    let authRevision = 0;
+    let sessionRestoreController = null;
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
     let currentUser = null;
     let lastSavedProfile = "";
@@ -256,9 +258,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       "/forgot-password",
       "/reset-password",
       "/refresh-session",
+      "/session",
     ]);
 
     function clearCurrentAuthSession({ redirectToLogin = true } = {}) {
+      interruptSessionRestore();
       clearAuthSession(sessionStorage, localStorage);
       setAccountState(null);
       adminLoaded = false;
@@ -317,7 +321,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const usesPublicAuth = publicAuthPaths.has(path);
 
       const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 30000);
+      const timeoutId = window.setTimeout(() => controller.abort(), usesPublicAuth ? 65000 : 30000);
       const headers = { "Content-Type": "application/json", "Accept-Language": getLanguage(), ...(requestOptions.headers || {}) };
       try {
         const response = await fetch(`${API_BASE}${path}`, {
@@ -504,14 +508,28 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
+    function interruptSessionRestore() {
+      authRevision += 1;
+      sessionRestoreController?.abort();
+      sessionRestoreController = null;
+    }
+
     async function restoreSession() {
+      const revision = authRevision;
+      const controller = new AbortController();
+      sessionRestoreController = controller;
+      const timeout = window.setTimeout(() => controller.abort(), 60000);
       try {
-        const result = await apiRequest("/me");
+        const result = await apiRequest("/session", {
+          method: "POST", body: "{}", cache: "no-store", signal: controller.signal,
+        });
+        if (revision !== authRevision) return false;
         setAccountState(result.user);
+        if (!result.authenticated || !result.user) return false;
         if (result.user?.is_admin === true && activeRoute === "admin") {
-          await loadAdminDashboard();
+          void loadAdminDashboard();
         } else if (activeRoute === "order") {
-          await loadMyOrders();
+          void loadMyOrders();
         }
         const loginView = document.querySelector('[data-view="login"]');
         if (loginView && !loginView.classList.contains("hidden")) {
@@ -525,10 +543,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         }
         return true;
       } catch {
+        if (revision !== authRevision) return false;
         setAccountState(null);
         adminLoaded = false;
         if (["admin", "order"].includes(activeRoute)) showRoute("login");
         return false;
+      } finally {
+        window.clearTimeout(timeout);
+        if (sessionRestoreController === controller) sessionRestoreController = null;
       }
     }
 
@@ -754,6 +776,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
                   <p class="mt-2 text-sm font-semibold ${isExpired ? "text-red-700" : "text-black/65"}"><i class="fa-regular fa-calendar mr-2" aria-hidden="true"></i>Expiration : ${escapeHTML(expiration)}</p>
                 </div>
                 <div class="flex items-center gap-3 sm:flex-col sm:items-end">
+                  ${order.payment_status === "paid" ? `<span class="rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-800">${t("Paiement confirmé")}</span>` : ""}
                   <span class="rounded-full px-3 py-1.5 text-xs font-bold ${status.style}">${status.label}</span>
                   <strong class="font-title text-lg text-aura">${formatPrice(Number(order.amount || 0))}</strong>
                 </div>
@@ -2064,6 +2087,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     });
     async function signOutCurrentSession(button) {
+      interruptSessionRestore();
       if (button) button.disabled = true;
       try {
         if (currentUser) await apiRequest("/logout", { method: "POST" });
@@ -2209,6 +2233,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("signin-form").addEventListener("submit", async event => {
       event.preventDefault();
+      interruptSessionRestore();
       const form = event.currentTarget;
       const submitButton = form.querySelector('button[type="submit"]');
       const originalLabel = submitButton.textContent;
@@ -2244,6 +2269,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("signup-form").addEventListener("submit", async event => {
       event.preventDefault();
+      interruptSessionRestore();
       const form = event.currentTarget;
       const submitButton = form.querySelector('button[type="submit"]');
       const originalLabel = submitButton.textContent;
