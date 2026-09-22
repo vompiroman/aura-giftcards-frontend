@@ -1762,12 +1762,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const result = await apiRequest("/admin/inventory");
         adminInventory = Array.isArray(result.inventory) ? result.inventory : [];
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
-        list.innerHTML = adminInventory.map(item => `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
+        list.innerHTML = adminInventory.map(item => {
+          const deletionRequiresDisconnect = Boolean(item.is_used && item.releasable);
+          const deleteButton = item.is_used && !item.releasable
+            ? `<button class="min-h-11 cursor-not-allowed rounded-xl border border-black/10 px-4 text-xs font-bold text-black/30" type="button" disabled title="${escapeHTML(t("L'abonnement est encore actif. La suppression sera disponible après son expiration."))}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`
+            : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}" data-confirm-disconnected="${deletionRequiresDisconnect}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`;
+          return `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
-            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${item.is_used ? "" : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`}</div>
+            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
           </div>
-        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
+        </article>`;
+        }).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
           button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
         });
@@ -1789,10 +1795,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
         list.querySelectorAll(".admin-delete-stock").forEach(button => {
           button.addEventListener("click", async () => {
-            if (!window.confirm(t("Supprimer ce compte non attribué du stock ?"))) return;
+            const confirmDisconnected = button.dataset.confirmDisconnected === "true";
+            const confirmationMessage = confirmDisconnected
+              ? t("Confirme que l'ancien client a été déconnecté. Ce profil sera supprimé définitivement du stock.")
+              : t("Supprimer ce compte non attribué du stock ?");
+            if (!window.confirm(confirmationMessage)) return;
             button.disabled = true;
             try {
-              await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}`, { method: "DELETE" });
+              await apiRequest(`/admin/inventory/${encodeURIComponent(button.dataset.stockId)}`, {
+                method: "DELETE",
+                body: JSON.stringify({ confirm_disconnected: confirmDisconnected })
+              });
               showToast("Compte retiré du stock");
               await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
             } catch (error) {

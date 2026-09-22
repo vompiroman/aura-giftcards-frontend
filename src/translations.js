@@ -458,6 +458,8 @@ const phrases = [
   ["Statut de la commande mis à jour", "Order status updated", "تم تحديث حالة الطلب"],
   ["Suppression impossible", "Unable to delete", "تعذر الحذف"],
   ["Supprimer ce compte non attribué du stock ?", "Remove this unassigned account from stock?", "هل تريد حذف هذا الحساب غير المخصص من المخزون؟"],
+  ["Confirme que l'ancien client a été déconnecté. Ce profil sera supprimé définitivement du stock.", "Confirm that the previous customer has been signed out. This profile will be permanently removed from inventory.", "أكد تسجيل خروج العميل السابق. سيُحذف هذا الملف نهائياً من المخزون."],
+  ["L'abonnement est encore actif. La suppression sera disponible après son expiration.", "The subscription is still active. Deletion will be available after it expires.", "لا يزال الاشتراك نشطاً. ستتوفر إمكانية الحذف بعد انتهائه."],
   ["Sélectionnez une date de début et une date de fin.", "Select a start date and an end date.", "اختر تاريخ بداية وتاريخ نهاية."],
   ["Ton panier est vide", "Your cart is empty", "سلتك فارغة"],
   ["Ton panier est vide.", "Your cart is empty.", "سلتك فارغة."],
