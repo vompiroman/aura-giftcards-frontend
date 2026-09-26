@@ -1791,15 +1791,21 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const deleteButton = item.is_used && !item.releasable
             ? `<button class="min-h-11 cursor-not-allowed rounded-xl border border-black/10 px-4 text-xs font-bold text-black/30" type="button" disabled title="${escapeHTML(t("L'abonnement est encore actif. La suppression sera disponible après son expiration."))}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`
             : `<button class="admin-delete-stock min-h-11 rounded-xl border border-red-200 px-4 text-xs font-bold text-red-700 transition hover:bg-red-50" type="button" data-stock-id="${escapeHTML(item.id)}" data-confirm-disconnected="${deletionRequiresDisconnect}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`;
+          const manualAssignButton = !item.is_used
+            ? `<button class="admin-manual-assign-stock min-h-11 rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-blue-800 transition hover:bg-blue-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-link mr-2" aria-hidden="true"></i>Attribution manuelle</button>`
+            : "";
           return `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
-            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
+            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${manualAssignButton}${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
           </div>
         </article>`;
         }).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
           button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
+        });
+        list.querySelectorAll(".admin-manual-assign-stock").forEach(button => {
+          button.addEventListener("click", () => openAdminManualAssignment(button.dataset.stockId));
         });
         list.querySelectorAll(".admin-test-stock-mailbox").forEach(button => {
           button.addEventListener("click", async () => {
@@ -1860,6 +1866,79 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
       }
     }
+
+    async function openAdminManualAssignment(stockId) {
+      const dialog = document.getElementById("admin-assignment-dialog");
+      const form = document.getElementById("admin-assignment-form");
+      const select = document.getElementById("admin-assignment-order");
+      const empty = document.getElementById("admin-assignment-empty");
+      const feedback = document.getElementById("admin-assignment-feedback");
+      const submit = document.getElementById("admin-assignment-submit");
+      if (!dialog || !form || !select || !empty || !submit) return;
+      form.elements.inventory_id.value = stockId;
+      select.innerHTML = `<option value="">${escapeHTML(t("Chargement des commandes…"))}</option>`;
+      select.disabled = true;
+      submit.disabled = true;
+      empty.classList.add("hidden");
+      if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
+      dialog.showModal();
+      try {
+        const result = await apiRequest(`/admin/inventory/${encodeURIComponent(stockId)}/assignment-options`);
+        const orders = Array.isArray(result.orders) ? result.orders : [];
+        select.innerHTML = orders.map(order => {
+          const items = Array.isArray(order.items) ? order.items : [];
+          const summary = items.map(item => `${item.name || item.service || "Netflix"} x${Number(item.quantity || 1)}`).join(", ");
+          return `<option value="${escapeHTML(order.order_id)}">${escapeHTML(order.order_id)} · ${escapeHTML(order.assigned_email || "")} · ${escapeHTML(summary)}</option>`;
+        }).join("");
+        if (orders.length === 0) {
+          select.innerHTML = `<option value="">${escapeHTML(t("Aucune commande Netflix payée n’attend actuellement ce profil."))}</option>`;
+          empty.classList.remove("hidden");
+        } else {
+          submit.disabled = false;
+        }
+      } catch (error) {
+        select.innerHTML = `<option value="">${escapeHTML(t("Impossible de charger les commandes."))}</option>`;
+        if (feedback) {
+          feedback.textContent = error.message || t("Impossible de charger les commandes.");
+          feedback.className = "mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-800";
+        }
+      } finally {
+        select.disabled = false;
+      }
+    }
+
+    const adminAssignmentDialog = document.getElementById("admin-assignment-dialog");
+    const closeAdminAssignmentDialog = () => adminAssignmentDialog?.open && adminAssignmentDialog.close();
+    document.getElementById("admin-assignment-dialog-close")?.addEventListener("click", closeAdminAssignmentDialog);
+    document.getElementById("admin-assignment-dialog-cancel")?.addEventListener("click", closeAdminAssignmentDialog);
+    adminAssignmentDialog?.addEventListener("click", event => {
+      if (event.target === adminAssignmentDialog) closeAdminAssignmentDialog();
+    });
+    document.getElementById("admin-assignment-form")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const button = document.getElementById("admin-assignment-submit");
+      const feedback = document.getElementById("admin-assignment-feedback");
+      const inventoryId = String(form.elements.inventory_id.value || "");
+      const orderId = String(form.elements.order_id.value || "");
+      if (!inventoryId || !orderId || !button) return;
+      button.disabled = true;
+      try {
+        await apiRequest(`/admin/inventory/${encodeURIComponent(inventoryId)}/assign`, {
+          method: "POST",
+          body: JSON.stringify({ order_id: orderId }),
+        });
+        showToast(t("Profil attribué à la commande"));
+        closeAdminAssignmentDialog();
+        await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminOrders(), loadAdminAudit()]);
+      } catch (error) {
+        if (feedback) {
+          feedback.textContent = error.message || t("Attribution impossible.");
+          feedback.className = "mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-800";
+        }
+        button.disabled = false;
+      }
+    });
 
     function openAdminStockEditor(stockId) {
       const item = adminInventory.find(entry => String(entry.id) === String(stockId));
@@ -2044,9 +2123,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const emailInput = form.elements.namedItem("account_email");
         if (emailInput) emailInput.value = accountEmail;
         const fulfilled = Number(result.stock_reconciliation?.fulfilled || 0);
-        feedback.textContent = fulfilled > 0
-          ? "Profil ajouté et attribué automatiquement à une commande payée en attente."
-          : "Profil ajouté au stock.";
+        feedback.textContent = result.manual_assignment
+          ? t("Profil ajouté au stock. Choisis une commande avec Attribution manuelle.")
+          : fulfilled > 0
+          ? t("Profil ajouté et attribué automatiquement à une commande payée en attente.")
+          : t("Profil ajouté au stock.");
         feedback.className = "mt-3 text-xs text-green-300";
         await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
       } catch (error) {
