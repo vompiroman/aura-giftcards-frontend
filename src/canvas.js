@@ -116,6 +116,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 });
 
     const CART_STORAGE_KEY = "aura_checkout_cart";
+    const RENEWAL_ORDER_STORAGE_KEY = "aura_checkout_renewal_order_id";
     const allowedCartPrices = new Map([
       ["Netflix|Netflix Premium|1 mois", 600],
       ["Netflix|Netflix Premium|2 mois", 1100],
@@ -144,10 +145,29 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function persistCart() {
       if (cart.length > 0) sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      else sessionStorage.removeItem(CART_STORAGE_KEY);
+      else {
+        sessionStorage.removeItem(CART_STORAGE_KEY);
+        setRenewalOrderId(null);
+      }
+    }
+
+    function loadSavedRenewalOrderId() {
+      const value = String(sessionStorage.getItem(RENEWAL_ORDER_STORAGE_KEY) || "").trim();
+      if (/^ORD-[A-Za-z0-9-]{6,40}$/.test(value)) return value;
+      sessionStorage.removeItem(RENEWAL_ORDER_STORAGE_KEY);
+      return null;
+    }
+
+    function setRenewalOrderId(value) {
+      renewalOrderId = typeof value === "string" && /^ORD-[A-Za-z0-9-]{6,40}$/.test(value)
+        ? value
+        : null;
+      if (renewalOrderId) sessionStorage.setItem(RENEWAL_ORDER_STORAGE_KEY, renewalOrderId);
+      else sessionStorage.removeItem(RENEWAL_ORDER_STORAGE_KEY);
     }
 
     let cart = loadSavedCart();
+    let renewalOrderId = loadSavedRenewalOrderId();
     let activeRoute = "home";
     let lastTrackedLanding = "";
     const landingRoutes = {
@@ -618,6 +638,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return;
       }
       cart = renewedItems;
+      setRenewalOrderId(String(order.order_id || order.id || ""));
       clearPromo();
       updateCart();
       setCheckoutStep(1);
@@ -1084,6 +1105,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     function addItemToCart(item, button) {
+      setRenewalOrderId(null);
       cart.push(item);
       clearPromo();
       updateCart();
@@ -1192,6 +1214,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
       document.querySelectorAll(".remove-cart").forEach(removeButton => {
         removeButton.addEventListener("click", () => {
+          setRenewalOrderId(null);
           cart.splice(Number(removeButton.dataset.index), 1);
           clearPromo();
           updateCart();
@@ -1288,7 +1311,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
           promo_code: activePromo?.code || undefined,
           customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined,
-          activation_credentials: checkoutActivationCredentials()
+          activation_credentials: checkoutActivationCredentials(),
+          renewal_order_id: renewalOrderId || undefined
         };
         const fingerprint = await checkoutPayloadFingerprint(orderPayload);
         if (pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
@@ -2355,6 +2379,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         await apiRequest("/verify-payment", { method: "POST", body: JSON.stringify({ order_id: orderId }) });
         cart = [];
+        setRenewalOrderId(null);
         activePromo = null;
         updateCart();
         showRoute("order");
