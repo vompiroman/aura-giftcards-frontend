@@ -120,7 +120,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     const allowedCartPrices = new Map([
       ["Netflix|Netflix Premium|1 mois", 600],
       ["Netflix|Netflix Premium|2 mois", 1100],
-      ["Spotify|Spotify Family|1 mois", 500],
+      ["Spotify|Spotify Family|1 mois", 800],
       ["Spotify|Spotify Family|1 an", 4000],
       ["Crunchyroll|Crunchyroll Mega Fan|1 mois", 500],
       ["Crunchyroll|Crunchyroll Mega Fan|1 an", 3000],
@@ -185,7 +185,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         description: "Accès Spotify Family activé sur ton compte avec accompagnement humain en Algérie.",
         product: "Spotify Family",
         service: "Spotify",
-        price: 500,
+        price: 800,
       },
       "landing-crunchyroll": {
         path: "/crunchyroll-mega-fan-algerie",
@@ -607,7 +607,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const prices = {
         "Netflix|1 mois": 600,
         "Netflix|2 mois": 1100,
-        "Spotify|1 mois": 500,
+        "Spotify|1 mois": 800,
         "Crunchyroll|1 mois": 500,
         "Crunchyroll|1 an": 3000,
         "Spotify|1 an": 4000
@@ -679,6 +679,23 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         button.innerHTML = originalLabel;
       }
     }
+
+    const netflixConnectionGuide = document.getElementById("netflix-connection-guide");
+    const closeNetflixConnectionGuide = () => {
+      if (netflixConnectionGuide?.open) netflixConnectionGuide.close();
+    };
+
+    function openNetflixConnectionGuide() {
+      if (!netflixConnectionGuide) return;
+      netflixConnectionGuide.showModal();
+      document.getElementById("netflix-guide-close")?.focus();
+    }
+
+    document.getElementById("netflix-guide-close")?.addEventListener("click", closeNetflixConnectionGuide);
+    document.getElementById("netflix-guide-understood")?.addEventListener("click", closeNetflixConnectionGuide);
+    netflixConnectionGuide?.addEventListener("click", event => {
+      if (event.target === netflixConnectionGuide) closeNetflixConnectionGuide();
+    });
 
     async function loadMyOrders() {
       const container = document.getElementById("my-orders-content");
@@ -758,6 +775,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const netflixCodeButtons = canGetNetflixCode
             ? assignedAccounts.map((assignedAccount, accountIndex) => `<button type="button" class="get-netflix-code min-h-11 rounded-xl bg-[#E50914] px-5 font-title text-sm font-bold text-white transition hover:bg-[#B8070F]" data-order-id="${orderId}" data-inventory-id="${escapeHTML(assignedAccount.id || "")}"><i class="fa-solid fa-key mr-2" aria-hidden="true"></i>${assignedAccounts.length > 1 ? `${t("Obtenir le code")} · ${t("Profil")} ${formatLocalizedNumber(accountIndex + 1)}` : t("Obtenir le code")}</button>`).join("")
             : "";
+          const netflixGuideButton = hasNetflix
+            ? `<button type="button" class="open-netflix-guide min-h-11 rounded-xl border border-[#E50914]/35 bg-red-50 px-5 font-title text-sm font-bold text-[#B8070F] transition hover:border-[#E50914] hover:bg-red-100"><i class="fa-regular fa-circle-question mr-2" aria-hidden="true"></i>${t("Comment se connecter ?")}</button>`
+            : "";
           const manualActivationForms = order.payment_status === "paid" && !isExpired &&
             !["active", "completed"].includes(order.status)
             ? items.filter(item => {
@@ -805,6 +825,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               ${account}
               ${manualActivationForms}
               <div class="mt-5 flex flex-wrap gap-3 border-t border-black/10 pt-5">
+                ${netflixGuideButton}
                 ${netflixCodeButtons}
                 ${canRenew ? `<button type="button" class="renew-order min-h-11 rounded-xl border border-aura px-5 font-title text-sm font-bold text-aura transition hover:bg-aura hover:text-white" data-order-index="${orderIndex}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Renouveler</button>` : ""}
               </div>
@@ -816,6 +837,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
         container.querySelectorAll(".get-netflix-code").forEach(button => {
           button.addEventListener("click", () => requestNetflixCode(button));
+        });
+        container.querySelectorAll(".open-netflix-guide").forEach(button => {
+          button.addEventListener("click", openNetflixConnectionGuide);
         });
         container.querySelectorAll(".activation-credentials-form").forEach(form => {
           form.addEventListener("submit", async event => {

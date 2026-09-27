@@ -84,6 +84,9 @@ for (const marker of [
   "setCheckoutCredentialRequirement",
   "const profileSaved = await saveCheckoutProfile",
   "Array.isArray(order.accounts)",
+  'id="netflix-connection-guide"',
+  "open-netflix-guide",
+  "openNetflixConnectionGuide",
   'data-duration="2 mois" data-price="1100"',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
@@ -92,7 +95,7 @@ for (const marker of [
 for (const offer of [
   '"Netflix|1 mois": 600',
   '"Netflix|2 mois": 1100',
-  '"Spotify|1 mois": 500',
+  '"Spotify|1 mois": 800',
   '"Spotify|1 an": 4000',
   '"Crunchyroll|1 mois": 500',
   '"Crunchyroll|1 an": 3000',
