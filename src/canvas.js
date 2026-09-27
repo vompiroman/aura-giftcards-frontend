@@ -53,6 +53,38 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     // Keep authentication same-origin. Vercel and the local Vite server proxy
     // /api to Render, so HttpOnly cookies never become third-party cookies.
     const API_BASE = "/api";
+    let clientErrorReportInFlight = false;
+    function reportClientError({ event = "runtime", message = "Unexpected client error", source = "browser", line, column } = {}) {
+      if (clientErrorReportInFlight) return;
+      clientErrorReportInFlight = true;
+      const payload = {
+        event: String(event).slice(0, 40),
+        message: String(message).replace(/[?#].*$/, "").slice(0, 300),
+        route: window.location.pathname.slice(0, 160),
+        source: String(source).split(/[?#]/)[0].slice(0, 160),
+        line: Number.isFinite(Number(line)) ? Number(line) : undefined,
+        column: Number.isFinite(Number(column)) ? Number(column) : undefined,
+      };
+      fetch(`${API_BASE}/client-errors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        keepalive: true,
+        body: JSON.stringify(payload),
+      }).catch(() => {}).finally(() => { clientErrorReportInFlight = false; });
+    }
+    window.addEventListener("error", event => reportClientError({
+      event: "runtime",
+      message: event.message || "Window error",
+      source: event.filename || "browser",
+      line: event.lineno,
+      column: event.colno,
+    }));
+    window.addEventListener("unhandledrejection", event => reportClientError({
+      event: "unhandledrejection",
+      message: event.reason instanceof Error ? event.reason.message : "Unhandled promise rejection",
+      source: "promise",
+    }));
     const authFeedback = document.getElementById("auth-feedback");
     let refreshPromise = null;
     let authRevision = 0;
@@ -230,7 +262,33 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.querySelector('meta[property="og:title"]')?.setAttribute("content", title);
       document.querySelector('meta[property="og:description"]')?.setAttribute("content", description);
       document.querySelector('meta[property="og:url"]')?.setAttribute("content", canonicalUrl);
+      document.querySelector('meta[property="og:type"]')?.setAttribute("content", landingRoutes[route] ? "product" : "website");
+      document.querySelector('meta[name="twitter:title"]')?.setAttribute("content", title);
+      document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", description);
       document.querySelector('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
+
+      document.querySelectorAll("[data-page-schema], [data-route-schema]").forEach(node => node.remove());
+      const landing = landingRoutes[route];
+      if (landing) {
+        const schema = document.createElement("script");
+        schema.type = "application/ld+json";
+        schema.dataset.routeSchema = "";
+        schema.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: landing.product,
+          url: canonicalUrl,
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "DZD",
+            price: landing.price,
+            availability: "https://schema.org/InStock",
+            url: canonicalUrl,
+            seller: { "@type": "Organization", name: "Aura Stream" },
+          },
+        });
+        document.head.append(schema);
+      }
     }
 
     function trackLandingView(route) {
@@ -422,6 +480,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       adminLinks.forEach(link => link.classList.toggle("hidden", !isAdminUser));
       const adminIdentity = document.getElementById("admin-identity");
       if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || t("administrateur")}` : "";
+      syncCheckoutAccess();
       if (!authenticated) return;
 
       const metadata = currentUser.user_metadata || {};
@@ -721,9 +780,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         if (orders.length === 0) {
           container.innerHTML = `
             <div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft">
-              <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-black/5 text-xl text-black/40"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
+              <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-black/5 text-xl text-black/60"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
               <h2 class="mt-5 font-title text-xl font-bold">Aucune commande confirmée</h2>
-              <p class="mt-2 text-sm text-black/50">Tes commandes payées apparaîtront ici.</p>
+              <p class="mt-2 text-sm text-black/60">Tes commandes payées apparaîtront ici.</p>
               <button type="button" class="route-link mt-6 min-h-11 rounded-xl bg-aura px-5 font-title text-sm font-bold text-white" data-route="products">Voir les offres</button>
             </div>`;
           container.querySelector(".route-link").addEventListener("click", event => showRoute(event.currentTarget.dataset.route));
@@ -813,7 +872,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
                 <div>
                   <p class="text-xs font-bold uppercase tracking-[0.12em] text-aura">${orderId}</p>
                   <h2 class="mt-2 font-title text-lg font-bold">${itemNames || "Commande Aura Stream"}</h2>
-                  <p class="mt-2 text-xs text-black/45">${escapeHTML(date)}</p>
+                  <p class="mt-2 text-xs text-black/60">${escapeHTML(date)}</p>
                   <p class="mt-2 text-sm font-semibold ${isExpired ? "text-red-700" : "text-black/65"}"><i class="fa-regular fa-calendar mr-2" aria-hidden="true"></i>Expiration : ${escapeHTML(expiration)}</p>
                 </div>
                 <div class="flex items-center gap-3 sm:flex-col sm:items-end">
@@ -1012,7 +1071,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     document.addEventListener("click", event => {
       const link = event.target.closest(".route-link");
       if (!link) return;
+      event.preventDefault();
       showRoute(link.dataset.route, link.dataset.scroll);
+      if (link.dataset.authPanelTarget) showAuthPanel(link.dataset.authPanelTarget);
     });
 
     document.getElementById("home-tracking-example-button")?.addEventListener("click", () => {
@@ -1205,14 +1266,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!itemsContainer) return;
 
       if (cart.length === 0) {
-        itemsContainer.innerHTML = '<p class="py-8 text-center text-sm text-black/50">Ton panier est vide.</p>';
+        itemsContainer.innerHTML = '<p class="py-8 text-center text-sm text-black/60">Ton panier est vide.</p>';
       } else {
         itemsContainer.innerHTML = cart.map((item, index) => `
           <article class="flex items-start gap-3 py-4 first:pt-0">
             <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-sm font-extrabold">${item.service[0]}</span>
             <div class="min-w-0 flex-1">
               <h3 class="truncate font-title text-sm font-bold">${item.name}</h3>
-              <p class="mt-1 text-xs text-black/45">${item.duration}</p>
+              <p class="mt-1 text-xs text-black/60">${item.duration}</p>
             </div>
             <div class="text-right">
               <p class="font-title text-sm font-extrabold">${formatPrice(item.price)}</p>
@@ -1246,6 +1307,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
       });
       updateMobileCartBar();
+      syncCheckoutAccess();
     }
 
     document.getElementById("mobile-cart-button")?.addEventListener("click", () => {
@@ -1265,10 +1327,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       updateCart();
     });
 
-    function setCheckoutStep(step) {
+    let currentCheckoutStep = 1;
+
+    function syncCheckoutAccess() {
+      const requiresAuthentication = !currentUser && cart.length > 0;
+      document.getElementById("checkout-auth-gate")?.classList.toggle("hidden", !requiresAuthentication);
       document.querySelectorAll("[data-checkout-panel]").forEach(panel => {
-        panel.classList.toggle("hidden", Number(panel.dataset.checkoutPanel) !== step);
+        panel.classList.toggle("hidden", requiresAuthentication || Number(panel.dataset.checkoutPanel) !== currentCheckoutStep);
       });
+    }
+
+    function setCheckoutStep(step) {
+      currentCheckoutStep = step;
+      syncCheckoutAccess();
       document.querySelectorAll("[data-step-indicator]").forEach(indicator => {
         indicator.classList.toggle("opacity-40", Number(indicator.dataset.stepIndicator) > step);
       });
@@ -1360,6 +1431,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         clearCheckoutCredentialPasswords();
         window.location.assign(invoice.payment_url);
       } catch (error) {
+        reportClientError({
+          event: "checkout",
+          message: error instanceof Error ? error.message : "Checkout preparation failed",
+          source: "payment",
+        });
         showToast(error.message || "Impossible de préparer le paiement");
         button.disabled = false;
         button.innerHTML = originalLabel;
@@ -1592,7 +1668,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (exportButton) exportButton.disabled = true;
       setAdminRevenueFeedback("");
       if (chart) {
-        chart.innerHTML = '<p class="grid min-h-56 place-items-center text-sm font-semibold text-black/45"><i class="fa-solid fa-spinner fa-spin mr-2 text-aura" aria-hidden="true"></i>Calcul des revenus…</p>';
+        chart.innerHTML = '<p class="grid min-h-56 place-items-center text-sm font-semibold text-black/60"><i class="fa-solid fa-spinner fa-spin mr-2 text-aura" aria-hidden="true"></i>Calcul des revenus…</p>';
       }
       const params = new URLSearchParams({
         start_date: range.startDate,
@@ -1638,7 +1714,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }).join("");
       chart.innerHTML = chartDays
         ? `<div class="revenue-chart-inner" role="list" style="--revenue-days:${daily.length}">${chartDays}</div>`
-        : '<p class="grid min-h-56 place-items-center text-sm text-black/45">Aucune vente sur cette période.</p>';
+        : '<p class="grid min-h-56 place-items-center text-sm text-black/60">Aucune vente sur cette période.</p>';
       adminRevenueReport = {
         startDate: result.period_start || range.startDate,
         endDate: result.period_end || range.endDate,
@@ -1651,7 +1727,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const available = Number(item.available || 0);
         const warning = available <= 2;
         return `<article class="flex items-center justify-between rounded-xl border border-black/10 p-4">
-          <div><p class="font-title text-sm font-bold capitalize">${escapeHTML(item.service)}</p><p class="mt-1 text-xs text-black/45">${Number(item.assigned || 0)} attribué(s)</p></div>
+          <div><p class="font-title text-sm font-bold capitalize">${escapeHTML(item.service)}</p><p class="mt-1 text-xs text-black/60">${Number(item.assigned || 0)} attribué(s)</p></div>
           <span class="rounded-full px-3 py-1.5 text-xs font-extrabold ${warning ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}">${available} disponible(s)</span>
         </article>`;
       }).join("");
@@ -1660,7 +1736,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function loadAdminOrders() {
       const list = document.getElementById("admin-orders-list");
       if (!list || currentUser?.is_admin !== true) return;
-      list.innerHTML = '<p class="py-8 text-center text-sm text-black/45"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Chargement…</p>';
+      list.innerHTML = '<p class="py-8 text-center text-sm text-black/60"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Chargement…</p>';
       const params = new URLSearchParams({
         page: String(adminOrdersPage),
         limit: "25",
@@ -1707,9 +1783,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               <div class="min-w-0">
                 <div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(order.order_id)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${paymentClass}">${escapeHTML(adminPaymentStatusLabel(order.payment_status || "unpaid"))}</span></div>
                 <p class="mt-2 truncate text-sm text-black/65">${escapeHTML(order.assigned_email || "Sans e-mail")}</p>
-                ${whatsapp ? `<a class="mt-1 inline-flex items-center gap-2 text-sm font-bold text-[#148A45] hover:underline" href="https://wa.me/${escapeHTML(whatsappDigits)}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>${escapeHTML(whatsapp)}</a>` : '<p class="mt-1 text-xs text-black/40">WhatsApp non renseigné</p>'}
-                <p class="mt-1 text-xs text-black/45">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
-                <div class="mt-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${followUp.className}">${followUp.label}</span>${order.expires_at ? `<span class="text-xs text-black/45">Expiration : ${formatDateTime(order.expires_at)}</span>` : ""}</div>
+                ${whatsapp ? `<a class="mt-1 inline-flex items-center gap-2 text-sm font-bold text-[#148A45] hover:underline" href="https://wa.me/${escapeHTML(whatsappDigits)}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>${escapeHTML(whatsapp)}</a>` : '<p class="mt-1 text-xs text-black/60">WhatsApp non renseigné</p>'}
+                <p class="mt-1 text-xs text-black/60">${items || "Aucun article"} · ${formatDateTime(order.created_at)}</p>
+                <div class="mt-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${followUp.className}">${followUp.label}</span>${order.expires_at ? `<span class="text-xs text-black/60">Expiration : ${formatDateTime(order.expires_at)}</span>` : ""}</div>
                 ${activationCredentials}
               </div>
               <div class="flex flex-wrap items-center gap-3">
@@ -1723,7 +1799,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               </div>
             </div>
           </article>`;
-        }).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucune commande ne correspond aux filtres.</p>';
+        }).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucune commande ne correspond aux filtres.</p>';
         list.querySelectorAll(".admin-order-status-select").forEach(select => {
           select.addEventListener("change", async () => {
             select.disabled = true;
@@ -1820,11 +1896,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             : "";
           return `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/40">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/40">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
+            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/60">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/60">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
             <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${manualAssignButton}${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
           </div>
         </article>`;
-        }).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun compte en stock.</p>';
+        }).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucun compte en stock.</p>';
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
           button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
         });
@@ -1987,16 +2063,16 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const promos = Array.isArray(result.promo_codes) ? result.promo_codes : [];
         list.innerHTML = promos.map(promo => `<article class="rounded-2xl border border-black/10 p-5">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-lg tracking-[0.12em]">${escapeHTML(promo.masked_code)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${promo.active ? "bg-green-50 text-green-700" : "bg-black/5 text-black/50"}">${promo.active ? "Actif" : "Inactif"}</span></div><p class="mt-2 text-sm text-black/50">${Number(promo.discount_value || 0)} % · ${(promo.services || []).map(escapeHTML).join(", ") || "Toute la boutique"}</p></div>
+            <div><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-lg tracking-[0.12em]">${escapeHTML(promo.masked_code)}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${promo.active ? "bg-green-50 text-green-700" : "bg-black/5 text-black/60"}">${promo.active ? "Actif" : "Inactif"}</span></div><p class="mt-2 text-sm text-black/60">${Number(promo.discount_value || 0)} % · ${(promo.services || []).map(escapeHTML).join(", ") || "Toute la boutique"}</p></div>
             <button class="admin-toggle-promo min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold hover:border-aura hover:text-aura" type="button" data-promo-id="${escapeHTML(promo.id)}" data-active="${promo.active}">${promo.active ? "Désactiver" : "Réactiver"}</button>
           </div>
           <div class="mt-5 grid grid-cols-2 gap-3 border-t border-black/10 pt-5 sm:grid-cols-4">
-            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Ventes</p><p class="mt-1 font-title text-xl font-extrabold">${Number(promo.sales_count || 0)}</p></div>
-            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Revenu généré</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.revenue_amount || 0))}</p></div>
-            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Réductions</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.discount_total || 0))}</p></div>
-            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/40">Dernière vente</p><p class="mt-1 text-xs font-semibold">${formatDateTime(promo.last_used_at)}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/60">Ventes</p><p class="mt-1 font-title text-xl font-extrabold">${Number(promo.sales_count || 0)}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/60">Revenu généré</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.revenue_amount || 0))}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/60">Réductions</p><p class="mt-1 font-title text-xl font-extrabold">${formatPrice(Number(promo.discount_total || 0))}</p></div>
+            <div><p class="text-[10px] font-bold uppercase tracking-wide text-black/60">Dernière vente</p><p class="mt-1 text-xs font-semibold">${formatDateTime(promo.last_used_at)}</p></div>
           </div>
-        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucun code promo créé.</p>';
+        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucun code promo créé.</p>';
         list.querySelectorAll(".admin-toggle-promo").forEach(button => {
           button.addEventListener("click", async () => {
             button.disabled = true;
@@ -2053,8 +2129,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const events = Array.isArray(result.events) ? result.events : [];
         list.innerHTML = events.map(event => `<article class="flex gap-4 rounded-2xl border border-black/10 p-4">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-black/55"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
-          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(adminAuditActionLabel(event.action))}</p><p class="mt-1 truncate text-xs text-black/45">${escapeHTML(adminAuditTargetLabel(event.target_type))}${event.target_id ? ` · <bdi dir="ltr">${escapeHTML(event.target_id)}</bdi>` : ""}</p><p class="mt-1 text-[11px] text-black/35">${formatDateTime(event.created_at)}</p></div>
-        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/45">Aucune activité récente.</p>';
+          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(adminAuditActionLabel(event.action))}</p><p class="mt-1 truncate text-xs text-black/60">${escapeHTML(adminAuditTargetLabel(event.target_type))}${event.target_id ? ` · <bdi dir="ltr">${escapeHTML(event.target_id)}</bdi>` : ""}</p><p class="mt-1 text-[11px] text-black/60">${formatDateTime(event.created_at)}</p></div>
+        </article>`).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucune activité récente.</p>';
       } catch (error) {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
       }
@@ -2259,7 +2335,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         tab.setAttribute("aria-selected", String(selected));
         tab.classList.toggle("bg-white", selected);
         tab.classList.toggle("shadow-sm", selected);
-        tab.classList.toggle("text-black/45", !selected);
+        tab.classList.toggle("text-black/60", !selected);
       });
       document.querySelectorAll("[data-auth-panel]").forEach(panel => {
         panel.classList.toggle("hidden", panel.dataset.authPanel !== name);

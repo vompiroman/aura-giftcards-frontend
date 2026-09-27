@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tailwindcss -i ./src/canvas.css -o ./public/canvas.css --minify && vite build",
+    "build": "tailwindcss -i ./src/canvas.css -o ./public/canvas.css --minify && vite build && node scripts/generate-landing-pages.mjs",
     "preview": "vite preview",
     "test:meta": "node scripts/test-meta.mjs",
     "test:session": "node scripts/test-session.mjs",
