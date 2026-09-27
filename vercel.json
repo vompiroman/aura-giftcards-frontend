@@ -11,19 +11,19 @@
   "rewrites": [
     {
       "source": "/netflix-algerie",
-      "destination": "/index.html"
+      "destination": "/netflix-algerie/index.html"
     },
     {
       "source": "/spotify-family-algerie",
-      "destination": "/index.html"
+      "destination": "/spotify-family-algerie/index.html"
     },
     {
       "source": "/crunchyroll-mega-fan-algerie",
-      "destination": "/index.html"
+      "destination": "/crunchyroll-mega-fan-algerie/index.html"
     },
     {
       "source": "/legal",
-      "destination": "/index.html"
+      "destination": "/legal/index.html"
     },
     {
       "source": "/api/:path*",

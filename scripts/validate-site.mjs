@@ -16,6 +16,16 @@ const [html, app, styles, meta, session, vercel, robots, sitemap, distHtml, dist
 ]);
 
 const source = [html, app, styles, meta, session, vercel, robots, sitemap].join("\n");
+const generatedPages = await Promise.all([
+  ["netflix-algerie", "Netflix Premium", "600"],
+  ["spotify-family-algerie", "Spotify Family", "800"],
+  ["crunchyroll-mega-fan-algerie", "Crunchyroll Mega Fan", "500"],
+].map(async ([slug, product, price]) => ({
+  slug,
+  product,
+  price,
+  html: await read(`../dist/${slug}/index.html`),
+})));
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
@@ -173,6 +183,29 @@ for (const landingUrl of [
   if (!sitemap.includes(landingUrl) || !serializedVercel.includes(new URL(landingUrl).pathname)) {
     throw new Error(`Landing page absente du sitemap ou des rewrites: ${landingUrl}`);
   }
+}
+for (const page of generatedPages) {
+  const canonical = `https://www.aura-stream.com/${page.slug}`;
+  if (!page.html.includes(`<link rel="canonical" href="${canonical}">`)) {
+    throw new Error(`Canonique dédiée absente: ${page.slug}`);
+  }
+  if (!page.html.includes(`content="${canonical}"`) || !page.html.includes('data-page-schema')) {
+    throw new Error(`Métadonnées sociales ou Product JSON-LD absentes: ${page.slug}`);
+  }
+  if (!page.html.includes(`&quot;`) && !page.html.includes(`"name":"${page.product}"`)) {
+    throw new Error(`Produit absent des données structurées: ${page.slug}`);
+  }
+  if (!page.html.includes(`"price":${page.price}`)) {
+    throw new Error(`Prix absent des données structurées: ${page.slug}`);
+  }
+}
+for (const destination of [
+  "/netflix-algerie/index.html",
+  "/spotify-family-algerie/index.html",
+  "/crunchyroll-mega-fan-algerie/index.html",
+  "/legal/index.html",
+]) {
+  if (!serializedVercel.includes(destination)) throw new Error(`Destination SEO absente: ${destination}`);
 }
 if (!distHtml.includes('type="module" crossorigin src="/assets/')) {
   throw new Error("Bundle Vite absent de dist/index.html");
