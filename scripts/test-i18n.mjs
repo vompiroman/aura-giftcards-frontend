@@ -45,6 +45,7 @@ const requiredDynamicMessages = [
   "Activation en cours",
   "Informations transmises en toute sécurité",
   "Aucun code Netflix récent n’a été trouvé.",
+  "Comment se connecter ?",
   "Aucune commande ne correspond aux filtres.",
   "Compte ajouté au stock.",
   "Statut de la commande mis à jour",
