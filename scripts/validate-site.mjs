@@ -102,6 +102,10 @@ for (const marker of [
   "prioritizeOrder",
   "Service commandé",
   "Cette commande",
+  "RENEWAL_OFFER_STORAGE_KEY",
+  "Renouveler avec la remise fidélité",
+  "Remise fidélité appliquée automatiquement.",
+  'id="discount-label"',
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }

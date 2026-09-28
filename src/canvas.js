@@ -96,6 +96,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let lastSavedProfile = "";
 let loadedOrders = [];
 let activePromo = null;
+let activeRenewalOffer = null;
 let pendingPaymentAttempt = null;
 let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
@@ -151,6 +152,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     const CART_STORAGE_KEY = "aura_checkout_cart";
     const RENEWAL_ORDER_STORAGE_KEY = "aura_checkout_renewal_order_id";
+    const RENEWAL_OFFER_STORAGE_KEY = "aura_checkout_renewal_offer";
     const allowedCartPrices = new Map([
       ["Netflix|Netflix Premium|1 mois", 600],
       ["Netflix|Netflix Premium|2 mois", 1100],
@@ -192,16 +194,60 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return null;
     }
 
+    function normalizeRenewalOffer(value) {
+      const percent = Number(value?.discount_percent);
+      const subtotal = Number(value?.subtotal);
+      const discountAmount = Number(value?.discount_amount);
+      const total = Number(value?.total);
+      if (
+        value?.eligible !== true
+        || !Number.isFinite(percent)
+        || percent <= 0
+        || percent > 100
+        || !Number.isFinite(subtotal)
+        || subtotal <= 0
+        || !Number.isFinite(discountAmount)
+        || discountAmount <= 0
+        || !Number.isFinite(total)
+        || total !== subtotal - discountAmount
+      ) return null;
+      return { eligible: true, discount_percent: percent, subtotal, discount_amount: discountAmount, total };
+    }
+
+    function loadSavedRenewalOffer() {
+      try {
+        const offer = normalizeRenewalOffer(JSON.parse(sessionStorage.getItem(RENEWAL_OFFER_STORAGE_KEY) || "null"));
+        if (offer) return offer;
+      } catch {
+        // Invalid session data is cleared below.
+      }
+      sessionStorage.removeItem(RENEWAL_OFFER_STORAGE_KEY);
+      return null;
+    }
+
+    function setRenewalOffer(value) {
+      activeRenewalOffer = normalizeRenewalOffer(value);
+      if (activeRenewalOffer) {
+        sessionStorage.setItem(RENEWAL_OFFER_STORAGE_KEY, JSON.stringify(activeRenewalOffer));
+      } else {
+        sessionStorage.removeItem(RENEWAL_OFFER_STORAGE_KEY);
+      }
+    }
+
     function setRenewalOrderId(value) {
       renewalOrderId = typeof value === "string" && /^ORD-[A-Za-z0-9-]{6,40}$/.test(value)
         ? value
         : null;
       if (renewalOrderId) sessionStorage.setItem(RENEWAL_ORDER_STORAGE_KEY, renewalOrderId);
-      else sessionStorage.removeItem(RENEWAL_ORDER_STORAGE_KEY);
+      else {
+        sessionStorage.removeItem(RENEWAL_ORDER_STORAGE_KEY);
+        setRenewalOffer(null);
+      }
     }
 
     let cart = loadSavedCart();
     let renewalOrderId = loadSavedRenewalOrderId();
+    activeRenewalOffer = renewalOrderId ? loadSavedRenewalOffer() : null;
     let activeRoute = "home";
     let lastTrackedLanding = "";
     const landingRoutes = {
@@ -314,7 +360,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const visibleRoutes = new Set(["home", "products", ...Object.keys(landingRoutes)]);
       const shouldShow = cart.length > 0 && visibleRoutes.has(activeRoute);
       const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const discount = activePromo ? Math.min(Number(activePromo.discount_amount || 0), subtotal) : 0;
+      const discount = activeRenewalOffer
+        ? Math.min(Number(activeRenewalOffer.discount_amount || 0), subtotal)
+        : activePromo
+          ? Math.min(Number(activePromo.discount_amount || 0), subtotal)
+          : 0;
       const total = Math.max(0, subtotal - discount);
       const summary = document.getElementById("mobile-cart-summary");
       const totalLabel = document.getElementById("mobile-cart-total");
@@ -686,6 +736,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function renewOrder(orderIndex) {
       const order = loadedOrders[orderIndex];
       if (!order) return;
+      const offer = normalizeRenewalOffer(order.renewal_offer);
+      if (!offer) {
+        showToast("Cette offre de renouvellement n’est plus disponible.");
+        return;
+      }
       const renewedItems = [];
       (Array.isArray(order.items) ? order.items : []).forEach(item => {
         const renewed = renewalCartItem(item);
@@ -700,11 +755,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
       cart = renewedItems;
       setRenewalOrderId(String(order.order_id || order.id || ""));
+      setRenewalOffer(offer);
       clearPromo();
       updateCart();
       setCheckoutStep(1);
       showRoute("cart");
-      showToast("Abonnement ajouté pour renouvellement");
+      showToast("Remise fidélité appliquée au renouvellement");
     }
 
     async function requestNetflixCode(button) {
@@ -836,8 +892,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             : t("Définie après l’activation");
           const canGetNetflixCode = hasNetflix && assignedAccounts.length > 0 && !waitingForStock &&
             !["completed", "cancelled"].includes(order.status) && order.payment_status === "paid" && !isExpired;
-          const canRenew = hasValidExpiration && !isExpired &&
-            expirationDate.getTime() - Date.now() <= 3 * 24 * 60 * 60 * 1000;
+          const renewalOffer = normalizeRenewalOffer(order.renewal_offer);
+          const canRenew = Boolean(renewalOffer);
           const account = assignedAccounts.map((assignedAccount, accountIndex) => `
             <div class="mt-5 rounded-xl bg-green-50 p-4 text-sm text-green-900">
               <p class="font-title font-bold">${assignedAccounts.length > 1 ? `${t("Accès attribué")} ${formatLocalizedNumber(accountIndex + 1)}` : t("Accès attribué")}</p>
@@ -901,7 +957,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               <div class="mt-5 flex flex-wrap gap-3 border-t border-black/10 pt-5">
                 ${netflixGuideButton}
                 ${netflixCodeButtons}
-                ${canRenew ? `<button type="button" class="renew-order min-h-11 rounded-xl border border-aura px-5 font-title text-sm font-bold text-aura transition hover:bg-aura hover:text-white" data-order-index="${orderIndex}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Renouveler</button>` : ""}
+                ${canRenew ? `<button type="button" class="renew-order min-h-11 rounded-xl border border-aura px-5 font-title text-sm font-bold text-aura transition hover:bg-aura hover:text-white" data-order-index="${orderIndex}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>${t("Renouveler avec la remise fidélité")} −${formatLocalizedNumber(renewalOffer.discount_percent)} %</button>` : ""}
               </div>
               <div class="netflix-code-result mt-4 hidden rounded-xl bg-[#FFF1F2] p-4 text-sm text-[#8F0A16]" role="status" aria-live="polite"></div>
             </article>`;
@@ -984,6 +1040,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const input = document.getElementById("promo-code");
       const button = document.getElementById("promo-apply");
       const code = String(input?.value || "").trim().toUpperCase();
+      if (renewalOrderId && activeRenewalOffer) {
+        setPromoFeedback("La remise fidélité ne peut pas être cumulée avec un code promo.", true);
+        return;
+      }
       if (!currentUser) {
         setPromoFeedback("Connecte-toi pour utiliser un code promo.", true);
         showRoute("login");
@@ -1299,18 +1359,38 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
 
       const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+      if (activeRenewalOffer && Number(activeRenewalOffer.subtotal) !== subtotal) {
+        setRenewalOrderId(null);
+      }
       if (activePromo && Number(activePromo.subtotal) !== subtotal) activePromo = null;
-      const discount = activePromo ? Math.min(Number(activePromo.discount_amount || 0), subtotal) : 0;
+      const discount = activeRenewalOffer
+        ? Math.min(Number(activeRenewalOffer.discount_amount || 0), subtotal)
+        : activePromo
+          ? Math.min(Number(activePromo.discount_amount || 0), subtotal)
+          : 0;
       const total = Math.max(0, subtotal - discount);
       document.getElementById("subtotal-value").textContent = formatPrice(subtotal);
       document.getElementById("checkout-total").textContent = formatPrice(total);
       document.getElementById("pay-total").textContent = formatPrice(total);
       const discountRow = document.getElementById("promo-discount-row");
       const discountValue = document.getElementById("promo-discount-value");
+      const discountLabel = document.getElementById("discount-label");
       discountRow?.classList.toggle("hidden", discount <= 0);
       discountRow?.classList.toggle("flex", discount > 0);
       if (discountValue) discountValue.textContent = `−${formatPrice(discount)}`;
+      if (discountLabel) discountLabel.textContent = activeRenewalOffer
+        ? `${t("Remise fidélité")} (−${formatLocalizedNumber(activeRenewalOffer.discount_percent)} %)`
+        : t("Réduction");
       document.getElementById("promo-remove")?.classList.toggle("hidden", !activePromo);
+      const promoInput = document.getElementById("promo-code");
+      const promoButton = document.getElementById("promo-apply");
+      if (promoInput) promoInput.disabled = Boolean(activeRenewalOffer);
+      if (promoButton) promoButton.disabled = Boolean(activeRenewalOffer);
+      if (activeRenewalOffer) {
+        setPromoFeedback("Remise fidélité appliquée automatiquement.");
+      } else if (!activePromo && document.getElementById("promo-feedback-message")?.textContent === t("Remise fidélité appliquée automatiquement.")) {
+        setPromoFeedback();
+      }
 
       document.querySelectorAll(".remove-cart").forEach(removeButton => {
         removeButton.addEventListener("click", () => {
@@ -1381,7 +1461,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return;
       }
       trackMeta("InitiateCheckout", {
-        value: activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
+        value: activeRenewalOffer?.total ?? activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
         currency: "DZD",
         content_type: "product",
         content_ids: cart.map(apiProductName),
@@ -2578,6 +2658,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         cart = [];
         setRenewalOrderId(null);
         activePromo = null;
+        setRenewalOffer(null);
         updateCart();
         showRoute("order");
         showToast("Paiement vérifié — finalise l’activation dans Mes commandes si nécessaire");
