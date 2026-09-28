@@ -98,6 +98,10 @@ for (const marker of [
   "open-netflix-guide",
   "openNetflixConnectionGuide",
   'data-duration="2 mois" data-price="1100"',
+  "orderItemPresentation",
+  "prioritizeOrder",
+  "Service commandé",
+  "Cette commande",
 ]) {
   if (!source.includes(marker)) throw new Error(`Marqueur applicatif absent: ${marker}`);
 }
@@ -135,6 +139,8 @@ for (const forbidden of [
   'currentUser?.phone || ""',
   "Après confirmation du paiement, tu transmettras tes informations depuis « Mes commandes ».",
   "Tu renseignes ton compte Spotify après le paiement.",
+  "order-demo-content",
+  "Activation Spotify en cours — confirmation sur WhatsApp.",
 ]) {
   if (source.includes(forbidden)) throw new Error(`Ancien marqueur interdit présent: ${forbidden}`);
 }

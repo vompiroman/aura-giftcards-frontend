@@ -7,6 +7,7 @@ import {
 } from "./meta.js";
 import { clearAuthSession } from "./session.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
+import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import {
   formatLocalizedDate,
   formatLocalizedNumber,
@@ -90,6 +91,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let authRevision = 0;
     let sessionRestoreController = null;
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
+    let highlightedOrderId = "";
     let currentUser = null;
     let lastSavedProfile = "";
 let loadedOrders = [];
@@ -776,7 +778,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         </div>`;
       try {
         const result = await apiRequest("/my-orders");
-        const orders = Array.isArray(result.orders) ? result.orders : [];
+        const orders = prioritizeOrder(Array.isArray(result.orders) ? result.orders : [], highlightedOrderId);
         if (orders.length === 0) {
           container.innerHTML = `
             <div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft">
@@ -798,6 +800,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const itemNames = items
             .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
             .join(" · ");
+          const orderItems = items.map(item => {
+            const presentation = orderItemPresentation(item);
+            const quantity = Math.max(1, Number(item?.quantity || 1));
+            const itemName = localizedSubscriptionName(item.name || item.service || t("Abonnement"));
+            return `
+              <div class="flex items-center gap-3 rounded-xl border border-black/10 bg-ivory p-3">
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl ${presentation.background}"><img src="${presentation.icon}" alt="${presentation.label}" class="h-6 w-8 object-contain"></span>
+                <div class="min-w-0 flex-1"><p class="text-[10px] font-bold uppercase tracking-[0.12em] text-black/60">Service commandé</p><p class="mt-1 truncate font-title text-sm font-bold">${escapeHTML(itemName)}</p></div>
+                ${quantity > 1 ? `<span class="rounded-full bg-white px-3 py-1 text-xs font-bold">×${formatLocalizedNumber(quantity)}</span>` : ""}
+              </div>`;
+          }).join("");
           const hasNetflix = items.some(item => String(item.name || item.service || "").toLowerCase().includes("netflix"));
           const assignedAccounts = Array.isArray(order.accounts) && order.accounts.length > 0
             ? order.accounts
@@ -814,6 +827,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               ? { label: "Activé", style: "bg-green-100 text-green-800" }
               : { label: "Activation en cours", style: "bg-[#FBF4E9] text-[#8A632E]" };
           const orderId = escapeHTML(order.order_id || order.id || "");
+          const isCurrentOrder = Boolean(highlightedOrderId) && String(order.order_id || order.id || "") === highlightedOrderId;
           const date = order.created_at
             ? formatLocalizedDate(order.created_at, { dateStyle: "medium", timeStyle: "short" })
             : "";
@@ -870,7 +884,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             <article class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-7">
               <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p class="text-xs font-bold uppercase tracking-[0.12em] text-aura">${orderId}</p>
+                  <div class="flex flex-wrap items-center gap-2"><p class="text-xs font-bold uppercase tracking-[0.12em] text-aura">${orderId}</p>${isCurrentOrder ? `<span class="rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase text-aura">${t("Cette commande")}</span>` : ""}</div>
                   <h2 class="mt-2 font-title text-lg font-bold">${itemNames || "Commande Aura Stream"}</h2>
                   <p class="mt-2 text-xs text-black/60">${escapeHTML(date)}</p>
                   <p class="mt-2 text-sm font-semibold ${isExpired ? "text-red-700" : "text-black/65"}"><i class="fa-regular fa-calendar mr-2" aria-hidden="true"></i>Expiration : ${escapeHTML(expiration)}</p>
@@ -881,6 +895,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
                   <strong class="font-title text-lg text-aura">${formatPrice(Number(order.amount || 0))}</strong>
                 </div>
               </div>
+              ${orderItems ? `<div class="mt-5 grid gap-3 sm:grid-cols-2">${orderItems}</div>` : ""}
               ${account}
               ${manualActivationForms}
               <div class="mt-5 flex flex-wrap gap-3 border-t border-black/10 pt-5">
@@ -2556,6 +2571,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const orderId = params.get("order_id") || params.get("orderId");
       if (!orderId || !currentUser) return;
       activeOrderId = orderId;
+      highlightedOrderId = orderId;
       sessionStorage.setItem("aura_order_id", orderId);
       try {
         await apiRequest("/verify-payment", { method: "POST", body: JSON.stringify({ order_id: orderId }) });
