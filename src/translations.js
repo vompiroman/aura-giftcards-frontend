@@ -821,6 +821,18 @@ const phrases = [
   ["Conditions Générales de Vente", "Terms and Conditions", "الشروط العامة للبيع"],
   ["et la", "and the", "و"],
   ["Politique de Confidentialité", "Privacy Policy", "سياسة الخصوصية"],
+  ["Saisis l’e-mail une seule fois, puis ajoute jusqu’à 5 profils avec leur PIN. Chaque profil reste attribuable séparément.", "Enter the email once, then add up to 5 profiles with their PIN. Each profile can still be assigned separately.", "أدخل البريد الإلكتروني مرة واحدة، ثم أضف حتى 5 ملفات مع رموز PIN الخاصة بها. يمكن تخصيص كل ملف بشكل مستقل."],
+  ["Profils Netflix", "Netflix profiles", "ملفات Netflix"],
+  ["Ajouter un profil", "Add a profile", "إضافة ملف"],
+  ["Retirer le profil", "Remove profile", "إزالة الملف"],
+  ["Profils disponibles", "profiles available", "ملفات متاحة"],
+  ["Ajouter des profils", "Add profiles", "إضافة ملفات"],
+  ["Ajouté", "Added", "أضيف"],
+  ["Profils ajoutés au stock. Choisis les commandes avec Attribution manuelle.", "Profiles added to stock. Choose orders using Manual assignment.", "تمت إضافة الملفات إلى المخزون. اختر الطلبات باستخدام التخصيص اليدوي."],
+  ["Profils ajoutés au stock. Les commandes payées en attente ont été traitées.", "Profiles added to stock. Pending paid orders have been processed.", "تمت إضافة الملفات إلى المخزون ومعالجة الطلبات المدفوعة المعلقة."],
+  ["Profils ajoutés au stock.", "Profiles added to stock.", "تمت إضافة الملفات إلى المخزون."],
+  ["Ajoute entre 1 et 5 profils Netflix pour ce compte.", "Add between 1 and 5 Netflix profiles for this account.", "أضف من 1 إلى 5 ملفات Netflix لهذا الحساب."],
+  ["Chaque profil doit avoir un nom différent.", "Each profile must have a different name.", "يجب أن يكون لكل ملف اسم مختلف."],
 ];
 
 export const TRANSLATIONS = {

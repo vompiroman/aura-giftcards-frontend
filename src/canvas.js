@@ -8,6 +8,7 @@ import {
 import { clearAuthSession } from "./session.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
+import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
 import {
   formatLocalizedDate,
   formatLocalizedNumber,
@@ -2012,7 +2013,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const result = await apiRequest("/admin/inventory");
         adminInventory = Array.isArray(result.inventory) ? result.inventory : [];
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
-        list.innerHTML = adminInventory.map(item => {
+        list.innerHTML = groupInventoryByAccount(adminInventory).map(group => {
+          const available = group.profiles.filter(item => !item.is_used).length;
+          const header = `<article class="overflow-hidden rounded-2xl border border-black/10 bg-white"><header class="flex flex-col gap-3 bg-ivory p-4 sm:p-5"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">${t("Connexion OTP")}</span><span class="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-700">${formatLocalizedNumber(available)} / ${formatLocalizedNumber(group.profiles.length)} ${t("Profils disponibles")}</span></div><p class="break-all text-sm font-semibold text-black/70" dir="ltr">${escapeHTML(group.email)}</p><div class="flex flex-wrap gap-2"><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(group.profiles[0].id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>${t("Tester la boîte")}</button><button class="admin-add-profiles-to-account min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold" type="button" data-account-email="${escapeHTML(group.email)}">${t("Ajouter des profils")}</button></div></header><div class="divide-y divide-black/10">`;
+          const profiles = group.profiles.map(item => {
           const deletionRequiresDisconnect = Boolean(item.is_used && item.releasable);
           const deleteButton = item.is_used && !item.releasable
             ? `<button class="min-h-11 cursor-not-allowed rounded-xl border border-black/10 px-4 text-xs font-bold text-black/30" type="button" disabled title="${escapeHTML(t("L'abonnement est encore actif. La suppression sera disponible après son expiration."))}"><i class="fa-regular fa-trash-can mr-2" aria-hidden="true"></i>Supprimer</button>`
@@ -2020,13 +2024,23 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const manualAssignButton = !item.is_used
             ? `<button class="admin-manual-assign-stock min-h-11 rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-blue-800 transition hover:bg-blue-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-link mr-2" aria-hidden="true"></i>Attribution manuelle</button>`
             : "";
-          return `<article class="rounded-2xl border border-black/10 bg-white p-4 transition hover:border-black/20 sm:p-5">
+          return `<div class="p-4 sm:p-5" data-profile-id="${escapeHTML(item.id)}">
           <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">Connexion OTP</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-2 truncate text-sm font-semibold text-black/70">${escapeHTML(item.account_email)}</p><p class="mt-1 text-xs leading-5 text-black/60">${escapeHTML(item.profile_name || "Profil non renseigné")}${item.profile_pin ? ` · PIN ${escapeHTML(item.profile_pin)}` : ""} · Ajouté ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 truncate text-[11px] text-black/60">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
-            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>Tester la boîte</button>${manualAssignButton}${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
+            <div class="min-w-0"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">${escapeHTML(item.profile_name || t("Profil non renseigné"))}</strong><span class="rounded-full px-2.5 py-1 text-[10px] font-bold ${item.is_used ? "bg-sand/20 text-[#7A4B20]" : "bg-green-50 text-green-700"}">${item.is_used ? "Attribué" : "Disponible"}</span>${item.releasable ? '<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold text-amber-800">À libérer</span>' : ""}</div><p class="mt-1 text-xs leading-5 text-black/60">${item.profile_pin ? `PIN <bdi>${escapeHTML(item.profile_pin)}</bdi> · ` : ""}${t("Ajouté")} ${formatDateTime(item.created_at)}</p>${item.assigned_order_id ? `<p class="mt-1 break-all text-[11px] text-black/60">Commande : ${escapeHTML(item.assigned_order_id)}${item.order_status ? ` · ${escapeHTML(item.order_status)}` : ""}${item.order_expires_at ? ` · expiration ${formatDateTime(item.order_expires_at)}` : ""}</p>` : ""}</div>
+            <div class="flex flex-wrap gap-2"><button class="admin-edit-stock min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold transition hover:border-graphite hover:bg-graphite hover:text-white" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-pen mr-2" aria-hidden="true"></i>Modifier</button>${manualAssignButton}${item.releasable ? `<button class="admin-release-stock min-h-11 rounded-xl border border-amber-300 bg-amber-50 px-4 text-xs font-bold text-amber-900 transition hover:bg-amber-100" type="button" data-stock-id="${escapeHTML(item.id)}"><i class="fa-solid fa-rotate mr-2" aria-hidden="true"></i>Libérer</button>` : ""}${deleteButton}</div>
           </div>
-        </article>`;
+        </div>`;
+          }).join("");
+          return `${header}${profiles}</div></article>`;
         }).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucun compte en stock.</p>';
+        list.querySelectorAll(".admin-add-profiles-to-account").forEach(button => {
+          button.addEventListener("click", () => {
+            const form = document.getElementById("admin-stock-form");
+            form.elements.account_email.value = button.dataset.accountEmail;
+            form.scrollIntoView({ behavior: "smooth", block: "start" });
+            form.querySelector('[name="profile_name"]')?.focus({ preventScroll: true });
+          });
+        });
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
           button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
         });
@@ -2335,25 +2349,62 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       adminOrdersPage += 1;
       loadAdminOrders();
     });
+    const stockProfiles = document.getElementById("admin-stock-profiles");
+    const addStockProfileButton = document.getElementById("admin-add-stock-profile");
+    function syncStockProfileRows() {
+      const rows = [...stockProfiles.querySelectorAll("[data-stock-profile]")];
+      addStockProfileButton.disabled = rows.length >= 5;
+      rows.forEach((row, index) => {
+        row.querySelector("[data-profile-number]").textContent = `${t("Profil")} ${formatLocalizedNumber(index + 1)}`;
+        row.querySelector("[data-remove-stock-profile]").disabled = rows.length === 1;
+      });
+    }
+    function addStockProfileRow() {
+      if (!stockProfiles || stockProfiles.children.length >= 5) return;
+      const row = document.createElement("div");
+      row.dataset.stockProfile = "";
+      row.className = "min-w-0 rounded-xl border border-white/15 p-3";
+      row.innerHTML = `<div class="mb-3 flex items-center justify-between gap-2"><span data-profile-number class="text-xs font-bold"></span><button data-remove-stock-profile type="button" class="min-h-11 px-2 text-xs text-ivory/60 disabled:opacity-30">${t("Retirer le profil")}</button></div><div class="grid min-w-0 gap-3 sm:grid-cols-2"><label class="grid min-w-0 gap-2 text-xs font-bold">${t("Nom du profil")}<input name="profile_name" required maxlength="80" autocomplete="off" class="min-h-11 min-w-0 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-normal text-white outline-none focus:border-aura" type="text"></label><label class="grid min-w-0 gap-2 text-xs font-bold">PIN<input name="profile_pin" required inputmode="numeric" pattern="[0-9]{4,8}" minlength="4" maxlength="8" autocomplete="off" class="min-h-11 min-w-0 w-full rounded-xl border border-white/15 bg-white/5 px-3 text-sm font-normal text-white outline-none focus:border-aura" type="password"></label></div>`;
+      stockProfiles.append(row);
+      syncStockProfileRows();
+    }
+    function resetStockProfileRows() {
+      stockProfiles.replaceChildren();
+      addStockProfileRow();
+    }
+    addStockProfileButton?.addEventListener("click", addStockProfileRow);
+    stockProfiles?.addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-stock-profile]");
+      if (!button || stockProfiles.children.length <= 1) return;
+      button.closest("[data-stock-profile]").remove();
+      syncStockProfileRows();
+    });
+    if (stockProfiles) resetStockProfileRows();
+
     document.getElementById("admin-stock-form")?.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
       const button = form.querySelector('button[type="submit"]');
       const feedback = document.getElementById("admin-stock-form-feedback");
-      const values = Object.fromEntries(new FormData(form));
       button.disabled = true;
       try {
+        const profiles = [...stockProfiles.querySelectorAll("[data-stock-profile]")].map(row => ({
+          profile_name: row.querySelector('[name="profile_name"]').value.trim(),
+          profile_pin: row.querySelector('[name="profile_pin"]').value.trim(),
+        }));
+        const values = groupedInventoryPayload(form.elements.account_email.value, profiles, form.elements.manual_assignment.checked);
         const result = await apiRequest("/admin/inventory", { method: "POST", body: JSON.stringify(values) });
         const accountEmail = String(values.account_email || "");
         form.reset();
+        resetStockProfileRows();
         const emailInput = form.elements.namedItem("account_email");
         if (emailInput) emailInput.value = accountEmail;
         const fulfilled = Number(result.stock_reconciliation?.fulfilled || 0);
         feedback.textContent = result.manual_assignment
-          ? t("Profil ajouté au stock. Choisis une commande avec Attribution manuelle.")
+          ? t("Profils ajoutés au stock. Choisis les commandes avec Attribution manuelle.")
           : fulfilled > 0
-          ? t("Profil ajouté et attribué automatiquement à une commande payée en attente.")
-          : t("Profil ajouté au stock.");
+          ? t("Profils ajoutés au stock. Les commandes payées en attente ont été traitées.")
+          : t("Profils ajoutés au stock.");
         feedback.className = "mt-3 text-xs text-green-300";
         await Promise.all([loadAdminInventory(), loadAdminOverview(), loadAdminAudit()]);
       } catch (error) {
@@ -2703,6 +2754,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       updateRouteMetadata(activeRoute);
       updateCart();
       syncCustomSelectLabels();
+      if (stockProfiles) syncStockProfileRows();
       if (activeRoute === "order" && currentUser) loadMyOrders();
       if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });
     });
