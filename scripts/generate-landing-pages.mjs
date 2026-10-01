@@ -6,6 +6,7 @@ const source = await readFile(resolve(root, "dist/index.html"), "utf8");
 const baseUrl = "https://www.aura-stream.com";
 
 const pages = [
+  { slug: "snapchat-plus-algerie", view: "landing-snapchat", title: "Snapchat+ en Algérie — Aura Stream", description: "Snapchat+ : 3 mois à 2 000 DA ou 6 mois à 2 500 DA. Renseigne ton nom d’utilisateur et ajoute @aura-stream.", product: { name: "Snapchat+", price: 2000 } },
   {
     slug: "netflix-algerie",
     view: "landing-netflix",

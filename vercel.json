@@ -10,6 +10,10 @@
   ],
   "rewrites": [
     {
+      "source": "/snapchat-plus-algerie",
+      "destination": "/snapchat-plus-algerie/index.html"
+    },
+    {
       "source": "/netflix-algerie",
       "destination": "/netflix-algerie/index.html"
     },

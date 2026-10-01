@@ -154,6 +154,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     const RENEWAL_ORDER_STORAGE_KEY = "aura_checkout_renewal_order_id";
     const RENEWAL_OFFER_STORAGE_KEY = "aura_checkout_renewal_offer";
     const allowedCartPrices = new Map([
+      ["Snapchat|Snapchat+|3 mois", 2000],
+      ["Snapchat|Snapchat+|6 mois", 2500],
       ["Netflix|Netflix Premium|1 mois", 600],
       ["Netflix|Netflix Premium|2 mois", 1100],
       ["Spotify|Spotify Family|1 mois", 800],
@@ -251,6 +253,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     let activeRoute = "home";
     let lastTrackedLanding = "";
     const landingRoutes = {
+      "landing-snapchat": {
+        path: "/snapchat-plus-algerie",
+        title: "Snapchat+ en Algérie — Aura Stream",
+        description: "Snapchat+ : 3 mois à 2 000 DA ou 6 mois à 2 500 DA. Renseigne ton nom d’utilisateur et ajoute @aura-stream.",
+        product: "Snapchat+", service: "Snapchat", price: 2000,
+      },
       "landing-netflix": {
         path: "/netflix-algerie",
         title: "Netflix Premium en Algérie — Aura Stream",
@@ -491,6 +499,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function apiProductName(item) {
       const names = {
+        "Snapchat+|3 mois": "Snapchat+ 3 mois",
+        "Snapchat+|6 mois": "Snapchat+ 6 mois",
         "Netflix Premium|1 mois": "Netflix Premium 1 mois",
         "Netflix Premium|2 mois": "Netflix Premium 2 mois",
         "Spotify Family|1 mois": "Spotify Family 1 mois",
@@ -503,6 +513,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function localizedSubscriptionName(value) {
       return String(value || "")
+        .replaceAll("3 mois", t("3 mois"))
+        .replaceAll("6 mois", t("6 mois"))
         .replaceAll("2 mois", t("2 mois"))
         .replaceAll("1 mois", t("1 mois"))
         .replaceAll("1 an", t("1 an"));
@@ -709,13 +721,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           ? "Spotify"
           : lowerName.includes("crunchyroll")
             ? "Crunchyroll"
-            : null;
+            : lowerName.includes("snapchat") ? "Snapchat" : null;
       if (!service) return null;
 
-      if (/\b(3 mois|6 mois)\b/.test(lowerName)) return null;
-      const durationMatch = lowerName.match(/\b(1 an|2 mois|1 mois)\b/);
+      if (service !== "Snapchat" && /\b(3 mois|6 mois)\b/.test(lowerName)) return null;
+      const durationMatch = lowerName.match(/\b(1 an|6 mois|3 mois|2 mois|1 mois)\b/);
       const duration = durationMatch?.[1] || "1 mois";
       const prices = {
+        "Snapchat|3 mois": 2000,
+        "Snapchat|6 mois": 2500,
         "Netflix|1 mois": 600,
         "Netflix|2 mois": 1100,
         "Spotify|1 mois": 800,
@@ -726,7 +740,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const price = prices[`${service}|${duration}`];
       if (price === undefined) return null;
       return {
-        name: service === "Netflix" ? "Netflix Premium" : service === "Spotify" ? "Spotify Family" : "Crunchyroll Mega Fan",
+        name: service === "Snapchat" ? "Snapchat+" : service === "Netflix" ? "Netflix Premium" : service === "Spotify" ? "Spotify Family" : "Crunchyroll Mega Fan",
         service,
         duration,
         price
@@ -953,6 +967,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               </div>
               ${orderItems ? `<div class="mt-5 grid gap-3 sm:grid-cols-2">${orderItems}</div>` : ""}
               ${account}
+              ${items.filter(item => String(item.name || "").toLowerCase().includes("snapchat")).map(item => `<div class="mt-5 rounded-xl bg-yellow-50 p-4 text-sm text-graphite"><p class="font-bold">${t("Ton compte Snapchat")} : <bdi>@${escapeHTML(item.snapchat_username || "")}</bdi></p><p class="mt-2">${t("Ajoute @aura-stream sur Snapchat pour recevoir ton abonnement.")}</p><a class="mt-3 inline-flex min-h-11 items-center rounded-xl bg-graphite px-4 font-bold text-white" href="https://www.snapchat.com/add/aura-stream" target="_blank" rel="noopener noreferrer">${t("Ajouter @aura-stream")}</a></div>`).join("")}
               ${manualActivationForms}
               <div class="mt-5 flex flex-wrap gap-3 border-t border-black/10 pt-5">
                 ${netflixGuideButton}
@@ -1315,7 +1330,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const hasNetflix = cart.some(item => item.service === "Netflix");
       const hasSpotify = cart.some(item => item.service === "Spotify");
       const hasCrunchyroll = cart.some(item => item.service === "Crunchyroll");
-      const hasManualActivation = hasSpotify || hasCrunchyroll;
+      const hasSnapchat = cart.some(item => item.service === "Snapchat");
+      const hasManualActivation = hasSpotify || hasCrunchyroll || hasSnapchat;
+      document.getElementById("snapchat-activation-panel").classList.toggle("hidden", !hasSnapchat);
+      for (const id of ["snapchat-username", "snapchat-friend-added"]) {
+        const input = document.getElementById(id);
+        input.disabled = !hasSnapchat;
+        input.required = hasSnapchat;
+        if (!hasSnapchat) { input.value = ""; input.checked = false; }
+      }
       document.getElementById("spotify-credentials-panel").classList.toggle(
         "hidden",
         !hasSpotify
@@ -1502,6 +1525,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           promo_code: activePromo?.code || undefined,
           customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined,
           activation_credentials: checkoutActivationCredentials(),
+          snapchat_username: cart.some(item => item.service === "Snapchat") ? document.getElementById("snapchat-username").value.trim() : undefined,
+          snapchat_friend_added: cart.some(item => item.service === "Snapchat") ? document.getElementById("snapchat-friend-added").checked : undefined,
           renewal_order_id: renewalOrderId || undefined
         };
         const fingerprint = await checkoutPayloadFingerprint(orderPayload);
@@ -1852,8 +1877,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             .map(item => escapeHTML(localizedSubscriptionName(item.name || item.service || t("Abonnement"))))
             .join(" · ");
           const activationCredentials = rawItems
-            .filter(item => item?.client_credentials && typeof item.client_credentials === "object")
+            .filter(item => (item?.client_credentials && typeof item.client_credentials === "object") || item?.snapchat_username)
             .map(item => {
+              if (item.snapchat_username) return `<div class="mt-3 rounded-xl bg-yellow-50 p-4 text-sm text-graphite"><strong>Snapchat+</strong><p>${t("Ton compte Snapchat")} : <bdi>@${escapeHTML(item.snapchat_username)}</bdi></p><p>${t("Ajout de @aura-stream confirmé")}</p></div>`;
               const credentials = item.client_credentials;
               const serviceName = localizedSubscriptionName(item.name || item.service || t("Abonnement"));
               return `<details class="mt-3 rounded-xl border border-aura/15 bg-[#FFF7F3] p-3" open>
