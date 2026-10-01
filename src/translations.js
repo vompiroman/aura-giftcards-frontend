@@ -823,6 +823,8 @@ const phrases = [
   ["Politique de Confidentialité", "Privacy Policy", "سياسة الخصوصية"],
   ["Saisis l’e-mail une seule fois, puis ajoute jusqu’à 5 profils avec leur PIN. Chaque profil reste attribuable séparément.", "Enter the email once, then add up to 5 profiles with their PIN. Each profile can still be assigned separately.", "أدخل البريد الإلكتروني مرة واحدة، ثم أضف حتى 5 ملفات مع رموز PIN الخاصة بها. يمكن تخصيص كل ملف بشكل مستقل."],
   ["Profils Netflix", "Netflix profiles", "ملفات Netflix"],
+  ["Afficher les profils", "Show profiles", "عرض الملفات"],
+  ["Masquer les profils", "Hide profiles", "إخفاء الملفات"],
   ["Ajouter un profil", "Add a profile", "إضافة ملف"],
   ["Retirer le profil", "Remove profile", "إزالة الملف"],
   ["Profils disponibles", "profiles available", "ملفات متاحة"],

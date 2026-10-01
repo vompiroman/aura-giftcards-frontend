@@ -104,6 +104,7 @@ let adminOrdersTotalPages = 1;
 let adminLoaded = false;
 let adminRevenueReport = null;
 let adminInventory = [];
+const expandedStockAccounts = new Set();
 
     // Purge tokens and cached profile data left by pre-cookie deployments.
     clearAuthSession(sessionStorage, localStorage);
@@ -2013,9 +2014,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const result = await apiRequest("/admin/inventory");
         adminInventory = Array.isArray(result.inventory) ? result.inventory : [];
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
-        list.innerHTML = groupInventoryByAccount(adminInventory).map(group => {
+        list.innerHTML = groupInventoryByAccount(adminInventory).map((group, groupIndex) => {
+          const accountKey = group.email || String(group.profiles[0].id);
+          const isExpanded = expandedStockAccounts.has(accountKey);
+          const profilesId = `admin-stock-account-profiles-${groupIndex}`;
           const available = group.profiles.filter(item => !item.is_used).length;
-          const header = `<article class="overflow-hidden rounded-2xl border border-black/10 bg-white"><header class="flex flex-col gap-3 bg-ivory p-4 sm:p-5"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">${t("Connexion OTP")}</span><span class="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-700">${formatLocalizedNumber(available)} / ${formatLocalizedNumber(group.profiles.length)} ${t("Profils disponibles")}</span></div><p class="break-all text-sm font-semibold text-black/70" dir="ltr">${escapeHTML(group.email)}</p><div class="flex flex-wrap gap-2"><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(group.profiles[0].id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>${t("Tester la boîte")}</button><button class="admin-add-profiles-to-account min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold" type="button" data-account-email="${escapeHTML(group.email)}">${t("Ajouter des profils")}</button></div></header><div class="divide-y divide-black/10">`;
+          const header = `<article class="overflow-hidden rounded-2xl border border-black/10 bg-white"><header class="flex flex-col gap-3 bg-ivory p-4 sm:p-5"><div class="flex flex-wrap items-center gap-2"><strong class="font-title text-sm">Netflix Premium</strong><span class="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700">${t("Connexion OTP")}</span><span class="rounded-full bg-green-50 px-2.5 py-1 text-[10px] font-bold text-green-700">${formatLocalizedNumber(available)} / ${formatLocalizedNumber(group.profiles.length)} ${t("Profils disponibles")}</span></div><p class="break-all text-sm font-semibold text-black/70" dir="ltr">${escapeHTML(group.email)}</p><div class="flex flex-wrap gap-2"><button class="admin-test-stock-mailbox min-h-11 rounded-xl border border-sand/70 bg-[#FFF8EE] px-4 text-xs font-bold text-[#7A4B20] transition hover:bg-sand/25" type="button" data-stock-id="${escapeHTML(group.profiles[0].id)}"><i class="fa-regular fa-envelope mr-2" aria-hidden="true"></i>${t("Tester la boîte")}</button><button class="admin-add-profiles-to-account min-h-11 rounded-xl border border-black/15 px-4 text-xs font-bold" type="button" data-account-email="${escapeHTML(group.email)}">${t("Ajouter des profils")}</button><button class="admin-toggle-stock-profiles min-h-11 rounded-xl border border-black/15 bg-white px-4 text-xs font-bold" type="button" aria-expanded="${isExpanded}" aria-controls="${profilesId}" data-account-key="${escapeHTML(accountKey)}"><span>${t(isExpanded ? "Masquer les profils" : "Afficher les profils")}</span><i class="fa-solid fa-chevron-down ml-2 ${isExpanded ? "rotate-180" : ""}" aria-hidden="true"></i></button></div></header><div id="${profilesId}" class="divide-y divide-black/10 ${isExpanded ? "" : "hidden"}">`;
           const profiles = group.profiles.map(item => {
           const deletionRequiresDisconnect = Boolean(item.is_used && item.releasable);
           const deleteButton = item.is_used && !item.releasable
@@ -2033,6 +2037,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           }).join("");
           return `${header}${profiles}</div></article>`;
         }).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucun compte en stock.</p>';
+        list.querySelectorAll(".admin-toggle-stock-profiles").forEach(button => {
+          button.addEventListener("click", () => {
+            const expanded = button.getAttribute("aria-expanded") !== "true";
+            const profiles = document.getElementById(button.getAttribute("aria-controls"));
+            button.setAttribute("aria-expanded", String(expanded));
+            button.querySelector("span").textContent = t(expanded ? "Masquer les profils" : "Afficher les profils");
+            button.querySelector("i").classList.toggle("rotate-180", expanded);
+            profiles.classList.toggle("hidden", !expanded);
+            if (expanded) expandedStockAccounts.add(button.dataset.accountKey);
+            else expandedStockAccounts.delete(button.dataset.accountKey);
+          });
+        });
         list.querySelectorAll(".admin-add-profiles-to-account").forEach(button => {
           button.addEventListener("click", () => {
             const form = document.getElementById("admin-stock-form");
