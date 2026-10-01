@@ -1,3 +1,5 @@
+const profileNameOrder = new Intl.Collator("fr", { numeric: true, sensitivity: "base" });
+
 export function groupInventoryByAccount(inventory) {
   const groups = new Map();
   for (const item of Array.isArray(inventory) ? inventory : []) {
@@ -7,7 +9,15 @@ export function groupInventoryByAccount(inventory) {
     if (!groups.has(key)) groups.set(key, { email, profiles: [] });
     groups.get(key).profiles.push(item);
   }
-  return [...groups.values()];
+  return [...groups.values()].map(group => ({
+    ...group,
+    profiles: group.profiles.sort((left, right) => {
+      const leftName = String(left.profile_name || "").replace(/\s+/g, "");
+      const rightName = String(right.profile_name || "").replace(/\s+/g, "");
+      if (!leftName || !rightName) return Number(!leftName) - Number(!rightName);
+      return profileNameOrder.compare(leftName, rightName);
+    }),
+  }));
 }
 
 export function groupedInventoryPayload(email, profiles, manualAssignment) {
