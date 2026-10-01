@@ -1747,7 +1747,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
       const remaining = expiresAt.getTime() - Date.now();
       if (remaining <= 0) {
-        return { label: "À déconnecter", className: "bg-red-50 text-red-700", disconnect: true };
+        const hasNetflix = Array.isArray(order.items)
+          && order.items.some(item => orderItemPresentation(item).key === "netflix");
+        return { label: hasNetflix ? "À déconnecter" : "Expiré", className: "bg-red-50 text-red-700", disconnect: hasNetflix };
       }
       if (remaining <= 3 * 24 * 60 * 60 * 1000) {
         return { label: "Expire sous 3 jours", className: "bg-amber-50 text-amber-700", disconnect: false };
