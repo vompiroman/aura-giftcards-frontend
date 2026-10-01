@@ -17,6 +17,7 @@ const [html, app, styles, meta, session, vercel, robots, sitemap, distHtml, dist
 
 const source = [html, app, styles, meta, session, vercel, robots, sitemap].join("\n");
 const generatedPages = await Promise.all([
+  ["snapchat-plus-algerie", "Snapchat+", "2000"],
   ["netflix-algerie", "Netflix Premium", "600"],
   ["spotify-family-algerie", "Spotify Family", "800"],
   ["crunchyroll-mega-fan-algerie", "Crunchyroll Mega Fan", "500"],
@@ -26,6 +27,8 @@ const generatedPages = await Promise.all([
   price,
   html: await read(`../dist/${slug}/index.html`),
 })));
+const productSection = html.match(/<section id="view-products"[\s\S]*?<\/section>/)?.[0] || "";
+if (!productSection.includes('data-service="snapchat"')) throw new Error("Snapchat doit être dans la boutique");
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
 if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 
@@ -111,6 +114,8 @@ for (const marker of [
 }
 
 for (const offer of [
+  '"Snapchat|3 mois": 2000',
+  '"Snapchat|6 mois": 2500',
   '"Netflix|1 mois": 600',
   '"Netflix|2 mois": 1100',
   '"Spotify|1 mois": 800',
@@ -120,8 +125,11 @@ for (const offer of [
 ]) {
   if (!app.includes(offer)) throw new Error(`Offre officielle absente: ${offer}`);
 }
-if (/\b(3 mois|6 mois)\b/i.test(html)) {
-  throw new Error("Une ancienne durée de 3 ou 6 mois est encore visible");
+for (const card of html.matchAll(/<article[^>]+data-service="(netflix|spotify|crunchyroll)"[\s\S]*?<\/article>/g)) {
+  if (/data-duration="(3 mois|6 mois)"/.test(card[0])) throw new Error("Ancienne durée réintroduite pour " + card[1]);
+}
+for (const marker of ['id="snapchat-username"', 'id="snapchat-friend-added"', 'data-price="2000" data-duration="3 mois"', 'data-price="2500" data-duration="6 mois"', "https://www.snapchat.com/add/aura-stream"]) {
+  if (!html.includes(marker)) throw new Error("Snapchat incomplet : " + marker);
 }
 
 for (const forbidden of [
@@ -185,6 +193,7 @@ if (/serveur se r[eé]veille/i.test(source)) {
   throw new Error("Un message trompeur de réveil serveur est encore présent");
 }
 for (const landingUrl of [
+  "https://www.aura-stream.com/snapchat-plus-algerie",
   "https://www.aura-stream.com/netflix-algerie",
   "https://www.aura-stream.com/spotify-family-algerie",
   "https://www.aura-stream.com/crunchyroll-mega-fan-algerie",
@@ -210,6 +219,7 @@ for (const page of generatedPages) {
   }
 }
 for (const destination of [
+  "/snapchat-plus-algerie/index.html",
   "/netflix-algerie/index.html",
   "/spotify-family-algerie/index.html",
   "/crunchyroll-mega-fan-algerie/index.html",

@@ -1,4 +1,5 @@
 const SERVICE_PRESENTATIONS = [
+  { key: "snapchat", label: "Snapchat+", icon: "/snapchat.svg", background: "bg-yellow-100" },
   { key: "netflix", label: "Netflix", icon: "/netflix.svg", background: "bg-red-50" },
   { key: "spotify", label: "Spotify", icon: "/spotify.svg", background: "bg-green-100" },
   { key: "crunchyroll", label: "Crunchyroll", icon: "/crunchyroll.svg", background: "bg-orange-50" },

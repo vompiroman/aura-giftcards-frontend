@@ -16,3 +16,6 @@ assert.equal(prioritized[0].items[0].name, "Netflix Premium 1 mois");
 assert.equal(orders[0].order_id, "ORD-old", "The API result must not be mutated");
 
 console.log("Order display classification and prioritization tests passed.");
+
+assert.equal(orderItemPresentation({ name: "Snapchat+ 6 mois" }).key, "snapchat");
+assert.equal(orderItemPresentation({ name: "Snapchat+ 3 mois" }).icon, "/snapchat.svg");
