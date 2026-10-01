@@ -1108,6 +1108,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function showRoute(route, scrollTarget) {
       if (!routeNames.has(route)) route = "home";
+      if (route === "products") applyProductFilter("all");
       if (route === "login" && !recoveryRequested) showAuthPanel("signin");
       if (
         ["login", "order", "admin"].includes(route)
@@ -1268,15 +1269,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     });
 
-    document.querySelectorAll(".filter-btn").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".filter-btn").forEach(item => item.setAttribute("aria-pressed", "false"));
-        button.setAttribute("aria-pressed", "true");
-        const filter = button.dataset.filter;
-        document.querySelectorAll(".product-card").forEach(card => {
-          card.classList.toggle("hidden", filter !== "all" && card.dataset.service !== filter);
-        });
+    function applyProductFilter(filter) {
+      document.querySelectorAll(".filter-btn").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.filter === filter));
       });
+      document.querySelectorAll("#product-grid .product-card").forEach(card => {
+        card.classList.toggle("hidden", filter !== "all" && card.dataset.service !== filter);
+      });
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(button => {
+      button.addEventListener("click", () => applyProductFilter(button.dataset.filter));
     });
 
     function addItemToCart(item, button) {
