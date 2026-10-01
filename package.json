@@ -12,7 +12,8 @@
     "test:phone": "node scripts/test-phone.mjs",
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:orders": "node scripts/test-order-display.mjs",
-    "check": "npm run build && npm run test:meta && npm run test:session && npm run test:phone && npm run test:i18n && npm run test:orders && node scripts/validate-site.mjs"
+    "test:inventory": "node scripts/test-inventory-groups.mjs",
+    "check": "npm run build && npm run test:meta && npm run test:session && npm run test:phone && npm run test:i18n && npm run test:orders && npm run test:inventory && node scripts/validate-site.mjs"
   },
   "dependencies": {},
   "devDependencies": {
