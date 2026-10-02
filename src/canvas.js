@@ -6,6 +6,7 @@ import {
   trackMeta,
 } from "./meta.js";
 import { clearAuthSession } from "./session.js";
+import { createSessionRecovery } from "./session-recovery.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
@@ -90,10 +91,43 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     const authFeedback = document.getElementById("auth-feedback");
     let refreshPromise = null;
     let authRevision = 0;
-    let sessionRestoreController = null;
+    let sessionCheckPending = true;
+    let paymentReturnHandled = false;
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
     let highlightedOrderId = "";
     let currentUser = null;
+    const sessionRecovery = createSessionRecovery({
+      request: signal => apiRequest("/session", { method: "POST", body: "{}", cache: "no-store", signal }),
+      onStatus: status => {
+        sessionCheckPending = ["checking", "retrying"].includes(status);
+        const message = status === "retrying"
+          ? "Connexion momentanément indisponible. Nouvelle tentative automatique…"
+          : "Restauration de ta connexion…";
+        const notice = document.getElementById("session-recovery-status");
+        if (notice) {
+          notice.textContent = t(message);
+          notice.classList.toggle("hidden", !sessionCheckPending || Boolean(currentUser));
+        }
+        if (!currentUser) {
+          accountLinks.forEach(link => { link.textContent = sessionCheckPending ? t("Restauration de ta connexion…") : t("Se connecter"); });
+          if (activeRoute === "order") void loadMyOrders();
+        }
+      },
+      onResult: result => {
+        setAccountState(result.authenticated ? result.user : null);
+        if (!result.authenticated) {
+          adminLoaded = false;
+          if (activeRoute === "admin") showRoute("login");
+          return;
+        }
+        if (activeRoute === "admin" && result.user.is_admin === true) void loadAdminDashboard();
+        else if (activeRoute === "order") void loadMyOrders();
+        if (activeRoute === "login" && !recoveryRequested) {
+          showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order");
+        }
+        if (!paymentReturnHandled) { paymentReturnHandled = true; void verifyPaymentReturn(); }
+      },
+    });
     let lastSavedProfile = "";
 let loadedOrders = [];
 let activePromo = null;
@@ -413,8 +447,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function refreshAuthSession() {
       if (refreshPromise) return refreshPromise;
       refreshPromise = (async () => {
+        const revision = authRevision;
         const controller = new AbortController();
-        const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+        const timeoutId = window.setTimeout(() => controller.abort(), 65000);
         try {
           const response = await fetch(`${API_BASE}/refresh-session`, {
             method: "POST",
@@ -425,6 +460,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             signal: controller.signal,
           });
           const payload = await response.json().catch(() => null);
+          if (revision !== authRevision) throw new DOMException("Session changed", "AbortError");
           if (!response.ok) {
             if ([400, 401].includes(response.status)) {
               clearCurrentAuthSession();
@@ -468,7 +504,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           ...requestOptions,
           headers,
           credentials: "include",
-          signal: requestOptions.signal || controller.signal
+          signal: requestOptions.signal ? AbortSignal.any([requestOptions.signal, controller.signal]) : controller.signal
         });
         let payload = null;
         try { payload = await response.json(); } catch { payload = null; }
@@ -536,6 +572,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function setAccountState(user) {
       currentUser = user || null;
+      if (currentUser) sessionRecovery.resume();
       const authenticated = Boolean(currentUser);
       const isAdminUser = authenticated && currentUser.is_admin === true;
       accountLinks.forEach(link => {
@@ -655,48 +692,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function interruptSessionRestore() {
       authRevision += 1;
-      sessionRestoreController?.abort();
-      sessionRestoreController = null;
-    }
-
-    async function restoreSession() {
-      const revision = authRevision;
-      const controller = new AbortController();
-      sessionRestoreController = controller;
-      const timeout = window.setTimeout(() => controller.abort(), 60000);
-      try {
-        const result = await apiRequest("/session", {
-          method: "POST", body: "{}", cache: "no-store", signal: controller.signal,
-        });
-        if (revision !== authRevision) return false;
-        setAccountState(result.user);
-        if (!result.authenticated || !result.user) return false;
-        if (result.user?.is_admin === true && activeRoute === "admin") {
-          void loadAdminDashboard();
-        } else if (activeRoute === "order") {
-          void loadMyOrders();
-        }
-        const loginView = document.querySelector('[data-view="login"]');
-        if (loginView && !loginView.classList.contains("hidden")) {
-          const nextRoute = cart.length
-            ? "cart"
-            : result.user?.is_admin === true
-              ? "admin"
-              : "order";
-          showRoute(nextRoute);
-          if (nextRoute === "cart") setCheckoutStep(1);
-        }
-        return true;
-      } catch {
-        if (revision !== authRevision) return false;
-        setAccountState(null);
-        adminLoaded = false;
-        if (["admin", "order"].includes(activeRoute)) showRoute("login");
-        return false;
-      } finally {
-        window.clearTimeout(timeout);
-        if (sessionRestoreController === controller) sessionRestoreController = null;
-      }
+      sessionRecovery.stop();
     }
 
     function formatPrice(value) {
@@ -834,6 +830,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const container = document.getElementById("my-orders-content");
       if (!container) return;
       if (!currentUser) {
+        if (sessionCheckPending) {
+          container.innerHTML = `<div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft" role="status"><i class="fa-solid fa-spinner fa-spin text-2xl text-aura" aria-hidden="true"></i><p class="mt-3 text-sm text-black/55">${t("Restauration de ta connexion…")}</p></div>`;
+          return;
+        }
         container.innerHTML = `
           <div class="rounded-2xl border border-black/10 bg-white p-8 text-center shadow-soft">
             <h2 class="font-title text-xl font-bold">Connecte-toi pour voir tes commandes</h2>
@@ -2780,4 +2780,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     const initialRoute = recoveryMode ? "login" : routeFromLocation();
     showRoute(initialRoute);
     if (recoveryMode) showAuthPanel("reset");
-    restoreSession().then(() => verifyPaymentReturn());
+    void sessionRecovery.check();
+    window.addEventListener("online", () => { void sessionRecovery.check({ force: true }); });
+    window.addEventListener("focus", () => { void sessionRecovery.check(); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") void sessionRecovery.check();
+    });
