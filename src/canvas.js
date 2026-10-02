@@ -7,6 +7,7 @@ import {
 } from "./meta.js";
 import { clearAuthSession } from "./session.js";
 import { createSessionRecovery } from "./session-recovery.js";
+import { authenticatedRequest } from "./authenticated-request.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
@@ -89,7 +90,6 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
       source: "promise",
     }));
     const authFeedback = document.getElementById("auth-feedback");
-    let refreshPromise = null;
     let authRevision = 0;
     let sessionCheckPending = true;
     let paymentReturnHandled = false;
@@ -98,6 +98,11 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let currentUser = null;
     const sessionRecovery = createSessionRecovery({
       request: signal => apiRequest("/session", { method: "POST", body: "{}", cache: "no-store", signal }),
+      isVisible: () => document.visibilityState === "visible",
+      // Cookies are shared across tabs. Serialize rotation so an older response
+      // cannot overwrite the token installed by another tab.
+      runExclusive: (signal, work) => navigator.locks?.request
+        ? navigator.locks.request("aura-auth-session", { signal }, work) : work(),
       onStatus: status => {
         sessionCheckPending = ["checking", "retrying"].includes(status);
         const message = status === "retrying"
@@ -114,7 +119,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
         }
       },
       onResult: result => {
-        setAccountState(result.authenticated ? result.user : null);
+        setAccountState(result.authenticated ? result.user : null, result.expires_at);
         if (!result.authenticated) {
           adminLoaded = false;
           if (activeRoute === "admin") showRoute("login");
@@ -445,80 +450,36 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     async function refreshAuthSession() {
-      if (refreshPromise) return refreshPromise;
-      refreshPromise = (async () => {
-        const revision = authRevision;
-        const controller = new AbortController();
-        const timeoutId = window.setTimeout(() => controller.abort(), 65000);
-        try {
-          const response = await fetch(`${API_BASE}/refresh-session`, {
-            method: "POST",
-            cache: "no-store",
-            credentials: "include",
-            headers: { "Content-Type": "application/json", "Accept-Language": getLanguage() },
-            body: JSON.stringify({}),
-            signal: controller.signal,
-          });
-          const payload = await response.json().catch(() => null);
-          if (revision !== authRevision) throw new DOMException("Session changed", "AbortError");
-          if (!response.ok) {
-            if ([400, 401].includes(response.status)) {
-              clearCurrentAuthSession();
-              return false;
-            }
-            throw new Error(payload?.error || "Le renouvellement de session est momentanément indisponible.");
-          }
-          if (payload.user) {
-            setAccountState(payload.user);
-          }
-          return true;
-        } catch (error) {
-          if (error?.name === "AbortError") {
-            throw new Error("Le renouvellement de session prend trop de temps. Réessaie dans quelques instants.");
-          }
-          if (error instanceof TypeError) {
-            throw new Error("Impossible de vérifier ta session pour le moment. Vérifie ta connexion.");
-          }
-          throw error;
-        } finally {
-          window.clearTimeout(timeoutId);
-        }
-      })();
-
-      try {
-        return await refreshPromise;
-      } finally {
-        refreshPromise = null;
-      }
+      // Recovery, focus and failed API requests share the same rotation.
+      // Only /session's confirmed anonymous result can sign a customer out.
+      return sessionRecovery.check({ force: true, throwOnError: true });
     }
-
-    async function apiRequest(path, options = {}) {
-      const { __retried = false, ...requestOptions } = options;
+    async function apiRequest(path, requestOptions = {}) {
       const usesPublicAuth = publicAuthPaths.has(path);
-
-      const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), usesPublicAuth ? 65000 : 30000);
       const headers = { "Content-Type": "application/json", "Accept-Language": getLanguage(), ...(requestOptions.headers || {}) };
       try {
-        const response = await fetch(`${API_BASE}${path}`, {
-          ...requestOptions,
-          headers,
-          credentials: "include",
-          signal: requestOptions.signal ? AbortSignal.any([requestOptions.signal, controller.signal]) : controller.signal
+        const response = await authenticatedRequest({
+          publicAuth: usesPublicAuth,
+          getRevision: () => authRevision,
+          restore: refreshAuthSession,
+          request: async () => {
+            // Each attempt gets its own deadline. Waiting for a cold-start
+            // restoration must not consume the subsequent request's timeout.
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), usesPublicAuth ? 65000 : 30000);
+            try {
+              return await fetch(`${API_BASE}${path}`, {
+                ...requestOptions, headers, credentials: "include",
+                signal: requestOptions.signal ? AbortSignal.any([requestOptions.signal, controller.signal]) : controller.signal,
+              });
+            } finally { window.clearTimeout(timeoutId); }
+          },
         });
-        let payload = null;
-        try { payload = await response.json(); } catch { payload = null; }
+        const payload = await response.json().catch(() => null);
         if (!response.ok) {
-          if (response.status === 401 && !usesPublicAuth && !__retried) {
-            const refreshed = await refreshAuthSession();
-            if (refreshed) return apiRequest(path, { ...requestOptions, __retried: true });
-          }
-          if (response.status === 401 && !usesPublicAuth) clearCurrentAuthSession();
           const message = typeof payload?.error === "string"
             ? payload.error
-            : typeof payload?.message === "string"
-              ? payload.message
-              : `Erreur API (${response.status})`;
+            : typeof payload?.message === "string" ? payload.message : `Erreur API (${response.status})`;
           throw new Error(t(message));
         }
         return payload;
@@ -530,11 +491,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           throw new Error("Impossible de joindre le service. Vérifie ta connexion puis réessaie.");
         }
         throw error;
-      } finally {
-        window.clearTimeout(timeoutId);
       }
     }
-
     function apiProductName(item) {
       const names = {
         "Snapchat+|3 mois": "Snapchat+ 3 mois",
@@ -570,9 +528,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return { firstName, lastName };
     }
 
-    function setAccountState(user) {
+    function setAccountState(user, expiresAt) {
       currentUser = user || null;
-      if (currentUser) sessionRecovery.resume();
+      if (currentUser) sessionRecovery.resume({ expiresAt });
       const authenticated = Boolean(currentUser);
       const isAdminUser = authenticated && currentUser.is_admin === true;
       accountLinks.forEach(link => {
@@ -2664,7 +2622,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             remember,
           })
         });
-        setAccountState(result.user);
+        setAccountState(result.user, result.expires_at);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
         const nextRoute = cart.length
@@ -2706,7 +2664,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           })
         });
         if (result.authenticated === true && result.user) {
-          setAccountState(result.user);
+          setAccountState(result.user, result.expires_at);
           showRoute("cart");
           setCheckoutStep(1);
           showToast("Compte créé");
