@@ -1849,7 +1849,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       };
       if (exportButton) exportButton.disabled = false;
 
-      const stock = Array.isArray(result.stock) ? result.stock : [];
+      const stock = (Array.isArray(result.stock) ? result.stock : []).filter(
+        item => String(item?.service || "").trim().toLowerCase() === "netflix",
+      );
       document.getElementById("admin-stock-summary").innerHTML = stock.map(item => {
         const available = Number(item.available || 0);
         const warning = available <= 2;
@@ -2012,7 +2014,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (!list || currentUser?.is_admin !== true) return;
       try {
         const result = await apiRequest("/admin/inventory");
-        adminInventory = Array.isArray(result.inventory) ? result.inventory : [];
+        adminInventory = (Array.isArray(result.inventory) ? result.inventory : []).filter(
+          item => String(item?.service || "").trim().toLowerCase() === "netflix",
+        );
         document.getElementById("admin-stock-count").textContent = `${adminInventory.filter(item => !item.is_used).length} disponible(s)`;
         list.innerHTML = groupInventoryByAccount(adminInventory).map((group, groupIndex) => {
           const accountKey = group.email || String(group.profiles[0].id);
