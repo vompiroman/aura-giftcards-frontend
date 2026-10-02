@@ -825,6 +825,7 @@ const phrases = [
   ["Restauration de ta connexion…", "Restoring your session…", "جارٍ استعادة جلستك…"],
   ["Connexion momentanément indisponible. Nouvelle tentative automatique…", "Connection temporarily unavailable. Retrying automatically…", "الاتصال غير متاح مؤقتاً. جارٍ إعادة المحاولة تلقائياً…"],
   ["Profils Netflix", "Netflix profiles", "ملفات Netflix"],
+  ["Profils Netflix en stock", "Netflix profiles in stock", "ملفات Netflix المتوفرة في المخزون"],
   ["Afficher les profils", "Show profiles", "عرض الملفات"],
   ["Masquer les profils", "Hide profiles", "إخفاء الملفات"],
   ["Ajouter un profil", "Add a profile", "إضافة ملف"],

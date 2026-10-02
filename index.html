@@ -793,7 +793,7 @@
         <div class="admin-tabs-scroll mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8" role="tablist" aria-label="Sections administrateur">
           <button class="admin-tab shrink-0 rounded-xl bg-graphite px-4 py-2.5 text-sm font-bold text-white" type="button" role="tab" aria-selected="true" data-admin-tab="overview"><i class="fa-solid fa-chart-line mr-2" aria-hidden="true"></i>Vue d’ensemble</button>
           <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="orders"><i class="fa-solid fa-receipt mr-2" aria-hidden="true"></i>Commandes</button>
-          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="stock"><i class="fa-solid fa-boxes-stacked mr-2" aria-hidden="true"></i>Stock</button>
+          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="stock"><i class="fa-solid fa-boxes-stacked mr-2" aria-hidden="true"></i>Stock Netflix</button>
           <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="promos"><i class="fa-solid fa-ticket mr-2" aria-hidden="true"></i>Codes promo</button>
           <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="activity"><i class="fa-solid fa-shield-halved mr-2" aria-hidden="true"></i>Activité</button>
         </div>
@@ -848,7 +848,7 @@
               </div>
             </section>
             <section class="min-w-0 rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-7">
-              <div class="flex items-center justify-between"><h2 class="font-title text-xl font-bold">État du stock</h2><button class="admin-open-tab text-xs font-bold text-aura hover:underline" type="button" data-target-tab="stock">Gérer</button></div>
+              <div class="flex items-center justify-between"><h2 class="font-title text-xl font-bold">Stock Netflix</h2><button class="admin-open-tab text-xs font-bold text-aura hover:underline" type="button" data-target-tab="stock">Gérer</button></div>
               <div id="admin-stock-summary" class="mt-6 grid gap-3"></div>
             </section>
           </div>
@@ -918,7 +918,7 @@
               <p id="admin-stock-form-feedback" class="mt-3 hidden text-xs" role="status"></p>
             </form>
             <section class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-7">
-              <div class="flex items-center justify-between gap-3"><div><h2 class="font-title text-2xl font-extrabold">Comptes en stock</h2><p class="mt-1 text-sm text-black/60">Aucun mot de passe n’est affiché.</p><p class="mt-1 text-xs leading-5 text-amber-800">Déconnecte d’abord l’ancien client avant de libérer un profil expiré ou annulé.</p></div><span id="admin-stock-count" class="rounded-full bg-black/5 px-3 py-1.5 text-xs font-bold">—</span></div>
+              <div class="flex items-center justify-between gap-3"><div><h2 class="font-title text-2xl font-extrabold">Profils Netflix en stock</h2><p class="mt-1 text-sm text-black/60">Aucun mot de passe n’est affiché.</p><p class="mt-1 text-xs leading-5 text-amber-800">Déconnecte d’abord l’ancien client avant de libérer un profil expiré ou annulé.</p></div><span id="admin-stock-count" class="rounded-full bg-black/5 px-3 py-1.5 text-xs font-bold">—</span></div>
               <div id="admin-inventory-list" class="mt-6 grid gap-3"></div>
             </section>
           </div>
