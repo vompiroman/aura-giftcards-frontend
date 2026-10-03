@@ -1,4 +1,5 @@
 const phrases = [
+  ["Service de connexion momentanément indisponible.", "Sign-in service is temporarily unavailable.", "خدمة تسجيل الدخول غير متاحة مؤقتاً."],
   ["Snapchat+","Snapchat+","Snapchat+"],
   ["3 mois","3 months","3 أشهر"],
   ["6 mois","6 months","6 أشهر"],
