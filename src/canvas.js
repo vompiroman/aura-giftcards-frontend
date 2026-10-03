@@ -98,11 +98,6 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let currentUser = null;
     const sessionRecovery = createSessionRecovery({
       request: signal => apiRequest("/session", { method: "POST", body: "{}", cache: "no-store", signal }),
-      isVisible: () => document.visibilityState === "visible",
-      // Cookies are shared across tabs. Serialize rotation so an older response
-      // cannot overwrite the token installed by another tab.
-      runExclusive: (signal, work) => navigator.locks?.request
-        ? navigator.locks.request("aura-auth-session", { signal }, work) : work(),
       onStatus: status => {
         sessionCheckPending = ["checking", "retrying"].includes(status);
         const message = status === "retrying"
@@ -119,7 +114,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
         }
       },
       onResult: result => {
-        setAccountState(result.authenticated ? result.user : null, result.expires_at);
+        setAccountState(result.authenticated ? result.user : null);
         if (!result.authenticated) {
           adminLoaded = false;
           if (activeRoute === "admin") showRoute("login");
@@ -438,6 +433,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       "/reset-password",
       "/refresh-session",
       "/session",
+      "/logout",
     ]);
 
     function clearCurrentAuthSession({ redirectToLogin = true } = {}) {
@@ -528,9 +524,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return { firstName, lastName };
     }
 
-    function setAccountState(user, expiresAt) {
+    function setAccountState(user) {
       currentUser = user || null;
-      if (currentUser) sessionRecovery.resume({ expiresAt });
+      if (currentUser) sessionRecovery.resume();
       const authenticated = Boolean(currentUser);
       const isAdminUser = authenticated && currentUser.is_admin === true;
       accountLinks.forEach(link => {
@@ -2463,17 +2459,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       interruptSessionRestore();
       if (button) button.disabled = true;
       try {
-        if (currentUser) await apiRequest("/logout", { method: "POST" });
-      } catch {
-        // Local sign-out still completes if the API is temporarily unavailable.
-      } finally {
+        await apiRequest("/logout", { method: "POST" });
         clearCurrentAuthSession({ redirectToLogin: false });
         sessionStorage.removeItem("aura_order_id");
         activeOrderId = "";
         showRoute("home");
+      } catch (error) {
+        // Do not pretend a persistent cookie was revoked when the server is offline.
+        sessionRecovery.resume();
+        showToast(error.message || "Déconnexion momentanément indisponible.");
+      } finally {
+        if (button) button.disabled = false;
       }
     }
-
     [
       document.getElementById("admin-signout"),
       document.getElementById("customer-signout"),
@@ -2622,7 +2620,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             remember,
           })
         });
-        setAccountState(result.user, result.expires_at);
+        setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
         const nextRoute = cart.length
@@ -2664,7 +2662,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           })
         });
         if (result.authenticated === true && result.user) {
-          setAccountState(result.user, result.expires_at);
+          setAccountState(result.user);
           showRoute("cart");
           setCheckoutStep(1);
           showToast("Compte créé");

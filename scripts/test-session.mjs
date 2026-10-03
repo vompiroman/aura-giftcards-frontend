@@ -92,7 +92,7 @@ assert.deepEqual(temporaryFailure.results, [], "A temporary outage must never si
 assert.equal(temporaryFailure.statuses.at(-1), "retrying");
 await temporaryFailure.retry();
 assert.deepEqual(temporaryFailure.results, [{ authenticated: true, user: savedUser }]);
-assert.equal(temporaryFailure.timers.size, 1, "A restored session schedules its next renewal");
+assert.equal(temporaryFailure.timers.size, 0, "A durable session does not need browser token timers");
 
 const signedOut = recoveryHarness(async () => ({ authenticated: false, user: null }));
 await signedOut.recovery.check();
@@ -123,26 +123,12 @@ await interruptedRetry.recovery.check();
 interruptedRetry.recovery.stop();
 assert.equal(interruptedRetry.timers.size, 0);
 
-const expiry = recoveryHarness(async () => ({ authenticated: true, user: savedUser, expires_at: 3600 }));
-await expiry.recovery.check();
-assert.equal([...expiry.timers.values()][0].delay, 3_540_000);
-await expiry.retry();
-assert.equal(expiry.results.length, 2, "A visible idle page renews before the one-hour expiry");
-
-let visible = false;
-let hiddenChecks = 0;
-const hidden = recoveryHarness(async () => {
-  hiddenChecks++;
-  return { authenticated: true, user: savedUser, expires_at: 3600 };
-}, { isVisible: () => visible });
-await hidden.recovery.check();
-await hidden.retry();
-assert.equal(hiddenChecks, 1, "Hidden tabs do not keep the free service awake");
-visible = true;
-hidden.advance(2 * 3600_000);
-await hidden.recovery.check();
-assert.equal(hiddenChecks, 2, "Returning after several hours restores the session");
-
+const returning = recoveryHarness(async () => ({ authenticated: true, user: savedUser }));
+await returning.recovery.check();
+returning.advance(7 * 24 * 3600_000);
+await returning.recovery.check();
+assert.equal(returning.results.length, 2, "Returning after a week restores from the stable cookie");
+assert.equal(returning.timers.size, 0, "No refresh polling while inactive");
 const failingRenewal = recoveryHarness(async () => { throw new Error("Render waking up"); });
 await assert.rejects(failingRenewal.recovery.check({ force: true, throwOnError: true }), /Render/);
 assert.equal(failingRenewal.results.length, 0, "A failed renewal never confirms logout");
@@ -175,23 +161,5 @@ await authenticatedRequest({
 });
 assert.equal(restored, 0, "An old response cannot affect a later login or explicit logout");
 
-// Simulate two tabs sharing rotating HttpOnly cookies via the browser lock.
-let cookieVersion = 0;
-let lock = Promise.resolve();
-const exclusive = (_signal, work) => {
-  const operation = lock.then(work);
-  lock = operation.catch(() => {});
-  return operation;
-};
-const rotate = async () => {
-  const seen = cookieVersion;
-  await new Promise(resolve => setImmediate(resolve));
-  assert.equal(cookieVersion, seen, "A tab must use the newest shared cookie");
-  cookieVersion++;
-  return { authenticated: true, user: savedUser };
-};
-const tabOne = recoveryHarness(rotate, { runExclusive: exclusive });
-const tabTwo = recoveryHarness(rotate, { runExclusive: exclusive });
-await Promise.all([tabOne.recovery.check(), tabTwo.recovery.check()]);
-assert.equal(cookieVersion, 2);
+assert.equal(app.includes("navigator.locks"), false, "Rotation is owned by the durable server session");
 console.log("Purge des anciens jetons, restauration automatique, reprise réseau et interruption de session vérifiées.");
