@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:secrets": "node ./scripts/check-secrets.mjs",
     "dev": "vite",
     "build": "tailwindcss -i ./src/canvas.css -o ./public/canvas.css --minify && vite build && node scripts/generate-landing-pages.mjs",
     "preview": "vite preview",

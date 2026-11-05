@@ -4,3 +4,8 @@ dist/
 .vite/
 *.log
 public/canvas.css
+
+# Local environment configuration may contain private credentials.
+**/.env
+**/.env.*
+!**/.env*.example
