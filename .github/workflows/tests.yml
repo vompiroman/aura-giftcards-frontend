@@ -2,6 +2,8 @@ name: Site checks
 
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,9 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+      - run: node scripts/check-secrets.mjs
+        env:
+          SECRET_SCAN_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      - run: node --test scripts/test-secret-check.mjs
       - run: npm ci
       - run: npm run check
