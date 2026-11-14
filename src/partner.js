@@ -271,4 +271,3 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
   void config();
   return {refresh,open,loadAdmin,submit,state:()=>state,enabled:()=>enabled,hasDepositReturn:()=>Boolean(depositReturn),draw};
 }
-
