@@ -2692,7 +2692,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
-        const partnerDestination = partnerUI.hasDepositReturn() || await restorePartnerApplication(result.user);
+        if (result.partner_application_submitted) sessionStorage.removeItem("aura_partner_application");
+        const partnerDestination = partnerUI.hasDepositReturn() || result.partner_application_submitted || await restorePartnerApplication(result.user);
         const nextRoute = partnerDestination ? "partner" : cart.length
           ? "cart"
           : result.user?.is_admin === true
@@ -2736,11 +2737,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             first_name: firstName,
             last_name: lastName,
             phone,
+            ...(wantsPartner ? {partner_application:partnerAnswers(form)} : {}),
           })
         });
         if (result.authenticated === true && result.user) {
           setAccountState(result.user);
-          if (wantsPartner) await restorePartnerApplication(result.user);
+          if (result.partner_application_saved) sessionStorage.removeItem("aura_partner_application");
+          else if (wantsPartner) await restorePartnerApplication(result.user);
           showRoute(wantsPartner ? "partner" : "cart");
           if (!wantsPartner) setCheckoutStep(1);
           showToast("Compte créé");
