@@ -8,6 +8,7 @@ import {
 import { clearAuthSession } from "./session.js";
 import { createSessionRecovery } from "./session-recovery.js";
 import { authenticatedRequest } from "./authenticated-request.js";
+import { createPartnerUI, partnerAnswers, partnerReduction, partnerSavings, tierNames } from "./partner.js";
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
@@ -96,6 +97,9 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
     let activeOrderId = sessionStorage.getItem("aura_order_id") || "";
     let highlightedOrderId = "";
     let currentUser = null;
+    let partnerUI;
+    let checkoutBusy = false;
+    const initialPaymentOrder = initialQueryParams.get("order_id") || initialQueryParams.get("orderId");
     const sessionRecovery = createSessionRecovery({
       request: signal => apiRequest("/session", { method: "POST", body: "{}", cache: "no-store", signal }),
       onStatus: status => {
@@ -121,10 +125,22 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
           return;
         }
         if (activeRoute === "admin" && result.user.is_admin === true) void loadAdminDashboard();
-        else if (activeRoute === "order") void loadMyOrders();
+        else if (activeRoute === "order") {
+          const walletOrder = sessionStorage.getItem("aura_wallet_order_notice");
+          if (walletOrder) {
+            sessionStorage.removeItem("aura_wallet_order_notice");
+            highlightedOrderId = walletOrder;
+            showToast("Commande réglée avec ton portefeuille.");
+          }
+          void loadMyOrders();
+        }
         if (activeRoute === "login" && !recoveryRequested) {
           showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order");
         }
+        if (activeRoute === "partner") void partnerUI.open();
+        void restorePartnerApplication(result.user).then(applied=>{
+          if (applied && activeRoute !== "partner") showRoute("partner");
+        });
         if (!paymentReturnHandled) { paymentReturnHandled = true; void verifyPaymentReturn(); }
       },
     });
@@ -328,7 +344,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       },
     };
     const routeNames = new Set([
-      "home", "products", "cart", "order", "login", "faq", "admin",
+      "home", "products", "cart", "order", "login", "faq", "admin", "partner",
       ...Object.keys(landingRoutes),
       ...Object.keys(contentRoutes),
     ]);
@@ -347,7 +363,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const title = t(page?.title || "Aura Stream — Comptes streaming en Algérie");
       const description = t(page?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.");
       const canonicalUrl = `https://www.aura-stream.com${page?.path || "/"}`;
-      const privateRoute = ["cart", "order", "login", "admin"].includes(route);
+      const privateRoute = ["cart", "order", "login", "admin", "partner"].includes(route);
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute("content", description);
       document.querySelector('meta[name="robots"]')?.setAttribute("content", privateRoute ? "noindex,nofollow" : "index,follow");
@@ -404,11 +420,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const visibleRoutes = new Set(["home", "products", ...Object.keys(landingRoutes)]);
       const shouldShow = cart.length > 0 && visibleRoutes.has(activeRoute);
       const subtotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const discount = activeRenewalOffer
-        ? Math.min(Number(activeRenewalOffer.discount_amount || 0), subtotal)
-        : activePromo
-          ? Math.min(Number(activePromo.discount_amount || 0), subtotal)
-          : 0;
+      const discount = cartSavings(subtotal);
       const total = Math.max(0, subtotal - discount);
       const summary = document.getElementById("mobile-cart-summary");
       const totalLabel = document.getElementById("mobile-cart-total");
@@ -476,7 +488,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const message = typeof payload?.error === "string"
             ? payload.error
             : typeof payload?.message === "string" ? payload.message : `Erreur API (${response.status})`;
-          throw new Error(t(message));
+          throw Object.assign(new Error(t(message)), {code:payload?.code,status:response.status});
         }
         return payload;
       } catch (error) {
@@ -526,6 +538,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function setAccountState(user) {
       currentUser = user || null;
+      if (partnerUI) void partnerUI.refresh({force:true}).catch(()=>undefined);
       if (currentUser) sessionRecovery.resume();
       const authenticated = Boolean(currentUser);
       const isAdminUser = authenticated && currentUser.is_admin === true;
@@ -1067,7 +1080,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (route === "products") applyProductFilter("all");
       if (route === "login" && !recoveryRequested) showAuthPanel("signin");
       if (
-        ["login", "order", "admin"].includes(route)
+        ["login", "order", "admin", "partner"].includes(route)
         && window.__metaPixelInitialized
         && !window.__auraSensitiveAuthFlow
       ) {
@@ -1102,6 +1115,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
       trackLandingView(route);
       if (route === "order") loadMyOrders();
+      if (route === "partner") void partnerUI.open();
       if (route === "cart") setCheckoutStep(1);
       if (route === "admin" && currentUser?.is_admin === true) loadAdminDashboard();
 
@@ -1152,11 +1166,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const card = button.closest(".product-card");
         card.querySelectorAll(".duration-btn").forEach(item => item.setAttribute("aria-pressed", "false"));
         button.setAttribute("aria-pressed", "true");
-        const formattedPrice = formatPrice(Number(button.dataset.price));
-        const separator = formattedPrice.lastIndexOf(" ");
-        const amount = separator > 0 ? formattedPrice.slice(0, separator) : formattedPrice;
-        const currency = separator > 0 ? formattedPrice.slice(separator + 1) : "";
-        card.querySelector(".price-value").innerHTML = `${escapeHTML(amount)} <span class="text-sm">${escapeHTML(currency)}</span>`;
+        renderPartnerPrices();
       });
     });
 
@@ -1333,7 +1343,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               <p class="mt-1 text-xs text-black/60">${item.duration}</p>
             </div>
             <div class="text-right">
-              <p class="font-title text-sm font-extrabold">${formatPrice(item.price)}</p>
+              <p class="font-title text-sm font-extrabold">${partnerPriceHtml(item.price, partnerWins(cart.reduce((sum,line)=>sum+line.price,0)))}</p>
               <button class="remove-cart mt-1 inline-flex min-h-11 items-center text-xs font-semibold text-aura hover:underline" data-index="${index}">Supprimer</button>
             </div>
           </article>
@@ -1345,11 +1355,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setRenewalOrderId(null);
       }
       if (activePromo && Number(activePromo.subtotal) !== subtotal) activePromo = null;
-      const discount = activeRenewalOffer
-        ? Math.min(Number(activeRenewalOffer.discount_amount || 0), subtotal)
-        : activePromo
-          ? Math.min(Number(activePromo.discount_amount || 0), subtotal)
-          : 0;
+      const discount = cartSavings(subtotal);
       const total = Math.max(0, subtotal - discount);
       document.getElementById("subtotal-value").textContent = formatPrice(subtotal);
       document.getElementById("checkout-total").textContent = formatPrice(total);
@@ -1360,9 +1366,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       discountRow?.classList.toggle("hidden", discount <= 0);
       discountRow?.classList.toggle("flex", discount > 0);
       if (discountValue) discountValue.textContent = `−${formatPrice(discount)}`;
-      if (discountLabel) discountLabel.textContent = activeRenewalOffer
+      if (discountLabel) discountLabel.textContent = partnerWins(subtotal)
+        ? t("Remise partenaire")
+        : activeRenewalOffer
         ? `${t("Remise fidélité")} (−${formatLocalizedNumber(activeRenewalOffer.discount_percent)} %)`
         : t("Réduction");
+      const wallet = partnerUI?.state();
+      document.getElementById("checkout-wallet")?.classList.toggle("hidden",wallet?.partner_status !== "APPROVED");
+      const walletButton = document.getElementById("pay-wallet-button");
+      if (walletButton) walletButton.disabled = checkoutBusy || !cart.length || Number(wallet?.wallet_balance ?? -1) < total;
+      const walletStatus = document.getElementById("checkout-wallet-status");
+      if (walletStatus) walletStatus.textContent = wallet?.partner_status === "APPROVED"
+        ? `${t("Solde disponible")} : ${formatPrice(Number(wallet.wallet_balance))}${Number(wallet.wallet_balance)<total ? " · "+t("Ton solde est insuffisant.") : ""}` : "";
       document.getElementById("promo-remove")?.classList.toggle("hidden", !activePromo);
       const promoInput = document.getElementById("promo-code");
       const promoButton = document.getElementById("promo-apply");
@@ -1456,8 +1471,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       setCheckoutStep(1);
     });
 
-    document.getElementById("pay-button").addEventListener("click", async event => {
+    async function payCheckout(event, wallet = false) {
       const button = event.currentTarget;
+      if (checkoutBusy) return;
       if (!currentUser) {
         showRoute("login");
         setAuthFeedback("Connecte-toi pour lancer le paiement.");
@@ -1474,6 +1490,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return;
       }
       const originalLabel = button.innerHTML;
+      checkoutBusy = true;
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
       try {
@@ -1488,11 +1505,26 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           snapchat_friend_added: cart.some(item => item.service === "Snapchat") ? document.getElementById("snapchat-friend-added").checked : undefined,
           renewal_order_id: renewalOrderId || undefined
         };
-        const fingerprint = await checkoutPayloadFingerprint(orderPayload);
-        if (pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
+        if (!wallet && !partnerUI.state()) await partnerUI.refresh().catch(()=>null);
+        const isPartner = partnerUI.state()?.partner_status === "APPROVED";
+        const subtotal = cart.reduce((sum,item)=>sum+item.price,0);
+        const expected = subtotal-cartSavings(subtotal);
+        const fingerprint = await checkoutPayloadFingerprint({...orderPayload,wallet});
+        if (isPartner) {
+          const keyName = "aura_partner_checkout_attempt";
+          let existing;
+          try {existing=JSON.parse(sessionStorage.getItem(keyName)||"null");} catch {}
+          const identity=currentUser.id || currentUser.email;
+          const attempt=existing?.fingerprint===fingerprint && existing?.identity===identity
+            ? existing : {identity,fingerprint,key:crypto.randomUUID(),expected};
+          sessionStorage.setItem(keyName,JSON.stringify(attempt));
+          Object.assign(orderPayload,{checkout_key:attempt.key,expected_total:attempt.expected,payment_method:wallet ? "wallet" : "slickpay"});
+        }
+        let order;
+        if (!isPartner && pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
           activeOrderId = pendingPaymentAttempt.orderId;
         } else {
-          const order = await apiRequest("/create-order", {
+          order = await apiRequest("/create-order", {
             method: "POST",
             body: JSON.stringify(orderPayload)
           });
@@ -1501,6 +1533,25 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         }
         if (!activeOrderId) throw new Error("La commande n’a pas reçu d’identifiant.");
         sessionStorage.setItem("aura_order_id", activeOrderId);
+
+        if (wallet) {
+          if (order?.payment_status !== "paid") throw new Error(t("Paiement portefeuille non confirmé."));
+          sessionStorage.removeItem("aura_partner_checkout_attempt");
+          highlightedOrderId=activeOrderId;
+          clearCheckoutCredentialPasswords();
+          cart=[];
+          activePromo=null;
+          setRenewalOrderId(null);
+          setRenewalOffer(null);
+          updateCart();
+          void partnerUI.refresh({force:true}).catch(()=>undefined);
+          if (window.__metaPixelInitialized && !window.__auraSensitiveAuthFlow) {
+            sessionStorage.setItem("aura_wallet_order_notice", activeOrderId);
+          }
+          showRoute("order");
+          showToast("Commande réglée avec ton portefeuille.");
+          return;
+        }
 
         const invoice = await apiRequest("/create-invoice", {
           method: "POST",
@@ -1516,10 +1567,22 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           source: "payment",
         });
         showToast(error.message || "Impossible de préparer le paiement");
+        if (error?.code?.startsWith("PARTNER_") || error?.code === "WALLET_INSUFFICIENT_BALANCE") {
+          if (["PARTNER_QUOTE_CHANGED","PARTNER_QUOTE_REQUIRED","PARTNER_USE_WALLET"].includes(error.code)) {
+            sessionStorage.removeItem("aura_partner_checkout_attempt");
+            if (error.code==="PARTNER_USE_WALLET") setCheckoutStep(2);
+          }
+          void partnerUI.refresh({force:true}).catch(()=>undefined);
+        }
+      } finally {
+        checkoutBusy = false;
         button.disabled = false;
         button.innerHTML = originalLabel;
+        if (wallet) updateCart();
       }
-    });
+    }
+    document.getElementById("pay-button").addEventListener("click", event=>void payCheckout(event));
+    document.getElementById("pay-wallet-button").addEventListener("click", event=>void payCheckout(event,true));
 
     function setAdminFeedback(message = "", isError = true) {
       const box = document.getElementById("admin-global-feedback");
@@ -1739,6 +1802,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (name === "stock") loadAdminInventory();
       if (name === "promos") loadAdminPromos();
       if (name === "activity") loadAdminAudit();
+      if (name === "partners") void partnerUI?.loadAdmin();
     }
 
     async function loadAdminOverview() {
@@ -1876,7 +1940,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
                 ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-11 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
                 <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
-                  ${["pending", "active", "completed", "cancelled"].map(status =>
+                  ${(order.partner_wallet_refunded_at ? ["cancelled"] : ["pending", "active", "completed", "cancelled"]).map(status =>
                     `<option value="${status}" ${order.status === status ? "selected" : ""}>${adminOrderStatusLabel(status)}</option>`
                   ).join("")}
                 </select>
@@ -1886,13 +1950,18 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         }).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucune commande ne correspond aux filtres.</p>';
         list.querySelectorAll(".admin-order-status-select").forEach(select => {
           select.addEventListener("change", async () => {
+            const target = orders.find(order => order.order_id === select.dataset.orderId);
+            if (target?.partner_wallet_paid && select.value === "cancelled" && !window.confirm(t("Annuler cette commande et rembourser le portefeuille ?"))) {
+              select.value = target.status;
+              return;
+            }
             select.disabled = true;
             try {
-              await apiRequest("/admin/update-order-status", {
+              const result = await apiRequest("/admin/update-order-status", {
                 method: "POST",
                 body: JSON.stringify({ order_id: select.dataset.orderId, status: select.value })
               });
-              showToast("Statut de la commande mis à jour");
+              showToast(result?.wallet_refunded ? "Portefeuille remboursé." : "Statut de la commande mis à jour");
               await Promise.all([loadAdminOrders(), loadAdminOverview(), loadAdminAudit()]);
             } catch (error) {
               showToast(error.message || "Mise à jour impossible");
@@ -2623,7 +2692,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setAccountState(result.user);
         setAuthFeedback("Connexion réussie. Tu peux maintenant finaliser ta commande.", false);
         showToast("Connexion réussie");
-        const nextRoute = cart.length
+        if (result.partner_application_submitted) sessionStorage.removeItem("aura_partner_application");
+        const partnerDestination = partnerUI.hasDepositReturn() || result.partner_application_submitted || await restorePartnerApplication(result.user);
+        const nextRoute = partnerDestination ? "partner" : cart.length
           ? "cart"
           : result.user?.is_admin === true
             ? "admin"
@@ -2650,21 +2721,31 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const firstName = document.getElementById("signup-first-name").value.trim();
         const lastName = document.getElementById("signup-last-name").value.trim();
         const phone = normalizeAlgerianPhone(document.getElementById("signup-phone").value);
+        const email = document.getElementById("signup-email").value.trim();
+        const wantsPartner = partnerUI.enabled() && document.getElementById("signup-account-type").value === "partner";
+        if (wantsPartner) {
+          sessionStorage.setItem("aura_partner_application",JSON.stringify({email:email.toLowerCase(),answers:partnerAnswers(form)}));
+        } else {
+          sessionStorage.removeItem("aura_partner_application");
+        }
         const result = await apiRequest("/register", {
           method: "POST",
           body: JSON.stringify({
-            email: document.getElementById("signup-email").value.trim(),
+            email,
             password: document.getElementById("signup-password").value,
             full_name: `${firstName} ${lastName}`.trim(),
             first_name: firstName,
             last_name: lastName,
             phone,
+            ...(wantsPartner ? {partner_application:partnerAnswers(form)} : {}),
           })
         });
         if (result.authenticated === true && result.user) {
           setAccountState(result.user);
-          showRoute("cart");
-          setCheckoutStep(1);
+          if (result.partner_application_saved) sessionStorage.removeItem("aura_partner_application");
+          else if (wantsPartner) await restorePartnerApplication(result.user);
+          showRoute(wantsPartner ? "partner" : "cart");
+          if (!wantsPartner) setCheckoutStep(1);
           showToast("Compte créé");
         } else {
           setAuthFeedback("Compte créé. Vérifie ton e-mail puis connecte-toi pour continuer.", false);
@@ -2705,14 +2786,16 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     async function verifyPaymentReturn() {
-      const params = new URLSearchParams(window.location.search);
-      const orderId = params.get("order_id") || params.get("orderId");
+      const orderId = initialPaymentOrder;
       if (!orderId || !currentUser) return;
       activeOrderId = orderId;
       highlightedOrderId = orderId;
       sessionStorage.setItem("aura_order_id", orderId);
       try {
-        await apiRequest("/verify-payment", { method: "POST", body: JSON.stringify({ order_id: orderId }) });
+        const payment = await apiRequest("/verify-payment", { method: "POST", body: JSON.stringify({ order_id: orderId }) });
+        if (payment?.payment_status !== "paid") throw new Error("Payment pending");
+        sessionStorage.removeItem("aura_partner_checkout_attempt");
+        void partnerUI.refresh({force:true}).catch(()=>undefined);
         cart = [];
         setRenewalOrderId(null);
         activePromo = null;
@@ -2733,8 +2816,60 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (stockProfiles) syncStockProfileRows();
       if (activeRoute === "order" && currentUser) loadMyOrders();
       if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });
+      renderPartnerPrices();
+      if (activeRoute === "partner") partnerUI.draw();
+      if (document.getElementById("admin-partner-tab")?.getAttribute("aria-selected")==="true") void partnerUI.loadAdmin();
     });
 
+    function cartSavings(subtotal) {
+      return partnerSavings(subtotal, partnerUI?.state(), activeRenewalOffer?.discount_amount ?? activePromo?.discount_amount ?? 0);
+    }
+    function partnerWins(subtotal) {
+      const reduction = partnerReduction(subtotal,partnerUI?.state());
+      return reduction > 0 && reduction >= Number(activeRenewalOffer?.discount_amount ?? activePromo?.discount_amount ?? 0);
+    }
+    function partnerPriceHtml(amount, showOffer = true, from = false) {
+      const state = partnerUI?.state();
+      const reduction = showOffer ? partnerReduction(amount,state) : 0;
+      const publicPrice = escapeHTML(formatPrice(amount));
+      const prefix = from ? escapeHTML(t("À partir de"))+" " : "";
+      if (!reduction) return prefix+publicPrice;
+      return `<span class="block text-sm font-medium opacity-60"><del>${publicPrice}</del></span>${prefix}${escapeHTML(formatPrice(amount-reduction))}
+        <span class="inline-block rounded-full bg-green-50 px-2 py-1 align-middle text-xs font-bold text-green-800">${escapeHTML(t(tierNames[state.partner_tier]))} −${Number(state.discount_percent)} %</span>`;
+    }
+    function renderPartnerPrices() {
+      document.querySelectorAll(".product-card").forEach(card=>{
+        const button=card.querySelector('.duration-btn[aria-pressed="true"]');
+        const target=card.querySelector(".price-value");
+        if(button && target) target.innerHTML=partnerPriceHtml(Number(button.dataset.price));
+      });
+      document.querySelectorAll("[data-partner-public-price]").forEach(target=>{
+        target.innerHTML=partnerPriceHtml(Number(target.dataset.partnerPublicPrice),true,target.hasAttribute("data-partner-from"));
+      });
+    }
+    let applicationSubmit;
+    async function restorePartnerApplication(user) {
+      let draft;
+      try {draft=JSON.parse(sessionStorage.getItem("aura_partner_application")||"null");} catch {}
+      if(!draft || !user?.email || draft.email!==user.email.toLowerCase()) return false;
+      if(applicationSubmit) return applicationSubmit;
+      applicationSubmit=(async()=>{
+        try {
+          await partnerUI.submit(draft.answers);
+          sessionStorage.removeItem("aura_partner_application");
+          return true;
+        } catch(error) {
+          if(error.status===409) {sessionStorage.removeItem("aura_partner_application");return true;}
+          showToast(error.message);
+          return false;
+        }
+      })();
+      try {return await applicationSubmit;} finally {applicationSubmit=null;}
+    }
+    partnerUI=createPartnerUI({
+      api:apiRequest,t,escape:escapeHTML,price:formatPrice,date:formatDateTime,getUser:()=>currentUser,
+      onChange:()=>{renderPartnerPrices();updateCart();},toast:showToast,
+    });
     updateCart();
     const recoveryMode = recoveryRequested;
     const initialRoute = recoveryMode ? "login" : routeFromLocation();
