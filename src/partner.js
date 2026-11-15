@@ -1,3 +1,5 @@
+import { createPartnerOperations } from "./partner-operations.js";
+
 const groups = {
   monthly_volume: ["Volume d’achat mensuel estimé", {
     UNDER_5000:"Moins de 5 000 DA", "5000_15000":"5 000 à 15 000 DA", "15000_50000":"15 000 à 50 000 DA", OVER_50000:"Plus de 50 000 DA",
@@ -37,7 +39,7 @@ export function partnerAnswers(form) {
   ]));
 }
 
-export function createPartnerUI({api, t, escape, price, date, getUser, onChange, toast}) {
+export function createPartnerUI({api, t, escape, price, date, getUser, onChange, toast, language, addToCart, showOrder}) {
   let enabled = false, configKnown = false, state = null, generation = 0, owner = null;
   let walletPage = 0, adminPage = 0, walletVersion = 0, adminVersion = 0;
   let depositReturn = new URLSearchParams(location.search).get("wallet_deposit");
@@ -56,6 +58,8 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
         : `<input class="${field}" name="${key}" required minlength="${key==="quick_contact" ? 3 : 1}" maxlength="${key==="quick_contact" ? 120 : 250}">`}</label>`).join("")}
     </div>`;
   const post = (path,body={}) => api(path,{method:"POST",body:JSON.stringify(body)});
+  const operations = createPartnerOperations({api,t,escape,price,date,language,addToCart,showOrder,
+    styles:{card,field,button,secondary}});
   const syncEntrypoints = () => {
     document.querySelectorAll("[data-partner-entry]").forEach(el=>el.classList.toggle("hidden",!enabled || !getUser()));
     const tab=document.getElementById("admin-partner-tab");
@@ -198,7 +202,8 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
         <p class="mt-2 text-sm text-black/60">${next ? `${label("Avant le prochain palier")} (${label(tierNames[next.tier])}) : ${htmlPrice(next.remaining)}`
           : label(unlocked ? "Tu as atteint le palier Or." : "Un dépôt débloque ta progression.")}</p>
         <ul class="mt-5 grid gap-2 text-sm">${(state.tiers || []).map(item=>`<li class="flex justify-between gap-2"><strong>${label(tierNames[item.tier])}</strong><span>${htmlPrice(item.threshold)} · ${Number(item.discount_percent)} %</span></li>`).join("")}</ul>
-      </section></div><section class="mt-5 ${card}"><div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-title text-2xl font-extrabold">${label("Historique du portefeuille")}</h2>
+      </section></div><div class="mt-5" data-partner-operations></div>
+      <section class="mt-5 ${card}"><div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-title text-2xl font-extrabold">${label("Historique du portefeuille")}</h2>
       <button class="${secondary}" data-partner-refresh>${label("Actualiser")}</button></div><ul id="partner-wallet-history" class="mt-3" aria-live="polite"></ul></section>`;
     let requestKey=null, requestedAmount=null;
     formHandler(document.getElementById("partner-deposit-form"),async form=>{
@@ -208,6 +213,7 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
       if (safePaymentUrl(result.payment_url)) location.assign(result.payment_url);
       else {requestKey=null; await refresh({force:true}); draw(); if(result.status==="FAILED") toast("Le paiement de la recharge a échoué.");}
     });
+    operations.attach(root.querySelector("[data-partner-operations]"),state.discount_percent);
     void showWallet(walletPage);
   }
   async function open() {
