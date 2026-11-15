@@ -93,6 +93,7 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
     const identity=user?.id || user?.email || null;
     if(owner!==identity) {
       owner=identity; generation++; state=null; partnerRequest=null;
+      operations.close();
       walletPage=0; adminPage=0; walletVersion++; adminVersion++;
       const content=region(); if(content) content.replaceChildren();
       document.getElementById("admin-partner-content")?.replaceChildren();
@@ -281,5 +282,5 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
   });
   document.getElementById("signup-account-type")?.addEventListener("change",syncEntrypoints);
   void config();
-  return {refresh,open,loadAdmin,submit,state:()=>state,enabled:()=>enabled,hasDepositReturn:()=>Boolean(depositReturn),draw};
+  return {refresh,open,close:operations.close,loadAdmin,submit,state:()=>state,enabled:()=>enabled,hasDepositReturn:()=>Boolean(depositReturn),draw};
 }
