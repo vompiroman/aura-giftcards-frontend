@@ -122,9 +122,9 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
                 ${label("Rappels e-mail à J−7 et J−2")}</label>
               <button class="${secondary}" type="submit">${label("Enregistrer")}</button><p class="basis-full text-xs" data-feedback role="status"></p>
             </form>${toolkit.orderTools(order,index)}</article>`).join("") || `<p class="text-sm text-black/60">${label("Aucune commande pour ces filtres.")}</p>`;
-          toolkit.bindOrderTools(result,payload.orders);
           result.innerHTML += `<div class="mt-4 flex flex-wrap gap-2">${model.offset ? `<button class="${secondary}" data-order-page="-20">${label("Précédent")}</button>` : ""}
             ${payload.has_more ? `<button class="${secondary}" data-order-page="20">${label("Suivant")}</button>` : ""}</div>`;
+          toolkit.bindOrderTools(result,payload.orders);
           result.querySelectorAll("[data-order-page]").forEach(el=>el.addEventListener("click",()=>{
             model.offset+=Number(el.dataset.orderPage); void draw("orders");
           }));
