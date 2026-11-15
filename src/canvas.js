@@ -27,13 +27,16 @@ const initialQueryParams = new URLSearchParams(window.location.search);
 const initialHash = window.location.hash.replace(/^#/, "");
 const initialHashParams = initialHash.includes("=") ? new URLSearchParams(initialHash) : new URLSearchParams();
 let capturedRecoveryToken = initialHashParams.get("type") === "recovery"
-  ? String(initialHashParams.get("access_token") || "")
-  : "";
+  ? initialHashParams.has("token_hash")
+    ? { token_hash: initialHashParams.get("token_hash") }
+    : initialHashParams.has("access_token") ? { token: initialHashParams.get("access_token") } : null
+  : null;
+const expiredRecoveryLink = initialHashParams.get("error_code") === "otp_expired";
 const recoveryRequested = initialQueryParams.get("type") === "recovery"
   || initialHashParams.get("type") === "recovery"
-  || Boolean(capturedRecoveryToken);
+  || expiredRecoveryLink;
 const sensitiveTokenInUrl = recoveryRequested
-  || ["access_token", "refresh_token", "provider_token", "token"].some((key) => (
+  || ["access_token", "refresh_token", "provider_token", "token", "token_hash"].some((key) => (
     initialQueryParams.has(key) || initialHashParams.has(key)
   ));
 if (sensitiveTokenInUrl) {
@@ -2623,10 +2626,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     });
 
-    function recoveryAccessToken() {
-      return capturedRecoveryToken;
-    }
-
     document.getElementById("forgot-password-form")?.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -2647,9 +2646,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("reset-password-form")?.addEventListener("submit", async event => {
       event.preventDefault();
-      const token = recoveryAccessToken();
       const password = document.getElementById("reset-password").value;
-      if (!token) {
+      if (!capturedRecoveryToken) {
         setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
         return;
       }
@@ -2658,11 +2656,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const result = await apiRequest("/reset-password", {
           method: "POST",
-          body: JSON.stringify({ token, password })
+          body: JSON.stringify({ ...capturedRecoveryToken, password })
         });
-        capturedRecoveryToken = "";
-        setAuthFeedback(result.message || "Mot de passe mis à jour. Tu peux te connecter.", false);
+        capturedRecoveryToken = null;
         showAuthPanel("signin");
+        setAuthFeedback(result.message || "Mot de passe mis à jour. Tu peux te connecter.", false);
         window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
       } catch (error) {
         setAuthFeedback(error.message || "Lien de réinitialisation invalide ou expiré.");
@@ -2874,7 +2872,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     const recoveryMode = recoveryRequested;
     const initialRoute = recoveryMode ? "login" : routeFromLocation();
     showRoute(initialRoute);
-    if (recoveryMode) showAuthPanel("reset");
+    if (recoveryMode) {
+      showAuthPanel(capturedRecoveryToken ? "reset" : "forgot");
+      if (!capturedRecoveryToken) setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
+    }
     void sessionRecovery.check();
     window.addEventListener("online", () => { void sessionRecovery.check({ force: true }); });
     window.addEventListener("focus", () => { void sessionRecovery.check(); });
