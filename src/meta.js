@@ -41,7 +41,7 @@ const hasAuthenticatedSession = () => {
 const hasSensitiveAuthContext = () => {
   const combinedUrlState = `${window.location.search || ""}&${window.location.hash || ""}`;
   return window.__auraSensitiveAuthFlow === true
-    || /(?:^|[?&#])(access_token|refresh_token|provider_token|token|type=recovery)=/i.test(combinedUrlState)
+    || /(?:^|[?&#])(?:(access_token|refresh_token|provider_token|token|token_hash)=|type=recovery(?:$|&)|error_code=otp_expired(?:$|&))/i.test(combinedUrlState)
     || /(?:^|#)(login|order|admin|partner)(?:$|[?&])/i.test(window.location.hash || "")
     || new URLSearchParams(window.location.search || "").get("account") === "1"
     || hasAuthenticatedSession();
