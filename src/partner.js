@@ -139,13 +139,17 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
     try {
       const result=await api(`/partner/wallet?offset=${offset}`);
       if(version!==walletVersion || !list.isConnected) return;
-      list.innerHTML=(result.transactions.length ? result.transactions.map(tx=>`<li class="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 py-3">
-        <div><strong>${label(types[tx.kind])}</strong> · ${label(statuses[tx.status])}<p class="mt-1 text-xs text-black/60">${escape(date(tx.confirmed_at || tx.created_at))}${tx.order_id ? ` · ${escape(tx.order_id)}` : ""}</p></div>
-        <div class="text-end"><strong>${tx.kind==="PURCHASE" ? "−" : "+"}${htmlPrice(tx.amount)}</strong>
+      list.innerHTML=(result.transactions.length ? result.transactions.map(tx=>{
+        const expense=tx.kind==="PURCHASE";
+        const movementColor=expense ? "text-red-700" : "text-green-700";
+        return `<li class="flex flex-wrap items-center justify-between gap-3 border-b border-black/10 py-3">
+        <div><strong class="${movementColor}">${label(types[tx.kind])}</strong> · ${label(statuses[tx.status])}<p class="mt-1 text-xs text-black/60">${escape(date(tx.confirmed_at || tx.created_at))}${tx.order_id ? ` · ${escape(tx.order_id)}` : ""}</p></div>
+        <div class="text-end"><strong class="${movementColor}">${expense ? "−" : "+"}${htmlPrice(tx.amount)}</strong>
          <p class="mt-1 text-xs text-black/60">${tx.balance_after==null ? "—" : `${label("Solde après opération")} : ${htmlPrice(tx.balance_after)}`}</p></div>
         ${tx.kind==="DEPOSIT" && tx.status==="PENDING" ? `<div class="flex flex-wrap gap-2"><button class="${secondary}" data-deposit-check="${escape(tx.id)}">${label("Vérifier le dépôt")}</button>
         ${safePaymentUrl(tx.payment_url) ? `<a class="inline-flex items-center ${secondary}" href="${escape(tx.payment_url)}">${label("Reprendre le paiement")}</a>` : ""}</div>` : ""}
-      </li>`).join("") : `<li class="py-4 text-sm text-black/60">${label("Aucun mouvement.")}</li>`)
+      </li>`;
+      }).join("") : `<li class="py-4 text-sm text-black/60">${label("Aucun mouvement.")}</li>`)
       + `<li class="mt-4 flex gap-2">${offset ? `<button class="${secondary}" data-wallet-page="${Math.max(0,offset-25)}">${label("Précédent")}</button>` : ""}${result.has_more ? `<button class="${secondary}" data-wallet-page="${offset+25}">${label("Suivant")}</button>` : ""}</li>`;
     } catch(error) {if(version===walletVersion) list.innerHTML=msg(error.message,true);}
   }
