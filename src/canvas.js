@@ -115,10 +115,13 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
         }
       },
       onResult: result => {
+        const partnerWasOpen = activeRoute === "partner";
+        const previousUser = currentUser?.id;
         setAccountState(result.authenticated ? result.user : null);
         if (!result.authenticated) {
           adminLoaded = false;
           if (activeRoute === "admin") showRoute("login");
+          if (partnerWasOpen && previousUser) partnerUI.draw();
           return;
         }
         if (activeRoute === "admin" && result.user.is_admin === true) void loadAdminDashboard();
@@ -134,7 +137,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
         if (activeRoute === "login" && !recoveryRequested) {
           showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order");
         }
-        if (activeRoute === "partner") void partnerUI.open();
+        if (partnerWasOpen && activeRoute === "partner" && previousUser !== result.user.id) void partnerUI.open();
         void restorePartnerApplication(result.user).then(applied=>{
           if (applied && activeRoute !== "partner") showRoute("partner");
         });
@@ -1075,6 +1078,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function showRoute(route, scrollTarget) {
       if (!routeNames.has(route)) route = "home";
+      if (activeRoute === "partner" && route !== "partner") partnerUI?.close();
       if (route !== "login") {
         recoveryRequested = false;
         capturedRecoveryToken = null;

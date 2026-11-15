@@ -7,6 +7,16 @@ const statuses = {
 };
 const quantityLimit = 20;
 
+function laterDelivery(value, previous) {
+  if (!value) return false;
+  if (!previous) return true;
+  const difference = Date.parse(value) - Date.parse(previous);
+  if (difference !== 0) return difference > 0;
+  // Postgres may distinguish two allocations within the same JavaScript millisecond.
+  const fraction = timestamp => (timestamp.match(/\.(\d+)/)?.[1] || "").padEnd(6,"0");
+  return fraction(value) > fraction(previous);
+}
+
 function orderStatus(order) {
   if (order.status === "cancelled") return "cancelled";
   if (order.payment_status === "unpaid") return "unpaid";
@@ -24,7 +34,13 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
   const tabs = { orders: "Mes commandes partenaire", basket: "Panier rapide", report: "Bilan mensuel", support:"Assistance" };
   const tabMarkup = Object.entries(tabs).map(([id,name]) =>
     `<button type="button" class="${secondary}" data-partner-section="${id}" aria-pressed="false">${label(name)}</button>`).join("");
-  let mounted;
+  let mounted, stockSnapshot;
+
+  function close() {
+    mounted?.stop();
+    mounted = null;
+    stockSnapshot = null;
+  }
 
   function attach(root, discountPercent) {
     if (!root) return;
@@ -35,7 +51,7 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
     model.month = `${month.find(p=>p.type==="year").value}-${month.find(p=>p.type==="month").value}`;
     root.innerHTML = `<div data-toolkit-guide></div><section class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Stock Netflix")}</h2>
       <p class="mt-2 text-sm" data-stock aria-live="polite">${label("Chargement…")}</p>
-      <p class="mt-1 text-xs text-black/60" data-stock-time></p><div class="mt-2" data-stock-alert></div></section>
+      <div class="mt-2" data-stock-alert></div></section>
       <section class="mt-5 ${card}">
         <nav class="flex flex-wrap gap-2" aria-label="${label("Espace partenaire")}">${tabMarkup}</nav>
         <div class="mt-5" data-operations-content tabindex="-1"></div>
@@ -49,7 +65,12 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
     const put = (path,data) => api(path,{method:"PUT",body:JSON.stringify(data)});
     const current = revision => !model.stopped && root.isConnected && revision === model.revision;
     const stock = root.querySelector("[data-stock]");
-    const stockTime = root.querySelector("[data-stock-time]");
+    function renderStock() {
+      if (!stockSnapshot) return;
+      const text = `${t("Profils libres")} : ${stockSnapshot.profiles} · ${t("Comptes avec des profils libres")} : ${stockSnapshot.accounts}`;
+      if (stock.textContent !== text) stock.textContent = text;
+    }
+    renderStock();
     let timer, refreshing = false;
     async function pollStock() {
       if (model.stopped || !root.isConnected || refreshing || document.visibilityState === "hidden"
@@ -58,14 +79,14 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
       try {
         const value = await api("/partner/stock");
         if (model.stopped || !root.isConnected) return;
-        const text = `${t("Profils libres")} : ${value.profiles} · ${t("Comptes avec des profils libres")} : ${value.accounts}`;
-        if (stock.textContent !== text) stock.textContent = text;
-        stockTime.textContent = `${t("Dernière actualisation")} : ${date(value.checked_at)}`;
+        if (!stockSnapshot || laterDelivery(value.last_delivery_at,stockSnapshot.last_delivery_at)) {
+          stockSnapshot = value;
+          renderStock();
+        }
         void refreshToolkit(Number(value.profiles));
       } catch {
-        if (!model.stopped && root.isConnected) {
+        if (!stockSnapshot && !model.stopped && root.isConnected) {
           textStatus(stock,"Stock momentanément indisponible.");
-          stockTime.textContent = "";
         }
       } finally { refreshing = false; }
     }
@@ -224,5 +245,5 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
     root.querySelectorAll("[data-partner-section]").forEach(el=>el.addEventListener("click",()=>void draw(el.dataset.partnerSection)));
     void draw("orders");
   }
-  return { attach, loadAdminSupport:toolkit.loadAdmin, clearAdminSupport:toolkit.clearAdmin };
+  return { attach, close, loadAdminSupport:toolkit.loadAdmin, clearAdminSupport:toolkit.clearAdmin };
 }
