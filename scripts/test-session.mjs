@@ -6,7 +6,24 @@ import { authenticatedRequest } from "../src/authenticated-request.js";
 const {
   LEGACY_AUTH_STORAGE_KEYS,
   clearAuthSession,
+  readRecoveryLocation,
+  recoveryRouteHash,
 } = await import("../src/session.js");
+
+const recoveryUrl = (hash, search = "") => ({ hash, search });
+const firstRecovery = readRecoveryLocation(recoveryUrl("#type=recovery&token_hash=first"));
+assert.deepEqual(firstRecovery, { recovery: true, sensitive: true, token: { token_hash: "first" } });
+const newRecovery = readRecoveryLocation(recoveryUrl("#type=recovery&token_hash=second"), firstRecovery.token);
+assert.deepEqual(newRecovery.token, { token_hash: "second" }, "A new link in the current tab must replace the previous token");
+assert.deepEqual(readRecoveryLocation(recoveryUrl(recoveryRouteHash), newRecovery.token), newRecovery);
+assert.deepEqual(readRecoveryLocation(recoveryUrl(recoveryRouteHash)), { recovery: true, sensitive: true, token: null });
+assert.deepEqual(readRecoveryLocation(recoveryUrl("#type=recovery&access_token=legacy")).token, { token: "legacy" });
+assert.deepEqual(readRecoveryLocation(recoveryUrl("#error_code=otp_expired"), newRecovery.token), {
+  recovery: true, sensitive: true, token: null,
+});
+assert.deepEqual(readRecoveryLocation(recoveryUrl("#login"), newRecovery.token), {
+  recovery: false, sensitive: false, token: null,
+});
 
 const makeStore = () => {
   const values = new Map();
