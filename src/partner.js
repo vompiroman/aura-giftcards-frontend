@@ -96,6 +96,7 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
       walletPage=0; adminPage=0; walletVersion++; adminVersion++;
       const content=region(); if(content) content.replaceChildren();
       document.getElementById("admin-partner-content")?.replaceChildren();
+      operations.clearAdminSupport(document.getElementById("admin-partner-support"));
       syncEntrypoints();
       onChange();
     }
@@ -233,6 +234,7 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
   async function loadAdmin(offset=0) {
     const root=document.getElementById("admin-partner-content");
     if(!root || !enabled || getUser()?.is_admin!==true) return;
+    if (offset===0) operations.loadAdminSupport(document.getElementById("admin-partner-support"));
     const version=++adminVersion;
     adminPage=offset;
     root.innerHTML=msg(t("Chargement…"));
