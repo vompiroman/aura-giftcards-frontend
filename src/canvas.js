@@ -2880,6 +2880,30 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     partnerUI=createPartnerUI({
       api:apiRequest,t,escape:escapeHTML,price:formatPrice,date:formatDateTime,getUser:()=>currentUser,
       onChange:()=>{renderPartnerPrices();updateCart();},toast:showToast,
+      language:getLanguage,
+      addToCart:lines=>{
+        const catalog = [...allowedCartPrices].map(([key,price])=>{
+          const [service,name,duration]=key.split("|");
+          return {service,name,duration,price};
+        });
+        const byName = new Map(catalog.map(item=>[apiProductName(item),item]));
+        const quantities = Array.isArray(lines) ? lines.map(line=>Number(line.quantity)) : [];
+        if (!quantities.length || quantities.some(quantity=>!Number.isInteger(quantity) || quantity<1)
+          || lines.some(line=>!byName.has(line.name))) {
+          showToast("Impossible de reconstruire cette commande.");
+          return;
+        }
+        if (quantities.reduce((sum,value)=>sum+value,cart.length)>20) {
+          showToast("Le panier est limité à 20 articles.");
+          return;
+        }
+        cart.push(...lines.flatMap((line,index)=>Array.from({length:quantities[index]},()=>({...byName.get(line.name)}))));
+        setRenewalOrderId(null);
+        clearPromo();
+        updateCart();
+        showRoute("cart");
+      },
+      showOrder:id=>{highlightedOrderId=id;showRoute("order");},
     });
     updateCart();
     showLocationRoute();
