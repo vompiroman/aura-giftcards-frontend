@@ -5,7 +5,7 @@ import {
   setMetaMarketingConsent,
   trackMeta,
 } from "./meta.js";
-import { clearAuthSession } from "./session.js";
+import { clearAuthSession, readRecoveryLocation, recoveryRouteHash } from "./session.js";
 import { createSessionRecovery } from "./session-recovery.js";
 import { authenticatedRequest } from "./authenticated-request.js";
 import { createPartnerUI, partnerAnswers, partnerReduction, partnerSavings, tierNames } from "./partner.js";
@@ -24,25 +24,19 @@ import {
 initializeI18n();
 
 const initialQueryParams = new URLSearchParams(window.location.search);
-const initialHash = window.location.hash.replace(/^#/, "");
-const initialHashParams = initialHash.includes("=") ? new URLSearchParams(initialHash) : new URLSearchParams();
-let capturedRecoveryToken = initialHashParams.get("type") === "recovery"
-  ? initialHashParams.has("token_hash")
-    ? { token_hash: initialHashParams.get("token_hash") }
-    : initialHashParams.has("access_token") ? { token: initialHashParams.get("access_token") } : null
-  : null;
-const expiredRecoveryLink = initialHashParams.get("error_code") === "otp_expired";
-const recoveryRequested = initialQueryParams.get("type") === "recovery"
-  || initialHashParams.get("type") === "recovery"
-  || expiredRecoveryLink;
-const sensitiveTokenInUrl = recoveryRequested
-  || ["access_token", "refresh_token", "provider_token", "token", "token_hash"].some((key) => (
-    initialQueryParams.has(key) || initialHashParams.has(key)
-  ));
-if (sensitiveTokenInUrl) {
-  window.__auraSensitiveAuthFlow = true;
-  window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
+let capturedRecoveryToken = null;
+let recoveryRequested = false;
+
+function captureRecoveryLocation() {
+  const { recovery, token, sensitive } = readRecoveryLocation(window.location, capturedRecoveryToken);
+  recoveryRequested = recovery;
+  capturedRecoveryToken = token;
+  if (sensitive) {
+    window.__auraSensitiveAuthFlow = true;
+    window.history.replaceState({}, document.title, window.location.pathname + (recovery ? recoveryRouteHash : "#login"));
+  }
 }
+captureRecoveryLocation();
 
 const views = [...document.querySelectorAll("[data-view]")];
     const navLinks = [...document.querySelectorAll(".nav-link")];
@@ -437,7 +431,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function setAuthFeedback(message, isError = true) {
       if (!authFeedback) return;
       authFeedback.textContent = t(message);
-      authFeedback.classList.remove("hidden", "bg-red-50", "text-red-800", "bg-green-50", "text-green-800");
+      authFeedback.classList.toggle("hidden", !message);
+      authFeedback.classList.remove("bg-red-50", "text-red-800", "bg-green-50", "text-green-800");
       authFeedback.classList.add(isError ? "bg-red-50" : "bg-green-50", isError ? "text-red-800" : "text-green-800");
     }
 
@@ -1080,6 +1075,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function showRoute(route, scrollTarget) {
       if (!routeNames.has(route)) route = "home";
+      if (route !== "login") {
+        recoveryRequested = false;
+        capturedRecoveryToken = null;
+      }
       if (route === "products") applyProductFilter("all");
       if (route === "login" && !recoveryRequested) showAuthPanel("signin");
       if (
@@ -1111,7 +1110,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.body.dataset.route = route;
       const landing = landingRoutes[route];
       const content = contentRoutes[route];
-      const nextUrl = landing?.path || content?.path || (route === "home" ? "/" : `/#${route}`);
+      const nextUrl = landing?.path || content?.path
+        || (route === "home" ? "/" : route === "login" && recoveryRequested ? "/" + recoveryRouteHash : `/#${route}`);
       window.history.replaceState({ route }, "", nextUrl);
       updateRouteMetadata(route);
       updateMobileCartBar();
@@ -1152,11 +1152,16 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       window.setTimeout(() => example.classList.remove("tracking-example-highlight"), 1400);
     });
 
-    window.addEventListener("hashchange", () => {
-      showRoute(routeFromLocation());
-    });
-
-    window.addEventListener("popstate", () => showRoute(routeFromLocation()));
+    function showLocationRoute() {
+      captureRecoveryLocation();
+      showRoute(recoveryRequested ? "login" : routeFromLocation());
+      if (recoveryRequested) {
+        showAuthPanel(capturedRecoveryToken ? "reset" : "forgot");
+        setAuthFeedback(capturedRecoveryToken ? "" : "Le lien de réinitialisation est invalide ou expiré.");
+      }
+    }
+    window.addEventListener("hashchange", showLocationRoute);
+    window.addEventListener("popstate", showLocationRoute);
 
     mobileToggle.addEventListener("click", () => {
       const expanded = mobileToggle.getAttribute("aria-expanded") === "true";
@@ -2646,12 +2651,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     document.getElementById("reset-password-form")?.addEventListener("submit", async event => {
       event.preventDefault();
+      const form = event.currentTarget;
       const password = document.getElementById("reset-password").value;
       if (!capturedRecoveryToken) {
         setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
         return;
       }
-      const button = event.currentTarget.querySelector('button[type="submit"]');
+      const button = form.querySelector('button[type="submit"]');
       button.disabled = true;
       try {
         const result = await apiRequest("/reset-password", {
@@ -2659,10 +2665,17 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           body: JSON.stringify({ ...capturedRecoveryToken, password })
         });
         capturedRecoveryToken = null;
+        recoveryRequested = false;
+        clearCurrentAuthSession({ redirectToLogin: false });
         showAuthPanel("signin");
         setAuthFeedback(result.message || "Mot de passe mis à jour. Tu peux te connecter.", false);
         window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
       } catch (error) {
+        if (error.code === "RECOVERY_LINK_INVALID") {
+          capturedRecoveryToken = null;
+          form.reset();
+          showAuthPanel("forgot");
+        }
         setAuthFeedback(error.message || "Lien de réinitialisation invalide ou expiré.");
       } finally {
         button.disabled = false;
@@ -2869,13 +2882,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       onChange:()=>{renderPartnerPrices();updateCart();},toast:showToast,
     });
     updateCart();
-    const recoveryMode = recoveryRequested;
-    const initialRoute = recoveryMode ? "login" : routeFromLocation();
-    showRoute(initialRoute);
-    if (recoveryMode) {
-      showAuthPanel(capturedRecoveryToken ? "reset" : "forgot");
-      if (!capturedRecoveryToken) setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
-    }
+    showLocationRoute();
     void sessionRecovery.check();
     window.addEventListener("online", () => { void sessionRecovery.check({ force: true }); });
     window.addEventListener("focus", () => { void sessionRecovery.check(); });
