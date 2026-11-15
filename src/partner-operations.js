@@ -1,3 +1,5 @@
+import { createPartnerToolkit } from "./partner-toolkit.js";
+
 const services = { netflix: "Netflix", spotify: "Spotify", crunchyroll: "Crunchyroll", snapchat: "Snapchat+" };
 const statuses = {
   pending: "À livrer", unpaid: "Paiement en attente", active: "Actives",
@@ -18,7 +20,8 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
   const { card, field, button, secondary } = styles;
   const label = value => escape(t(value));
   const money = value => escape(price(Number(value)));
-  const tabs = { orders: "Mes commandes partenaire", basket: "Panier rapide", report: "Bilan mensuel" };
+  const toolkit = createPartnerToolkit({api,t,escape,price,date,language,styles});
+  const tabs = { orders: "Mes commandes partenaire", basket: "Panier rapide", report: "Bilan mensuel", support:"Assistance" };
   const tabMarkup = Object.entries(tabs).map(([id,name]) =>
     `<button type="button" class="${secondary}" data-partner-section="${id}" aria-pressed="false">${label(name)}</button>`).join("");
   let mounted;
@@ -30,14 +33,18 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
     const month = new Intl.DateTimeFormat("en-CA",{ year:"numeric", month:"2-digit", timeZone:"Africa/Algiers" })
       .formatToParts(new Date());
     model.month = `${month.find(p=>p.type==="year").value}-${month.find(p=>p.type==="month").value}`;
-    root.innerHTML = `<section class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Stock Netflix")}</h2>
+    root.innerHTML = `<div data-toolkit-guide></div><section class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Stock Netflix")}</h2>
       <p class="mt-2 text-sm" data-stock aria-live="polite">${label("Chargement…")}</p>
-      <p class="mt-1 text-xs text-black/60" data-stock-time></p></section>
+      <p class="mt-1 text-xs text-black/60" data-stock-time></p><div class="mt-2" data-stock-alert></div></section>
       <section class="mt-5 ${card}">
         <nav class="flex flex-wrap gap-2" aria-label="${label("Espace partenaire")}">${tabMarkup}</nav>
-        <div class="mt-5" data-operations-content></div>
+        <div class="mt-5" data-operations-content tabindex="-1"></div>
       </section>`;
     const content = root.querySelector("[data-operations-content]");
+    const refreshToolkit=toolkit.stockTools(root,tab=>{
+      void draw(tab);
+      content.focus();
+    });
     const textStatus = (element, message) => { if (element) element.textContent = t(message); };
     const put = (path,data) => api(path,{method:"PUT",body:JSON.stringify(data)});
     const current = revision => !model.stopped && root.isConnected && revision === model.revision;
@@ -54,6 +61,7 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
         const text = `${t("Profils libres")} : ${value.profiles} · ${t("Comptes avec des profils libres")} : ${value.accounts}`;
         if (stock.textContent !== text) stock.textContent = text;
         stockTime.textContent = `${t("Dernière actualisation")} : ${date(value.checked_at)}`;
+        void refreshToolkit(Number(value.profiles));
       } catch {
         if (!model.stopped && root.isConnected) {
           textStatus(stock,"Stock momentanément indisponible.");
@@ -113,7 +121,8 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
               <label class="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" class="accent-aura" name="reminders" ${order.partner_reminders ? "checked" : ""}>
                 ${label("Rappels e-mail à J−7 et J−2")}</label>
               <button class="${secondary}" type="submit">${label("Enregistrer")}</button><p class="basis-full text-xs" data-feedback role="status"></p>
-            </form></article>`).join("") || `<p class="text-sm text-black/60">${label("Aucune commande pour ces filtres.")}</p>`;
+            </form>${toolkit.orderTools(order,index)}</article>`).join("") || `<p class="text-sm text-black/60">${label("Aucune commande pour ces filtres.")}</p>`;
+          toolkit.bindOrderTools(result,payload.orders);
           result.innerHTML += `<div class="mt-4 flex flex-wrap gap-2">${model.offset ? `<button class="${secondary}" data-order-page="-20">${label("Précédent")}</button>` : ""}
             ${payload.has_more ? `<button class="${secondary}" data-order-page="20">${label("Suivant")}</button>` : ""}</div>`;
           result.querySelectorAll("[data-order-page]").forEach(el=>el.addEventListener("click",()=>{
@@ -206,7 +215,8 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
       try {
         if (tab==="orders") await drawOrders(revision);
         else if (tab==="basket") await drawBasket(revision);
-        else await drawReport(revision);
+        else if (tab==="report") await drawReport(revision);
+        else await toolkit.renderTickets(content,()=>current(revision));
       } catch (error) {
         if (current(revision)) textStatus(content,error.message);
       }
@@ -214,5 +224,5 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
     root.querySelectorAll("[data-partner-section]").forEach(el=>el.addEventListener("click",()=>void draw(el.dataset.partnerSection)));
     void draw("orders");
   }
-  return { attach };
+  return { attach, loadAdminSupport:toolkit.loadAdmin, clearAdminSupport:toolkit.clearAdmin };
 }
