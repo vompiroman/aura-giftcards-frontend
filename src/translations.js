@@ -747,6 +747,7 @@ const phrases = [
   ["Code à six chiffres", "Six-digit code", "رمز من ستة أرقام"],
   ["Confirmer le code", "Confirm code", "تأكيد الرمز"],
   ["La double authentification administrateur est requise.", "This admin action requires two-factor authentication.", "تتطلب هذه العملية الإدارية المصادقة الثنائية."],
+  ["Ce mot de passe a été compromis. Choisis-en un autre.", "This password has been exposed. Choose a different one.", "سبق تسريب كلمة المرور هذه. اختر كلمة مرور أخرى."],
   ["Trop de tentatives. Réessaie dans quelques minutes.", "Too many attempts. Try again in a few minutes.", "عدد كبير جداً من المحاولات. حاول مجدداً بعد بضع دقائق."],
   ["Connecte-toi sur le site pour configurer le deuxième facteur.", "Sign in on the website to set up your second factor.", "سجّل الدخول على الموقع لإعداد عامل المصادقة الثاني."],
   ["Connecte-toi sur le site pour vérifier le deuxième facteur.", "Sign in on the website to verify your second factor.", "سجّل الدخول على الموقع للتحقق من عامل المصادقة الثاني."],
