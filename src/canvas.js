@@ -157,6 +157,7 @@ const adminSecurity = createAdminSecurity({ api: apiRequest, t, onVerified: () =
 let adminRevenueReport = null;
 let adminInventory = [];
 const expandedStockAccounts = new Set();
+const netflixLoginRequests = new Map();
 
     // Purge tokens and cached profile data left by pre-cookie deployments.
     clearAuthSession(sessionStorage, localStorage);
@@ -543,6 +544,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (currentUser?.id !== user?.id || currentUser?.is_admin !== user?.is_admin) {
         adminLoaded = false;
         adminSecurity.reset();
+        netflixLoginRequests.clear();
       }
       currentUser = user || null;
       if (partnerUI) void partnerUI.refresh({force:true}).catch(()=>undefined);
@@ -749,19 +751,40 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       showToast("Remise fidélité appliquée au renouvellement");
     }
 
+    function activeNetflixLogin(orderId, inventoryId) {
+      const key = JSON.stringify([orderId, inventoryId]);
+      const request = netflixLoginRequests.get(key);
+      if (request && Date.parse(request.expires_at) > Date.now()) return request;
+      netflixLoginRequests.delete(key);
+      return null;
+    }
+
     async function requestNetflixCode(button) {
       const orderId = button.dataset.orderId;
       const inventoryId = button.dataset.inventoryId;
+      const key = JSON.stringify([orderId, inventoryId]);
+      const actorId = currentUser?.id;
+      const active = activeNetflixLogin(orderId, inventoryId);
       const resultContainer = button.closest("article").querySelector(".netflix-code-result");
-      const originalLabel = button.innerHTML;
+      const label = button.querySelector("[data-netflix-code-label]");
       button.disabled = true;
-      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Recherche du code…';
+      label.textContent = t(active ? "Recherche du code…" : "Préparation…");
       resultContainer.classList.add("hidden");
       try {
         const result = await apiRequest("/get-netflix-otp", {
           method: "POST",
-          body: JSON.stringify({ order_id: orderId, inventory_id: inventoryId || undefined })
+          body: JSON.stringify({
+            order_id: orderId, inventory_id: inventoryId || undefined, login_request_id: active?.request_id,
+          }),
         });
+        if (actorId !== currentUser?.id) return;
+        if (result.request_id && Date.parse(result.expires_at) > Date.now()) {
+          netflixLoginRequests.set(key, result);
+          resultContainer.textContent = t("Demande un nouveau code sur Netflix, puis reviens ici et clique sur « Obtenir le code ».");
+          resultContainer.classList.remove("hidden");
+          return;
+        }
+        netflixLoginRequests.delete(key);
         let safeLink = "";
         if (result.link) {
           try {
@@ -775,11 +798,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           ${safeLink ? `<a class="mt-3 inline-flex min-h-11 items-center rounded-lg bg-[#E50914] px-4 font-bold text-white" href="${escapeHTML(safeLink)}" target="_blank" rel="noopener noreferrer">Ouvrir le lien Netflix</a>` : ""}`;
         resultContainer.classList.remove("hidden");
       } catch (error) {
+        if (actorId !== currentUser?.id) return;
+        if (error.code === "NETFLIX_LOGIN_EXPIRED") netflixLoginRequests.delete(key);
         resultContainer.textContent = error.message || "Impossible de récupérer le code Netflix.";
         resultContainer.classList.remove("hidden");
       } finally {
         button.disabled = false;
-        button.innerHTML = originalLabel;
+        const action = activeNetflixLogin(orderId, inventoryId) ? "Obtenir le code" : "Préparer la connexion";
+        label.textContent = t(action) + (button.dataset.profileLabel || "");
       }
     }
 
@@ -892,7 +918,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               ${assignedAccount.profile_pin ? `<p>PIN : <strong>${escapeHTML(assignedAccount.profile_pin)}</strong></p>` : ""}
             </div>`).join("");
           const netflixCodeButtons = canGetNetflixCode
-            ? assignedAccounts.map((assignedAccount, accountIndex) => `<button type="button" class="get-netflix-code min-h-11 rounded-xl bg-[#E50914] px-5 font-title text-sm font-bold text-white transition hover:bg-[#B8070F]" data-order-id="${orderId}" data-inventory-id="${escapeHTML(assignedAccount.id || "")}"><i class="fa-solid fa-key mr-2" aria-hidden="true"></i>${assignedAccounts.length > 1 ? `${t("Obtenir le code")} · ${t("Profil")} ${formatLocalizedNumber(accountIndex + 1)}` : t("Obtenir le code")}</button>`).join("")
+            ? assignedAccounts.map((assignedAccount, accountIndex) => {
+              const inventoryId = assignedAccount.id || "";
+              const action = activeNetflixLogin(orderId, inventoryId) ? "Obtenir le code" : "Préparer la connexion";
+              const profileLabel = assignedAccounts.length > 1 ? ` · ${t("Profil")} ${formatLocalizedNumber(accountIndex + 1)}` : "";
+              return `<button type="button" class="get-netflix-code min-h-11 rounded-xl bg-[#E50914] px-5 font-title text-sm font-bold text-white transition hover:bg-[#B8070F]" data-order-id="${orderId}" data-inventory-id="${escapeHTML(inventoryId)}" data-profile-label="${escapeHTML(profileLabel)}"><i class="fa-solid fa-key mr-2" aria-hidden="true"></i><span data-netflix-code-label>${escapeHTML(t(action) + profileLabel)}</span></button>`;
+            }).join("")
             : "";
           const netflixGuideButton = hasNetflix
             ? `<button type="button" class="open-netflix-guide min-h-11 rounded-xl border border-[#E50914]/35 bg-red-50 px-5 font-title text-sm font-bold text-[#B8070F] transition hover:border-[#E50914] hover:bg-red-100"><i class="fa-regular fa-circle-question mr-2" aria-hidden="true"></i>${t("Comment se connecter ?")}</button>`
