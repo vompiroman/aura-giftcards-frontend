@@ -2,7 +2,7 @@ import { TRANSLATIONS } from "./translations.js";
 
 const STORAGE_KEY = "aura_language";
 const SUPPORTED_LANGUAGES = new Set(["fr", "en", "ar"]);
-const TRANSLATED_ATTRIBUTES = ["aria-label", "aria-description", "placeholder", "title"];
+const TRANSLATED_ATTRIBUTES = ["aria-label", "aria-description", "placeholder", "title", "alt"];
 const LOCALES = { fr: "fr-DZ", en: "en-DZ", ar: "ar-DZ-u-nu-latn" };
 const LANGUAGE_NAMES = {
   fr: { fr: "Français", en: "French", ar: "الفرنسية" },
