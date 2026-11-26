@@ -83,7 +83,7 @@ export function createPartnerOperations({ api, t, escape, price, date, language,
           stockSnapshot = value;
           renderStock();
         }
-        void refreshToolkit(Number(value.profiles));
+        void refreshToolkit(Number(stockSnapshot.profiles));
       } catch {
         if (!stockSnapshot && !model.stopped && root.isConnected) {
           textStatus(stock,"Stock momentanément indisponible.");
