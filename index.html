@@ -812,7 +812,30 @@
         </div>
       </div>
 
-      <div class="sticky top-16 z-30 border-b border-black/10 bg-ivory/95 backdrop-blur-xl lg:top-[72px]">
+      <section id="admin-security" class="mx-auto hidden max-w-xl space-y-4 px-4 py-8 sm:px-6" aria-labelledby="admin-security-title">
+        <h2 id="admin-security-title" class="font-title text-2xl font-extrabold">Double authentification</h2>
+        <p class="text-sm text-black/65">Confirme ton identité pour ouvrir l’administration.</p>
+        <button data-admin-enroll type="button" class="hidden min-h-11 rounded-xl bg-graphite px-5 font-bold text-white">Configurer une application d’authentification</button>
+        <div data-admin-setup class="hidden space-y-3">
+          <p class="text-sm">Scanne le QR code ou saisis la clé dans ton application d’authentification.</p>
+          <img data-admin-qr class="h-44 w-44 rounded-lg bg-white" width="176" height="176" alt="QR code de configuration">
+          <code data-admin-mfa-secret class="block select-all break-all rounded-lg border border-black/15 p-3" dir="ltr"></code>
+        </div>
+        <form data-admin-verify class="hidden space-y-3">
+          <label data-admin-factor-row class="hidden space-y-1 font-bold">
+            <span>Application d’authentification</span>
+            <select data-admin-factor class="block min-h-11 w-full rounded-xl border border-black/15 bg-white px-3"></select>
+          </label>
+          <label class="block space-y-1 font-bold">
+            <span>Code à six chiffres</span>
+            <input data-admin-mfa-code type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required dir="ltr" class="block min-h-11 w-full rounded-xl border border-black/15 bg-white px-3">
+          </label>
+          <button type="submit" class="min-h-11 rounded-xl bg-aura px-5 font-bold text-white">Confirmer le code</button>
+        </form>
+        <p data-admin-mfa-status class="text-sm text-black/65" role="status"></p>
+      </section>
+
+      <div id="admin-tabs" class="sticky top-16 z-30 hidden border-b border-black/10 bg-ivory/95 backdrop-blur-xl lg:top-[72px]">
         <div class="admin-tabs-scroll mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8" role="tablist" aria-label="Sections administrateur">
           <button class="admin-tab shrink-0 rounded-xl bg-graphite px-4 py-2.5 text-sm font-bold text-white" type="button" role="tab" aria-selected="true" data-admin-tab="overview"><i class="fa-solid fa-chart-line mr-2" aria-hidden="true"></i>Vue d’ensemble</button>
           <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="orders"><i class="fa-solid fa-receipt mr-2" aria-hidden="true"></i>Commandes</button>
@@ -823,7 +846,7 @@
         </div>
       </div>
 
-      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div id="admin-data" class="mx-auto hidden max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div id="admin-global-feedback" class="mb-6 hidden rounded-2xl border px-5 py-4 text-sm" role="alert"></div>
 
         <section data-admin-panel="overview">

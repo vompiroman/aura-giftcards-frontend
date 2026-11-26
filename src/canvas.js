@@ -12,6 +12,7 @@ import { createPartnerUI, partnerAnswers, partnerReduction, partnerSavings, tier
 import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
+import { createAdminSecurity } from "./admin-security.js";
 import {
   formatLocalizedDate,
   formatLocalizedNumber,
@@ -152,6 +153,7 @@ let pendingPaymentAttempt = null;
 let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
 let adminLoaded = false;
+const adminSecurity = createAdminSecurity({ api: apiRequest, t, onVerified: () => void loadAdminDashboard() });
 let adminRevenueReport = null;
 let adminInventory = [];
 const expandedStockAccounts = new Set();
@@ -538,6 +540,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function setAccountState(user) {
+      if (currentUser?.id !== user?.id || currentUser?.is_admin !== user?.is_admin) {
+        adminLoaded = false;
+        adminSecurity.reset();
+      }
       currentUser = user || null;
       if (partnerUI) void partnerUI.refresh({force:true}).catch(()=>undefined);
       if (currentUser) sessionRecovery.resume();
@@ -2333,7 +2339,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     async function loadAdminDashboard({ refresh = false } = {}) {
       if (currentUser?.is_admin !== true) return;
-      if (adminLoaded && !refresh) return;
+      if (adminLoaded && !refresh) return true;
+      if (!await adminSecurity.load({ refresh }) || currentUser?.is_admin !== true) {
+        adminLoaded = false;
+        return false;
+      }
       adminLoaded = true;
       setAdminFeedback("");
       const results = await Promise.allSettled([
@@ -2346,6 +2356,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (results.some(result => result.status === "rejected")) {
         setAdminFeedback("Certaines données n’ont pas pu être actualisées. Réessaie dans quelques instants.");
       }
+      return true;
     }
 
     document.querySelectorAll(".admin-tab").forEach(button => {
@@ -2358,8 +2369,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        await loadAdminDashboard({ refresh: true });
-        showToast("Tableau de bord actualisé");
+        if (await loadAdminDashboard({ refresh: true })) showToast("Tableau de bord actualisé");
       } finally {
         button.disabled = false;
       }
