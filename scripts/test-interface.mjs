@@ -121,6 +121,7 @@ async function checkDialog(page, opener, id, title) {
   await page.keyboard.press("Enter");
   const dialog = page.getByRole("dialog", { name: title, exact: true });
   await dialog.waitFor();
+  await hasIcons(page, "#" + id);
   const close = page.locator("#" + id + "-close");
   await focused(close);
   if (id === "admin-assignment-dialog") {
@@ -184,6 +185,8 @@ for (const width of [320, 390, 1440]) {
         assert.ok((await contrastFor(page.locator(".support-strip-link"))).ratio >= 4.5);
         await open(page, admin.origin, "/#products");
         await hasIcons(page, "#view-products");
+        const snapchat = language === "ar" ? "\u2066Snapchat+\u2069" : "Snapchat+";
+        assert.equal((await page.locator(".filter-btn[data-filter=snapchat]").textContent()).trim(), snapchat);
         await page.locator('.product-card[data-service=netflix] .add-product').click();
         await page.locator("#header-cart-button").click();
         const phone = page.locator("#customer-whatsapp");
@@ -223,6 +226,7 @@ for (const width of [320, 390, 1440]) {
         const statusFilter = page.getByRole("combobox", { name: copy.status, exact: true });
         await serviceFilter.waitFor();
         await statusFilter.waitFor();
+        assert.equal(await serviceFilter.locator('option[value=Snapchat]').textContent(), snapchat);
         const row = page.getByRole("combobox", { name: copy.order + " " + orderReference, exact: true });
         await row.waitFor();
         assert.equal(await row.inputValue(), "active");
@@ -261,6 +265,7 @@ for (const width of [320, 390, 1440]) {
 
         await page.locator("#admin-stock-tab").click();
         await page.locator(".admin-toggle-stock-profiles").click();
+        await hasIcons(page, "#admin-stock-panel");
         await checkDialog(page, page.locator(".admin-edit-stock"), "admin-stock-dialog", copy.edit);
         await checkDialog(page, page.locator(".admin-manual-assign-stock"), "admin-assignment-dialog", copy.assign);
 
@@ -270,6 +275,7 @@ for (const width of [320, 390, 1440]) {
         assert.ok((await auditResponse).ok());
         const target = page.locator("#admin-audit-list bdi");
         await target.waitFor();
+        await hasIcons(page, "#admin-activity-panel");
         assert.equal(await target.textContent(), auditReference);
         const layout = await page.evaluate(async () => {
           await document.fonts.ready;
