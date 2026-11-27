@@ -1,13 +1,15 @@
 import { readFile, readdir } from "node:fs/promises";
+import { landingRoutes, productSchema } from "../src/catalog.js";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [html, app, styles, meta, session, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
+const [html, app, styles, meta, session, catalog, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
   read("../index.html"),
   read("../src/canvas.js"),
   read("../src/canvas.css"),
   read("../src/meta.js"),
   read("../src/session.js"),
+  read("../src/catalog.js"),
   read("../vercel.json"),
   read("../public/robots.txt"),
   read("../public/sitemap.xml"),
@@ -15,17 +17,11 @@ const [html, app, styles, meta, session, vercel, robots, sitemap, distHtml, dist
   read("../dist/canvas.css"),
 ]);
 
-const source = [html, app, styles, meta, session, vercel, robots, sitemap].join("\n");
-const generatedPages = await Promise.all([
-  ["snapchat-plus-algerie", "Snapchat+", "2000"],
-  ["netflix-algerie", "Netflix Premium", "600"],
-  ["spotify-family-algerie", "Spotify Family", "800"],
-  ["crunchyroll-mega-fan-algerie", "Crunchyroll Mega Fan", "500"],
-].map(async ([slug, product, price]) => ({
-  slug,
-  product,
-  price,
-  html: await read(`../dist/${slug}/index.html`),
+const source = [html, app, styles, meta, session, catalog, vercel, robots, sitemap].join("\n");
+const generatedPages = await Promise.all(Object.values(landingRoutes).map(async landing => ({
+  ...landing,
+  slug: landing.path.slice(1),
+  html: await read(`../dist${landing.path}/index.html`),
 })));
 const productSection = html.match(/<section id="view-products"[\s\S]*?<\/section>/)?.[0] || "";
 if (!productSection.includes('data-service="snapchat"')) throw new Error("Snapchat doit être dans la boutique");
@@ -180,7 +176,7 @@ if (!serializedVercel.includes("https://aura-giftcards-api.onrender.com/api/:pat
 if (!app.includes('const API_BASE = "/api"')) {
   throw new Error("Le frontend ne passe pas par le proxy API de même origine");
 }
-for (const forbidden of ["authToken", "loadAuthSession", "saveAuthSession", 'credentials: "omit"']) {
+for (const forbidden of ["authToken", "loadAuthSession", "saveAuthSession"]) {
   if (app.includes(forbidden)) throw new Error(`Ancienne session navigateur encore présente: ${forbidden}`);
 }
 
@@ -212,11 +208,9 @@ for (const page of generatedPages) {
   if (!page.html.includes(`content="${canonical}"`) || !page.html.includes('data-page-schema')) {
     throw new Error(`Métadonnées sociales ou Product JSON-LD absentes: ${page.slug}`);
   }
-  if (!page.html.includes(`&quot;`) && !page.html.includes(`"name":"${page.product}"`)) {
-    throw new Error(`Produit absent des données structurées: ${page.slug}`);
-  }
-  if (!page.html.includes(`"price":${page.price}`)) {
-    throw new Error(`Prix absent des données structurées: ${page.slug}`);
+  const schema = page.html.match(/<script type="application\/ld\+json" data-page-schema>([^<]+)<\/script>/)?.[1];
+  if (!schema || JSON.stringify(JSON.parse(schema)) !== JSON.stringify(productSchema(page, canonical))) {
+    throw new Error(`Données structurées incohérentes pour ${page.slug}`);
   }
 }
 for (const destination of [

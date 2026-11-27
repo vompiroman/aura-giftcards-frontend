@@ -57,13 +57,15 @@ for (const forbidden of [
   "loadAuthSession",
   "saveAuthSession",
   "sessionNeedsRefresh",
-  'credentials: "omit"',
   "headers.Authorization",
 ]) {
   assert.equal(app.includes(forbidden), false, `Jeton navigateur encore présent: ${forbidden}`);
 }
 assert.equal(app.includes('const API_BASE = "/api"'), true);
-assert.equal(app.includes('credentials: "include"'), true);
+const apiRequestStart = app.indexOf("async function apiRequest(");
+const apiRequest = app.slice(apiRequestStart, app.indexOf("\n    function ", apiRequestStart));
+assert.match(apiRequest, /credentials: "include"/, "Les requêtes authentifiées utilisent le cookie de session.");
+assert.doesNotMatch(apiRequest, /credentials: "omit"/);
 assert.equal(app.includes("remember,"), true);
 assert.equal(
   app.includes("clearCurrentAuthSession({ redirectToLogin: false });"),

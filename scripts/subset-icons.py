@@ -74,7 +74,7 @@ def main():
         filename = f"aura-icons-{family}.woff2"
         font_name = f"Aura Stream Icons {family.title()}"
         build_font(source / "webfonts" / name, output / filename, family, {mapping[icon] for icon in used[family]})
-        css.append(f'@font-face {{ font-family: "{font_name}"; src: url("./{filename}") format("woff2"); font-weight: {weight}; font-display: block; }}')
+        css.append(f'@font-face {{ font-family: "{font_name}"; src: url("/aura-icons/{filename}") format("woff2"); font-weight: {weight}; font-display: block; }}')
         css.append(f'.fa-{family} {{ font-family: "{font_name}"; font-weight: {weight}; }}')
 
     for icon in sorted(set().union(*used.values())):

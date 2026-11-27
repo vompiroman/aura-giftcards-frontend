@@ -14,6 +14,8 @@ import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
 import { createAdminSecurity } from "./admin-security.js";
 import { bindFieldValidation } from "./form-validation.js";
+import { allowedCartPrices, contentRoutes, landingRoutes, productSchema } from "./catalog.js";
+import { createCheckoutFunnel } from "./checkout-funnel.js";
 import {
   formatLocalizedDate,
   formatLocalizedNumber,
@@ -49,7 +51,6 @@ const views = [...document.querySelectorAll("[data-view]")];
     const mobileMenu = document.getElementById("mobile-menu");
     const mobileToggle = document.getElementById("mobile-menu-toggle");
     const cartCount = document.getElementById("cart-count");
-    const headerCartButton = document.getElementById("header-cart-button");
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toast-message");
     const accountLinks = [...document.querySelectorAll(".account-link")];
@@ -58,6 +59,23 @@ const views = [...document.querySelectorAll("[data-view]")];
 const profileSaveStatus = document.getElementById("profile-save-status");
 const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
+const funnel = createCheckoutFunnel({
+  settings: localStorage,
+  session: sessionStorage,
+  uuid: () => crypto.randomUUID(),
+  send: async payload => (await fetch("/api/checkout-funnel", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "omit",
+    referrerPolicy: "no-referrer",
+    keepalive: true,
+    signal: AbortSignal.timeout(8000),
+    body: JSON.stringify(payload),
+  })).ok,
+});
+const bannerMarketing = document.getElementById("preferences-meta");
+const bannerMeasurement = document.getElementById("preferences-checkout");
+let consentOpener = null;
     // Keep authentication same-origin. Vercel and the local Vite server proxy
     // /api to Render, so HttpOnly cookies never become third-party cookies.
     const API_BASE = "/api";
@@ -195,39 +213,44 @@ if (marketingConsentInput) {
   marketingConsentInput.addEventListener("change", () => {
     setMetaMarketingConsent(marketingConsentInput.checked);
     if (marketingConsentInput.checked) trackLandingView(activeRoute);
-    marketingConsentBanner?.classList.add("hidden");
+    bannerMarketing.checked = marketingConsentInput.checked;
   });
 }
-if (storedMarketingConsent) {
-  initializeMetaPixel();
-} else {
-  marketingConsentBanner?.classList.remove("hidden");
+if (storedMarketingConsent) initializeMetaPixel();
+function openConsentPreferences() {
+  bannerMarketing.checked = getMetaMarketingConsent()?.status === "granted";
+  bannerMeasurement.checked = funnel.consent() === true;
+  marketingConsentBanner.classList.remove("hidden");
 }
-document.getElementById("accept-marketing")?.addEventListener("click", () => {
-  setMetaMarketingConsent(true);
-  trackLandingView(activeRoute);
-  if (marketingConsentInput) marketingConsentInput.checked = true;
+function saveConsentPreferences(marketing, measurement) {
+  setMetaMarketingConsent(marketing);
+  funnel.setConsent(measurement);
+  if (marketingConsentInput) marketingConsentInput.checked = marketing;
   marketingConsentBanner?.classList.add("hidden");
+  if (marketing) trackLandingView(activeRoute);
+  if (measurement) recordCheckoutView();
+  consentOpener?.focus({ preventScroll: true });
+  consentOpener = null;
+}
+if (!storedMarketingConsent || funnel.consent() === null) openConsentPreferences();
+document.getElementById("open-cookie-preferences").addEventListener("click", event => {
+  consentOpener = event.currentTarget;
+  openConsentPreferences();
+  bannerMarketing.focus();
 });
-document.getElementById("decline-marketing")?.addEventListener("click", () => {
-  setMetaMarketingConsent(false);
-  if (marketingConsentInput) marketingConsentInput.checked = false;
-  marketingConsentBanner?.classList.add("hidden");
+document.getElementById("accept-marketing")?.addEventListener("click", () =>
+  saveConsentPreferences(bannerMarketing.checked, bannerMeasurement.checked));
+document.getElementById("decline-marketing")?.addEventListener("click", () => saveConsentPreferences(false, false));
+marketingConsentBanner.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || !consentOpener) return;
+  marketingConsentBanner.classList.add("hidden");
+  consentOpener.focus({ preventScroll: true });
+  consentOpener = null;
 });
 
     const CART_STORAGE_KEY = "aura_checkout_cart";
     const RENEWAL_ORDER_STORAGE_KEY = "aura_checkout_renewal_order_id";
     const RENEWAL_OFFER_STORAGE_KEY = "aura_checkout_renewal_offer";
-    const allowedCartPrices = new Map([
-      ["Snapchat|Snapchat+|3 mois", 2000],
-      ["Snapchat|Snapchat+|6 mois", 2500],
-      ["Netflix|Netflix Premium|1 mois", 600],
-      ["Netflix|Netflix Premium|2 mois", 1100],
-      ["Spotify|Spotify Family|1 mois", 800],
-      ["Spotify|Spotify Family|1 an", 4000],
-      ["Crunchyroll|Crunchyroll Mega Fan|1 mois", 500],
-      ["Crunchyroll|Crunchyroll Mega Fan|1 an", 3000],
-    ]);
 
     function loadSavedCart() {
       try {
@@ -318,45 +341,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     let activeRoute = "home";
     let renderedLocation = "";
     let lastTrackedLanding = "";
-    const landingRoutes = {
-      "landing-snapchat": {
-        path: "/snapchat-plus-algerie",
-        title: "Snapchat+ en Algérie — Aura Stream",
-        description: "Snapchat+ : 3 mois à 2 000 DA ou 6 mois à 2 500 DA. Renseigne ton nom d’utilisateur et ajoute @aura-stream.",
-        product: "Snapchat+", service: "Snapchat", price: 2000,
-      },
-      "landing-netflix": {
-        path: "/netflix-algerie",
-        title: "Netflix Premium en Algérie — Aura Stream",
-        description: "Accès à un profil Netflix Premium, livré automatiquement après confirmation du paiement.",
-        product: "Netflix Premium",
-        service: "Netflix",
-        price: 600,
-      },
-      "landing-spotify": {
-        path: "/spotify-family-algerie",
-        title: "Spotify Family en Algérie — Aura Stream",
-        description: "Accès Spotify Family activé sur ton compte avec accompagnement humain en Algérie.",
-        product: "Spotify Family",
-        service: "Spotify",
-        price: 800,
-      },
-      "landing-crunchyroll": {
-        path: "/crunchyroll-mega-fan-algerie",
-        title: "Crunchyroll Mega Fan en Algérie — Aura Stream",
-        description: "Crunchyroll Mega Fan activé sur ton compte avec suivi et support en Algérie.",
-        product: "Crunchyroll Mega Fan",
-        service: "Crunchyroll",
-        price: 500,
-      },
-    };
-    const contentRoutes = {
-      legal: {
-        path: "/legal",
-        title: "Conditions, confidentialité et remboursements — Aura Stream",
-        description: "Consulte les conditions de vente, la politique de confidentialité et les règles de remboursement d’Aura Stream.",
-      },
-    };
+    let netflixAvailability;
+    let availabilityCheckedAt = 0;
+    let checkingAvailability = false;
     const routeNames = new Set([
       "home", "products", "cart", "order", "login", "faq", "admin", "partner",
       ...Object.keys(landingRoutes),
@@ -395,20 +382,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const schema = document.createElement("script");
         schema.type = "application/ld+json";
         schema.dataset.routeSchema = "";
-        schema.textContent = JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          name: landing.product,
-          url: canonicalUrl,
-          offers: {
-            "@type": "Offer",
-            priceCurrency: "DZD",
-            price: landing.price,
-            availability: "https://schema.org/InStock",
-            url: canonicalUrl,
-            seller: { "@type": "Organization", name: "Aura Stream" },
-          },
-        });
+        schema.textContent = JSON.stringify(productSchema(landing, canonicalUrl, {
+          available: Date.now() - availabilityCheckedAt < 60_000 ? netflixAvailability : undefined,
+          translate: t,
+        }));
         document.head.append(schema);
       }
     }
@@ -421,11 +398,31 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         content_category: "Streaming",
         content_type: "product",
         content_ids: [landing.product],
-        value: landing.price,
+        value: landing.offers[0][1],
         currency: "DZD",
       });
       if (tracked) lastTrackedLanding = route;
       return tracked;
+    }
+
+    async function refreshNetflixAvailability() {
+      const notice = document.getElementById("netflix-stock-notice");
+      if (checkingAvailability || Date.now() - availabilityCheckedAt < 60_000) return;
+      notice.classList.add("hidden");
+      checkingAvailability = true;
+      try {
+        const response = await fetch("/api/catalog/netflix-availability", {
+          credentials: "omit", signal: AbortSignal.timeout(15_000),
+        });
+        if (!response.ok) return;
+        const { available } = await response.json();
+        if (typeof available !== "boolean") return;
+        netflixAvailability = available;
+        availabilityCheckedAt = Date.now();
+        if (activeRoute === "landing-netflix") updateRouteMetadata(activeRoute);
+        notice.classList.toggle("hidden", available);
+      } catch { /* Initial HTML leaves availability unspecified. */ }
+      finally { checkingAvailability = false; }
     }
 
     function updateMobileCartBar() {
@@ -556,6 +553,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (accountChanged) {
         authRevision += 1;
         if (currentUser) {
+          funnel.reset();
           setRenewalOrderId(null);
           sessionStorage.removeItem("aura_partner_checkout_attempt");
         }
@@ -578,6 +576,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         netflixLoginRequests.clear();
       }
       currentUser = user || null;
+      if (currentUser && activeRoute === "cart") recordCheckoutView();
       if (partnerUI) void partnerUI.refresh({force:true}).catch(()=>undefined);
       if (currentUser) sessionRecovery.resume();
       const authenticated = Boolean(currentUser);
@@ -1221,6 +1220,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       updateMobileCartBar();
 
       trackLandingView(route);
+      if (route !== "cart") recordCheckoutView();
+      if (route === "landing-netflix") void refreshNetflixAvailability();
       if (route === "order") loadMyOrders();
       if (route === "partner") void partnerUI.open();
       if (route === "cart") setCheckoutStep(1);
@@ -1319,6 +1320,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function addItemToCart(item, button) {
       setRenewalOrderId(null);
       cart.push(item);
+      void funnel.track("add_to_cart", [item.service]);
       clearPromo();
       updateCart();
       showToast(`${item.name} ajouté au panier`);
@@ -1331,8 +1333,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
       if (button) {
         const original = button.textContent;
-        button.textContent = "Ajouté !";
-        window.setTimeout(() => button.textContent = original, 1500);
+        button.textContent = t("Ajouté !");
+        window.setTimeout(() => {
+          button.textContent = button.dataset.ctaLabel ? t(button.dataset.ctaLabel) : original;
+        }, 1500);
       }
     }
 
@@ -1363,7 +1367,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function updateCart() {
       persistCart();
       cartCount.textContent = String(cart.length);
-      if (headerCartButton) headerCartButton.setAttribute("aria-label", `${t("Panier")} (${cart.length})`);
       const hasNetflix = cart.some(item => item.service === "Netflix");
       const hasSpotify = cart.some(item => item.service === "Spotify");
       const hasCrunchyroll = cart.some(item => item.service === "Crunchyroll");
@@ -1489,6 +1492,22 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     let currentCheckoutStep = 1;
 
+    function recordCheckoutView() {
+      const landing = landingRoutes[activeRoute];
+      if (landing) {
+        void funnel.track("product_view", [landing.service]);
+        return;
+      }
+      if (!cart.length) return;
+      const products = cart.map(item => item.service);
+      if (activeRoute === "login" && !recoveryRequested && !currentUser) {
+        void funnel.track("login_view", products);
+      } else if (activeRoute === "cart") {
+        void funnel.track("cart_view", products);
+        if (currentUser) void funnel.track(currentCheckoutStep === 2 ? "summary_view" : "customer_info", products);
+      }
+    }
+
     function syncCheckoutAccess() {
       const requiresAuthentication = !currentUser && cart.length > 0;
       document.getElementById("checkout-auth-gate")?.classList.toggle("hidden", !requiresAuthentication);
@@ -1500,6 +1519,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     function setCheckoutStep(step, { scroll = true } = {}) {
       currentCheckoutStep = step;
       syncCheckoutAccess();
+      recordCheckoutView();
       document.querySelectorAll("[data-step-indicator]").forEach(indicator => {
         indicator.classList.toggle("opacity-40", Number(indicator.dataset.stepIndicator) > step);
       });
@@ -1613,6 +1633,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         if (!isPartner && pendingPaymentAttempt?.fingerprint === fingerprint && pendingPaymentAttempt.orderId) {
           activeOrderId = pendingPaymentAttempt.orderId;
         } else {
+          orderPayload.checkout_journey_id = funnel.id();
           order = await apiRequest("/create-order", {
             method: "POST",
             body: JSON.stringify(orderPayload)
@@ -1630,6 +1651,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           highlightedOrderId=activeOrderId;
           clearCheckoutCredentialPasswords();
           cart=[];
+          funnel.reset();
           activePromo=null;
           setRenewalOrderId(null);
           setRenewalOffer(null);
@@ -1898,6 +1920,70 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (name === "partners") void partnerUI?.loadAdmin();
     }
 
+    const adminFunnelStages = {
+      product_view: "Fiche → ajout au panier",
+      add_to_cart: "Ajout → ouverture du panier",
+      cart_view: "Panier → connexion ou coordonnées",
+      login_view: "Connexion → coordonnées",
+      customer_info: "Coordonnées → récapitulatif",
+      summary_view: "Récapitulatif → paiement confirmé",
+    };
+    let adminFunnelLoad = 0;
+
+    async function loadAdminCheckoutFunnel() {
+      const request = ++adminFunnelLoad;
+      const revision = authRevision;
+      const status = document.getElementById("admin-funnel-status");
+      const results = document.getElementById("admin-funnel-results");
+      results.replaceChildren();
+      status.textContent = t("Chargement du parcours d’achat…");
+      try {
+        const report = await apiRequest("/admin/checkout-funnel");
+        if (request !== adminFunnelLoad || revision !== authRevision) return;
+        const counts = (report.stages || []).filter(row => row.reached > 0);
+        const date = value => formatLocalizedDate(value + "T12:00:00Z", { day: "numeric", month: "short", year: "numeric" });
+        status.textContent = `${date(report.from)} — ${date(report.through)} · ${t("Paiements suivis / confirmés")} ${formatLocalizedNumber(report.tracked_paid_orders)} / ${formatLocalizedNumber(report.all_paid_orders)}`;
+        if (!counts.length) {
+          results.textContent = t("Aucun parcours mesuré sur cette période.");
+          return;
+        }
+        const cards = document.createElement("div");
+        cards.className = "grid min-w-0 gap-4 sm:grid-cols-2";
+        for (const landing of Object.values(landingRoutes)) {
+          const serviceRows = counts.filter(row => row.service === landing.service.toLowerCase());
+          if (!serviceRows.length) continue;
+          const card = document.createElement("section");
+          card.className = "min-w-0 rounded-xl border border-black/10 bg-ivory p-4";
+          const heading = document.createElement("h3");
+          heading.className = "font-title font-bold";
+          heading.textContent = landing.product;
+          const rows = document.createElement("dl");
+          rows.className = "mt-2 space-y-2 text-sm";
+          for (const [stage, label] of Object.entries(adminFunnelStages)) {
+            const row = serviceRows.find(item => item.stage === stage);
+            if (!row) continue;
+            const line = document.createElement("div");
+            line.className = "flex flex-wrap justify-between gap-x-3 gap-y-1";
+            const title = document.createElement("dt");
+            title.textContent = t(label);
+            const value = document.createElement("dd");
+            value.className = "font-bold tabular-nums";
+            value.dir = "ltr";
+            value.textContent = `${formatLocalizedNumber(row.continued)} / ${formatLocalizedNumber(row.reached)}`;
+            line.append(title, value);
+            rows.append(line);
+          }
+          card.append(heading, rows);
+          cards.append(card);
+        }
+        results.append(cards);
+      } catch {
+        if (request === adminFunnelLoad && revision === authRevision) {
+          status.textContent = t("Mesure du parcours momentanément indisponible.");
+        }
+      }
+    }
+
     async function loadAdminOverview() {
       const range = selectedAdminRevenueRange();
       const exportButton = document.getElementById("admin-revenue-export");
@@ -1913,6 +1999,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         end_date: range.endDate
       });
       const result = await apiRequest(`/admin/dashboard?${params}`);
+      void loadAdminCheckoutFunnel();
       const summary = result.summary || {};
       document.getElementById("admin-revenue-total").textContent = formatPrice(Number(summary.revenue_total || 0));
       document.getElementById("admin-revenue-period").textContent = formatPrice(Number(summary.revenue_period || 0));
@@ -3028,6 +3115,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         sessionStorage.removeItem("aura_partner_checkout_attempt");
         void partnerUI.refresh({force:true}).catch(()=>undefined);
         cart = [];
+        funnel.reset();
         setRenewalOrderId(null);
         activePromo = null;
         setRenewalOffer(null);

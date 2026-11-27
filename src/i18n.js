@@ -206,7 +206,8 @@ function translateTextNode(node, force = false) {
       textSources.set(node, source);
     }
   }
-  node.nodeValue = preserveWhitespace(source, t(source));
+  const translated = preserveWhitespace(source, t(source));
+  if (translated !== node.nodeValue) node.nodeValue = translated;
 }
 
 function translateAttributes(element, force = false) {
@@ -226,7 +227,8 @@ function translateAttributes(element, force = false) {
       source = current;
       sources.set(attribute, source);
     }
-    element.setAttribute(attribute, t(source));
+    const translated = t(source);
+    if (translated !== current) element.setAttribute(attribute, translated);
   }
 }
 

@@ -4,11 +4,11 @@
 .fa-spin { animation: aura-icon-spin 2s linear infinite; }
 @keyframes aura-icon-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .fa-spin { animation: none; } }
-@font-face { font-family: "Aura Stream Icons Solid"; src: url("./aura-icons-solid.woff2") format("woff2"); font-weight: 900; font-display: block; }
+@font-face { font-family: "Aura Stream Icons Solid"; src: url("/aura-icons/aura-icons-solid.woff2") format("woff2"); font-weight: 900; font-display: block; }
 .fa-solid { font-family: "Aura Stream Icons Solid"; font-weight: 900; }
-@font-face { font-family: "Aura Stream Icons Regular"; src: url("./aura-icons-regular.woff2") format("woff2"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Aura Stream Icons Regular"; src: url("/aura-icons/aura-icons-regular.woff2") format("woff2"); font-weight: 400; font-display: block; }
 .fa-regular { font-family: "Aura Stream Icons Regular"; font-weight: 400; }
-@font-face { font-family: "Aura Stream Icons Brands"; src: url("./aura-icons-brands.woff2") format("woff2"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Aura Stream Icons Brands"; src: url("/aura-icons/aura-icons-brands.woff2") format("woff2"); font-weight: 400; font-display: block; }
 .fa-brands { font-family: "Aura Stream Icons Brands"; font-weight: 400; }
 .fa-arrow-down { --aura-icon: "\f063"; }
 .fa-arrow-right { --aura-icon: "\f061"; }
