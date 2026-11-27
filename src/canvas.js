@@ -2166,10 +2166,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function showAdminStockDialog(dialog, opener) {
+      // Native dialogs restore the focus captured when showModal runs.
+      opener.focus({ preventScroll: true });
       dialog.showModal();
-      dialog.addEventListener("close", () => {
-        if (opener.isConnected) opener.focus();
-      }, { once: true });
     }
 
     async function openAdminManualAssignment(stockId, opener) {

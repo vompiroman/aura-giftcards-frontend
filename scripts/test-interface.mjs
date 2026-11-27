@@ -22,16 +22,25 @@ const languages = {
     service: "Filtrer par service", status: "Filtrer par statut", order: "Statut de la commande",
     edit: "Modifier le compte", assign: "Attribution manuelle",
     required: "Renseigne ce champ.", email: "Saisis une adresse e-mail valide.",
+    snapchatName: "Saisis un nom d’utilisateur Snapchat valide.",
+    snapchatConfirmation: "Confirme l’ajout de @aura-stream.",
+    applicationPending: "Candidature en cours d’examen",
   },
   en: {
     service: "Filter by service", status: "Filter by status", order: "Order status for",
     edit: "Edit account", assign: "Manual assignment",
     required: "Fill in this field.", email: "Enter a valid email address.",
+    snapchatName: "Enter a valid Snapchat username.",
+    snapchatConfirmation: "Confirm that you added @aura-stream.",
+    applicationPending: "Application under review",
   },
   ar: {
     service: "التصفية حسب الخدمة", status: "التصفية حسب الحالة", order: "حالة الطلب",
     edit: "تعديل الحساب", assign: "تخصيص يدوي",
     required: "املأ هذا الحقل.", email: "أدخل بريدًا إلكترونيًا صالحًا.",
+    snapchatName: "أدخل اسم مستخدم صالحًا على Snapchat.",
+    snapchatConfirmation: "أكّد أنك أضفت \u2066@aura-stream\u2069.",
+    applicationPending: "الطلب قيد المراجعة",
   },
 };
 
@@ -138,12 +147,23 @@ async function checkDialog(page, opener, id, title) {
 
 for (const width of [320, 390, 1440]) {
   for (const [language, copy] of Object.entries(languages)) {
-    test(width + " px / " + language + " — skip, forms, admin, RTL and icons", { timeout: 45000 }, async () => {
+    test(width + " px / " + language + " — skip, forms, admin, RTL, icons and partner application", { timeout: 45000 }, async () => {
       const context = await browser.newContext({ viewport: { width, height: 900 }, locale: "fr-FR" });
       const errors = [];
+      let application;
       await context.addInitScript(language => localStorage.setItem("aura_language", language), language);
       await context.route("**/*", route => {
-        const url = new URL(route.request().url());
+        const request = route.request();
+        const url = new URL(request.url());
+        if (url.origin === admin.origin) {
+          if (url.pathname === "/api/partner/applications" && request.method() === "POST") {
+            application = request.postDataJSON();
+            return route.fulfill({ status: 201, json: {} });
+          }
+          if (url.pathname === "/api/partner" && application) {
+            return route.fulfill({ json: { partner_status: "PENDING" } });
+          }
+        }
         if ([admin.origin, guest.origin].includes(url.origin)) return route.continue();
         return route.abort();
       });
@@ -188,11 +208,12 @@ for (const width of [320, 390, 1440]) {
         const snapchat = language === "ar" ? "\u2066Snapchat+\u2069" : "Snapchat+";
         assert.equal((await page.locator(".filter-btn[data-filter=snapchat]").textContent()).trim(), snapchat);
         await page.locator('.product-card[data-service=netflix] .add-product').click();
+        await page.locator('.product-card[data-service=snapchat] .add-product').first().click();
         await page.locator("#header-cart-button").click();
         const phone = page.locator("#customer-whatsapp");
         await phone.waitFor();
         assert.deepEqual(await phone.inputValue(), "+213555010100");
-        for (const selector of ["#customer-first-name", "#customer-last-name", "#customer-email", "#customer-whatsapp", "#promo-code"]) {
+        for (const selector of ["#customer-first-name", "#customer-last-name", "#customer-email", "#customer-whatsapp", "#snapchat-username", "#promo-code"]) {
           const color = await contrastFor(page.locator(selector), true);
           assert.equal(color.opacity, 1);
           assert.ok(color.ratio >= 4.5, selector + " contrast " + color.ratio);
@@ -202,6 +223,14 @@ for (const width of [320, 390, 1440]) {
         await page.locator("#to-payment").press("Enter");
         await checkInvalidField(page, "customer-first-name", copy.required);
         await page.locator("#customer-first-name").fill("Camille");
+        assert.ok((await page.locator("#checkout-items h3").allTextContents()).includes(snapchat));
+        await page.locator("#snapchat-username").fill("1invalide");
+        await page.locator("#to-payment").press("Enter");
+        await checkInvalidField(page, "snapchat-username", copy.snapchatName);
+        await page.locator("#snapchat-username").fill("aura.ui_test");
+        await page.locator("#to-payment").press("Enter");
+        await checkInvalidField(page, "snapchat-friend-added", copy.snapchatConfirmation);
+        await page.locator("#snapchat-friend-added").check();
         await page.locator("#to-payment").press("Enter");
         await page.locator("#checkout-payment").waitFor();
         assert.equal(await page.locator("#checkout-payment").isVisible(), true);
@@ -266,8 +295,19 @@ for (const width of [320, 390, 1440]) {
         await page.locator("#admin-stock-tab").click();
         await page.locator(".admin-toggle-stock-profiles").click();
         await hasIcons(page, "#admin-stock-panel");
-        await checkDialog(page, page.locator(".admin-edit-stock"), "admin-stock-dialog", copy.edit);
-        await checkDialog(page, page.locator(".admin-manual-assign-stock"), "admin-assignment-dialog", copy.assign);
+        const editStock = page.locator(".admin-edit-stock");
+        const assignStock = page.locator(".admin-manual-assign-stock");
+        await checkDialog(page, editStock, "admin-stock-dialog", copy.edit);
+        await checkDialog(page, assignStock, "admin-assignment-dialog", copy.assign);
+        await editStock.press("Enter");
+        await page.locator("#admin-stock-dialog[open]").waitFor();
+        const nextButtonKeptFocus = await assignStock.evaluate(next => new Promise(resolve => {
+          const dialog = document.getElementById("admin-stock-dialog");
+          dialog.addEventListener("close", () => resolve(document.activeElement === next), { once: true });
+          dialog.close();
+          next.focus();
+        }));
+        assert.equal(nextButtonKeptFocus, true, "closing a dialog must preserve subsequent focus movement");
 
         const auditResponse = page.waitForResponse(response =>
           new URL(response.url()).pathname === "/api/admin/audit-logs");
@@ -328,10 +368,27 @@ for (const width of [320, 390, 1440]) {
         await page.keyboard.press("Escape");
         await focused(languageButton);
         await languageButton.press("Enter");
-        const otherLanguage = language === "ar" ? "fr" : "ar";
+        const otherLanguage = { fr: "en", en: "ar", ar: "fr" }[language];
         await page.locator("#" + formMenu + '-language-options [data-language-option="' + otherLanguage + '"]').press("Enter");
         assert.equal(await page.locator("html").getAttribute("lang"), otherLanguage);
         assert.equal(await partnerFields.count(), 3);
+        if (formMenu === "mobile" && await page.locator("#mobile-menu-toggle").getAttribute("aria-expanded") === "true") {
+          await page.locator("#mobile-menu-toggle").click();
+        }
+        const partnerForm = page.locator("#partner-application-form");
+        const answers = {
+          monthly_volume: "5000_15000", sales_channel: "WEB", profile: "INDEPENDENT",
+          products: "Netflix et Snapchat+", quick_contact: "@aura_ui_test", additional_info: "Candidature fictive",
+        };
+        for (const [name, value] of Object.entries(answers)) {
+          const field = partnerForm.locator(`[name="${name}"]`);
+          if (await field.evaluate(element => element.tagName === "SELECT")) await field.selectOption(value);
+          else await field.fill(value);
+        }
+        await partnerForm.locator('[type="submit"]').click();
+        await page.getByRole("heading", { name: languages[otherLanguage].applicationPending, exact: true }).waitFor();
+        assert.deepEqual(application, answers);
+        assert.equal(await partnerForm.count(), 0);
         assert.deepEqual(errors, []);
       } finally {
         await context.close();
@@ -342,5 +399,5 @@ for (const width of [320, 390, 1440]) {
 
 test("browser scenarios stop before sign-in or payment requests", () => {
   assert.equal(guest.apiRequests.some(request => request.pathname === "/api/login"), false);
-  assert.equal(admin.apiRequests.some(request => /\/(?:create-invoice|wallet\/purchase|assign)$/.test(request.pathname)), false);
+  assert.equal(admin.apiRequests.some(request => /\/(?:create-order|create-invoice|wallet\/purchase|assign)$/.test(request.pathname)), false);
 });
