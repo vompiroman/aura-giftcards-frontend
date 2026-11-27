@@ -83,7 +83,8 @@ const frenchDateTime = formatLocalizedDate("2026-07-29T13:46:00Z", { dateStyle: 
 assert.doesNotMatch(frenchDateTime, /\b(?:AM|PM)\b/, "French dates must use a 24-hour time format");
 
 const canvasSource = fs.readFileSync(new URL("../src/canvas.js", import.meta.url), "utf8");
-assert.match(canvasSource, /syncCustomSelectLabels\(\)/, "Custom select labels must be synchronized after language changes");
+assert.match(html, /<label[^>]+for="admin-order-service">Filtrer par service<\/label>/, "Service filter must keep a translated label");
+assert.match(html, /<label[^>]+for="admin-order-status">Filtrer par statut<\/label>/, "Status filter must keep a translated label");
 assert.match(canvasSource, /adminPaymentStatusLabel\(order\.payment_status/, "Payment statuses must use localized labels");
 
 const i18nSource = fs.readFileSync(new URL("../src/i18n.js", import.meta.url), "utf8");

@@ -1,0 +1,58 @@
+/* Font Awesome Free 6.7.2 subset. See LICENSE.txt in this directory. */
+.fa-solid, .fa-regular, .fa-brands { display: inline-block; font-style: normal; font-variant: normal; line-height: 1; text-rendering: auto; -webkit-font-smoothing: antialiased; }
+.fa-solid::before, .fa-regular::before, .fa-brands::before { content: var(--aura-icon); }
+.fa-spin { animation: aura-icon-spin 2s linear infinite; }
+@keyframes aura-icon-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .fa-spin { animation: none; } }
+@font-face { font-family: "Aura Stream Icons Solid"; src: url("/aura-icons/aura-icons-solid.woff2") format("woff2"); font-weight: 900; font-display: block; }
+.fa-solid { font-family: "Aura Stream Icons Solid"; font-weight: 900; }
+@font-face { font-family: "Aura Stream Icons Regular"; src: url("/aura-icons/aura-icons-regular.woff2") format("woff2"); font-weight: 400; font-display: block; }
+.fa-regular { font-family: "Aura Stream Icons Regular"; font-weight: 400; }
+@font-face { font-family: "Aura Stream Icons Brands"; src: url("/aura-icons/aura-icons-brands.woff2") format("woff2"); font-weight: 400; font-display: block; }
+.fa-brands { font-family: "Aura Stream Icons Brands"; font-weight: 400; }
+.fa-arrow-down { --aura-icon: "\f063"; }
+.fa-arrow-right { --aura-icon: "\f061"; }
+.fa-arrow-right-from-bracket { --aura-icon: "\f08b"; }
+.fa-arrow-trend-up { --aura-icon: "\e098"; }
+.fa-arrow-up-right-from-square { --aura-icon: "\f08e"; }
+.fa-bag-shopping { --aura-icon: "\f290"; }
+.fa-bars { --aura-icon: "\f0c9"; }
+.fa-bolt { --aura-icon: "\f0e7"; }
+.fa-box-open { --aura-icon: "\f49e"; }
+.fa-boxes-stacked { --aura-icon: "\f468"; }
+.fa-calendar { --aura-icon: "\f133"; }
+.fa-chart-column { --aura-icon: "\e0e3"; }
+.fa-chart-line { --aura-icon: "\f201"; }
+.fa-check { --aura-icon: "\f00c"; }
+.fa-check-circle { --aura-icon: "\f058"; }
+.fa-chevron-down { --aura-icon: "\f078"; }
+.fa-circle-check { --aura-icon: "\f058"; }
+.fa-circle-notch { --aura-icon: "\f1ce"; }
+.fa-circle-question { --aura-icon: "\f059"; }
+.fa-clock { --aura-icon: "\f017"; }
+.fa-coins { --aura-icon: "\f51e"; }
+.fa-credit-card { --aura-icon: "\f09d"; }
+.fa-envelope { --aura-icon: "\f0e0"; }
+.fa-file-excel { --aura-icon: "\f1c3"; }
+.fa-floppy-disk { --aura-icon: "\f0c7"; }
+.fa-globe { --aura-icon: "\f0ac"; }
+.fa-instagram { --aura-icon: "\f16d"; }
+.fa-key { --aura-icon: "\f084"; }
+.fa-link { --aura-icon: "\f0c1"; }
+.fa-list-check { --aura-icon: "\f0ae"; }
+.fa-location-dot { --aura-icon: "\f3c5"; }
+.fa-lock { --aura-icon: "\f023"; }
+.fa-magnifying-glass { --aura-icon: "\f002"; }
+.fa-pen { --aura-icon: "\f304"; }
+.fa-plus { --aura-icon: "\2b"; }
+.fa-receipt { --aura-icon: "\f543"; }
+.fa-rotate { --aura-icon: "\f2f1"; }
+.fa-shield-halved { --aura-icon: "\f3ed"; }
+.fa-spinner { --aura-icon: "\f110"; }
+.fa-ticket { --aura-icon: "\f145"; }
+.fa-trash-can { --aura-icon: "\f2ed"; }
+.fa-triangle-exclamation { --aura-icon: "\f071"; }
+.fa-user-check { --aura-icon: "\f4fc"; }
+.fa-user-lock { --aura-icon: "\f502"; }
+.fa-whatsapp { --aura-icon: "\f232"; }
+.fa-xmark { --aura-icon: "\f00d"; }

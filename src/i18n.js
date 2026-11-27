@@ -155,7 +155,13 @@ export function t(value, variables = {}) {
   if (!source || currentLanguage === "fr") return interpolate(source, variables);
 
   const exact = TRANSLATIONS[currentLanguage]?.get(source);
-  if (exact) return interpolate(exact, variables);
+  if (exact) {
+    // Isolate the Latin names in RTL sentences and in native option labels.
+    const translation = currentLanguage === "ar"
+      ? exact.replace(/Snapchat\+|@aura-stream/g, name => "\u2066" + name + "\u2069")
+      : exact;
+    return interpolate(translation, variables);
+  }
 
   for (const [pattern, replacement] of dynamicPatterns[currentLanguage] || []) {
     if (pattern.test(source)) return interpolate(source.replace(pattern, replacement), variables);
@@ -200,7 +206,8 @@ function translateTextNode(node, force = false) {
       textSources.set(node, source);
     }
   }
-  node.nodeValue = preserveWhitespace(source, t(source));
+  const translated = preserveWhitespace(source, t(source));
+  if (translated !== node.nodeValue) node.nodeValue = translated;
 }
 
 function translateAttributes(element, force = false) {
@@ -220,7 +227,8 @@ function translateAttributes(element, force = false) {
       source = current;
       sources.set(attribute, source);
     }
-    element.setAttribute(attribute, t(source));
+    const translated = t(source);
+    if (translated !== current) element.setAttribute(attribute, translated);
   }
 }
 
@@ -294,14 +302,13 @@ function setLanguageMenuOpen(root, open, { focusOption = false, restoreFocus = f
   const trigger = root?.querySelector(".language-menu-trigger");
   const panel = root?.querySelector(".language-menu-panel");
   if (!root || !trigger || !panel) return;
+  if (!open && restoreFocus) trigger.focus();
   root.dataset.open = String(open);
   trigger.setAttribute("aria-expanded", String(open));
   panel.setAttribute("aria-hidden", String(!open));
   if (open && focusOption) {
     const selected = root.querySelector('[data-language-option][aria-selected="true"]');
     (selected || root.querySelector("[data-language-option]"))?.focus();
-  } else if (!open && restoreFocus) {
-    trigger.focus();
   }
 }
 
@@ -318,12 +325,17 @@ function initializeLanguageMenus() {
     if (!trigger || options.length === 0) continue;
 
     setLanguageMenuOpen(root, false);
-    trigger.addEventListener("click", () => {
+    trigger.addEventListener("click", event => {
       const open = root.dataset.open !== "true";
       closeOtherLanguageMenus(root);
-      setLanguageMenuOpen(root, open);
+      setLanguageMenuOpen(root, open, { focusOption: event.detail === 0 });
     });
     trigger.addEventListener("keydown", event => {
+      if (event.key === "Escape" && root.dataset.open === "true") {
+        event.preventDefault();
+        setLanguageMenuOpen(root, false, { restoreFocus: true });
+        return;
+      }
       if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
       event.preventDefault();
       closeOtherLanguageMenus(root);
