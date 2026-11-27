@@ -13,6 +13,7 @@ import { formatAlgerianPhoneInput, normalizeAlgerianPhone } from "./phone.js";
 import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
 import { createAdminSecurity } from "./admin-security.js";
+import { bindFieldValidation } from "./form-validation.js";
 import {
   formatLocalizedDate,
   formatLocalizedNumber,
@@ -1145,8 +1146,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const isCurrent = link.dataset.route === route;
         link.setAttribute("aria-current", isCurrent ? "page" : "false");
       });
-      mobileMenu.classList.add("hidden");
-      mobileToggle.setAttribute("aria-expanded", "false");
+      setMobileMenuOpen(false);
       activeRoute = route;
       document.body.dataset.route = route;
       const landing = landingRoutes[route];
@@ -1172,6 +1172,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
+
+    document.getElementById("skip-to-content").addEventListener("click", event => {
+      event.preventDefault();
+      const main = document.getElementById("main-content");
+      main.focus({ preventScroll: true });
+      main.scrollIntoView({ block: "start", behavior: "instant" });
+    });
 
     document.addEventListener("click", event => {
       const link = event.target.closest(".route-link");
@@ -1204,10 +1211,26 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     window.addEventListener("hashchange", showLocationRoute);
     window.addEventListener("popstate", showLocationRoute);
 
-    mobileToggle.addEventListener("click", () => {
+    function setMobileMenuOpen(open) {
+      mobileToggle.setAttribute("aria-expanded", String(open));
+      mobileMenu.classList.toggle("hidden", !open);
+      updateMobileMenuLabel();
+    }
+
+    function updateMobileMenuLabel() {
       const expanded = mobileToggle.getAttribute("aria-expanded") === "true";
-      mobileToggle.setAttribute("aria-expanded", String(!expanded));
-      mobileMenu.classList.toggle("hidden", expanded);
+      mobileToggle.setAttribute("aria-label", t(expanded ? "Fermer le menu" : "Ouvrir le menu"));
+    }
+
+    mobileToggle.addEventListener("click", () => {
+      setMobileMenuOpen(mobileToggle.getAttribute("aria-expanded") !== "true");
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key !== "Escape" || event.defaultPrevented
+        || mobileToggle.getAttribute("aria-expanded") !== "true") return;
+      event.preventDefault();
+      setMobileMenuOpen(false);
+      mobileToggle.focus();
     });
 
     document.querySelectorAll(".duration-btn").forEach(button => {
@@ -1216,71 +1239,6 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         card.querySelectorAll(".duration-btn").forEach(item => item.setAttribute("aria-pressed", "false"));
         button.setAttribute("aria-pressed", "true");
         renderPartnerPrices();
-      });
-    });
-
-    function closeCustomSelect(root, { restoreFocus = false } = {}) {
-      const trigger = root.querySelector(".custom-select-trigger");
-      const options = root.querySelector(".custom-select-options");
-      trigger?.setAttribute("aria-expanded", "false");
-      options?.classList.add("hidden");
-      if (restoreFocus) trigger?.focus();
-    }
-
-    function syncCustomSelectLabels() {
-      document.querySelectorAll("[data-custom-select]").forEach(root => {
-        const input = root.querySelector('input[type="hidden"]');
-        const triggerLabel = root.querySelector(".custom-select-trigger span");
-        const options = [...root.querySelectorAll('[role="option"]')];
-        if (!input || !triggerLabel || options.length === 0) return;
-
-        const selected = options.find(option => (option.dataset.value || "") === input.value) || options[0];
-        options.forEach(option => option.setAttribute("aria-selected", String(option === selected)));
-        triggerLabel.textContent = selected.textContent.trim();
-      });
-    }
-
-    document.querySelectorAll("[data-custom-select]").forEach(root => {
-      const trigger = root.querySelector(".custom-select-trigger");
-      const options = root.querySelector(".custom-select-options");
-      const input = root.querySelector('input[type="hidden"]');
-      if (!trigger || !options || !input) return;
-
-      trigger.addEventListener("click", () => {
-        const willOpen = trigger.getAttribute("aria-expanded") !== "true";
-        document.querySelectorAll("[data-custom-select]").forEach(other => {
-          if (other !== root) closeCustomSelect(other);
-        });
-        trigger.setAttribute("aria-expanded", String(willOpen));
-        options.classList.toggle("hidden", !willOpen);
-        if (willOpen) {
-          const selected = options.querySelector('[role="option"][aria-selected="true"]');
-          selected?.focus();
-        }
-      });
-
-      options.querySelectorAll('[role="option"]').forEach(option => {
-        option.addEventListener("click", () => {
-          options.querySelectorAll('[role="option"]').forEach(item => item.setAttribute("aria-selected", "false"));
-          option.setAttribute("aria-selected", "true");
-          input.value = option.dataset.value || "";
-          trigger.querySelector("span").textContent = option.textContent.trim();
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-          closeCustomSelect(root, { restoreFocus: true });
-        });
-      });
-
-      root.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          closeCustomSelect(root, { restoreFocus: true });
-        }
-      });
-    });
-
-    document.addEventListener("click", event => {
-      document.querySelectorAll("[data-custom-select]").forEach(root => {
-        if (!root.contains(event.target)) closeCustomSelect(root);
       });
     });
 
@@ -1487,9 +1445,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    document.getElementById("to-payment").addEventListener("click", async () => {
-      const form = document.getElementById("customer-form");
-      if (!form.reportValidity()) return;
+    const customerForm = document.getElementById("customer-form");
+    const validateCheckoutFields = bindFieldValidation(customerForm);
+    customerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      const invalidField = validateCheckoutFields();
+      if (invalidField) {
+        invalidField.focus();
+        return;
+      }
       if (!currentUser) {
         showToast("Connecte-toi avant de continuer");
         showRoute("login");
@@ -1533,9 +1497,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showRoute("products");
         return;
       }
-      const checkoutForm = document.getElementById("customer-form");
-      if (!checkoutForm.reportValidity()) {
+      const invalidField = validateCheckoutFields();
+      if (invalidField) {
         setCheckoutStep(1);
+        invalidField.focus();
         return;
       }
       const originalLabel = button.innerHTML;
@@ -1840,6 +1805,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.querySelectorAll(".admin-tab").forEach(button => {
         const active = button.dataset.adminTab === name;
         button.setAttribute("aria-selected", String(active));
+        button.tabIndex = active ? 0 : -1;
         button.classList.toggle("bg-graphite", active);
         button.classList.toggle("text-white", active);
         button.classList.toggle("text-black/55", !active);
@@ -1988,7 +1954,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
               <div class="flex flex-wrap items-center gap-3">
                 <strong class="font-title text-lg">${formatPrice(Number(order.amount || 0))}</strong>
                 ${followUp.disconnect ? `<button class="admin-mark-disconnected min-h-11 rounded-xl bg-aura px-3 text-xs font-bold text-white transition hover:bg-[#BE2E3D]" type="button" data-order-id="${escapeHTML(order.order_id)}">Marquer déconnecté</button>` : ""}
-                <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" data-order-id="${escapeHTML(order.order_id)}">
+                <select class="admin-order-status-select min-h-11 rounded-xl border border-black/15 bg-white px-3 text-xs font-bold" aria-label="${escapeHTML(t("Statut de la commande {reference}", { reference: order.order_id }))}" data-order-id="${escapeHTML(order.order_id)}">
                   ${(order.partner_wallet_refunded_at ? ["cancelled"] : ["pending", "active", "completed", "cancelled"]).map(status =>
                     `<option value="${status}" ${order.status === status ? "selected" : ""}>${adminOrderStatusLabel(status)}</option>`
                   ).join("")}
@@ -2134,10 +2100,10 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           });
         });
         list.querySelectorAll(".admin-edit-stock").forEach(button => {
-          button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId));
+          button.addEventListener("click", () => openAdminStockEditor(button.dataset.stockId, button));
         });
         list.querySelectorAll(".admin-manual-assign-stock").forEach(button => {
-          button.addEventListener("click", () => openAdminManualAssignment(button.dataset.stockId));
+          button.addEventListener("click", () => openAdminManualAssignment(button.dataset.stockId, button));
         });
         list.querySelectorAll(".admin-test-stock-mailbox").forEach(button => {
           button.addEventListener("click", async () => {
@@ -2199,7 +2165,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
-    async function openAdminManualAssignment(stockId) {
+    function showAdminStockDialog(dialog, opener) {
+      dialog.showModal();
+      dialog.addEventListener("close", () => {
+        if (opener.isConnected) opener.focus();
+      }, { once: true });
+    }
+
+    async function openAdminManualAssignment(stockId, opener) {
       const dialog = document.getElementById("admin-assignment-dialog");
       const form = document.getElementById("admin-assignment-form");
       const select = document.getElementById("admin-assignment-order");
@@ -2213,7 +2186,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       submit.disabled = true;
       empty.classList.add("hidden");
       if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
-      dialog.showModal();
+      showAdminStockDialog(dialog, opener);
       try {
         const result = await apiRequest(`/admin/inventory/${encodeURIComponent(stockId)}/assignment-options`);
         const orders = Array.isArray(result.orders) ? result.orders : [];
@@ -2272,7 +2245,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     });
 
-    function openAdminStockEditor(stockId) {
+    function openAdminStockEditor(stockId, opener) {
       const item = adminInventory.find(entry => String(entry.id) === String(stockId));
       const dialog = document.getElementById("admin-stock-dialog");
       const form = document.getElementById("admin-stock-edit-form");
@@ -2284,7 +2257,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       form.elements.profile_pin.value = item.profile_pin || "";
       const feedback = document.getElementById("admin-stock-edit-feedback");
       if (feedback) feedback.className = "mt-4 hidden rounded-xl px-4 py-3 text-sm";
-      dialog.showModal();
+      showAdminStockDialog(dialog, opener);
     }
 
     async function loadAdminPromos() {
@@ -2359,9 +2332,9 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       try {
         const result = await apiRequest("/admin/audit-logs?limit=50");
         const events = Array.isArray(result.events) ? result.events : [];
-        list.innerHTML = events.map(event => `<article class="flex gap-4 rounded-2xl border border-black/10 p-4">
+        list.innerHTML = events.map(event => `<article class="flex min-w-0 gap-4 rounded-2xl border border-black/10 p-4">
           <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-black/5 text-black/55"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></span>
-          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(adminAuditActionLabel(event.action))}</p><p class="mt-1 truncate text-xs text-black/60">${escapeHTML(adminAuditTargetLabel(event.target_type))}${event.target_id ? ` · <bdi dir="ltr">${escapeHTML(event.target_id)}</bdi>` : ""}</p><p class="mt-1 text-[11px] text-black/60">${formatDateTime(event.created_at)}</p></div>
+          <div class="min-w-0"><p class="font-title text-sm font-bold">${escapeHTML(adminAuditActionLabel(event.action))}</p><p class="mt-1 text-xs text-black/60 [overflow-wrap:anywhere]">${escapeHTML(adminAuditTargetLabel(event.target_type))}${event.target_id ? ` · <bdi dir="ltr">${escapeHTML(event.target_id)}</bdi>` : ""}</p><p class="mt-1 text-[11px] text-black/60">${formatDateTime(event.created_at)}</p></div>
         </article>`).join("") || '<p class="py-10 text-center text-sm text-black/60">Aucune activité récente.</p>';
       } catch (error) {
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
@@ -2390,8 +2363,33 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       return true;
     }
 
-    document.querySelectorAll(".admin-tab").forEach(button => {
-      button.addEventListener("click", () => activateAdminTab(button.dataset.adminTab));
+    const adminTabList = document.querySelector("#admin-tabs [role=tablist]");
+    adminTabList.addEventListener("click", event => {
+      const tab = event.target.closest(".admin-tab");
+      if (tab) activateAdminTab(tab.dataset.adminTab);
+    });
+    adminTabList.addEventListener("keydown", event => {
+      const tabs = [...adminTabList.querySelectorAll(".admin-tab:not(.hidden)")];
+      const current = tabs.indexOf(event.target);
+      if (current < 0) return;
+      const step = document.documentElement.dir === "rtl" ? -1 : 1;
+      const targets = {
+        ArrowRight: (current + step + tabs.length) % tabs.length,
+        ArrowLeft: (current - step + tabs.length) % tabs.length,
+        Home: 0,
+        End: tabs.length - 1,
+      };
+      const next = targets[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      tabs.forEach((tab, index) => tab.tabIndex = index === next ? 0 : -1);
+      tabs[next].focus();
+    });
+    adminTabList.addEventListener("focusout", event => {
+      if (adminTabList.contains(event.relatedTarget)) return;
+      adminTabList.querySelectorAll(".admin-tab").forEach(tab => {
+        tab.tabIndex = tab.getAttribute("aria-selected") === "true" ? 0 : -1;
+      });
     });
     document.querySelectorAll(".admin-open-tab").forEach(button => {
       button.addEventListener("click", () => activateAdminTab(button.dataset.targetTab));
@@ -2727,8 +2725,15 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     });
 
-    document.getElementById("signin-form").addEventListener("submit", async event => {
+    const signInForm = document.getElementById("signin-form");
+    const validateSignInFields = bindFieldValidation(signInForm);
+    signInForm.addEventListener("submit", async event => {
       event.preventDefault();
+      const invalidField = validateSignInFields();
+      if (invalidField) {
+        invalidField.focus();
+        return;
+      }
       interruptSessionRestore();
       const form = event.currentTarget;
       const submitButton = form.querySelector('button[type="submit"]');
@@ -2868,7 +2873,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     document.addEventListener("aura:languagechange", () => {
       updateRouteMetadata(activeRoute);
       updateCart();
-      syncCustomSelectLabels();
+      updateMobileMenuLabel();
       if (stockProfiles) syncStockProfileRows();
       if (activeRoute === "order" && currentUser) loadMyOrders();
       if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });

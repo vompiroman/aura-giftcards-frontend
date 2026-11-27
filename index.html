@@ -33,7 +33,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="/aura-icons/icons.css">
 
   <script type="module" src="/src/meta.js"></script>
 
@@ -41,7 +41,7 @@
 </head>
 
 <body class="font-body antialiased selection:bg-aura selection:text-white">
-  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-graphite">
+  <a id="skip-to-content" href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-3 focus:text-graphite">
     Aller au contenu
   </a>
 
@@ -56,7 +56,7 @@
         <i class="fa-brands fa-whatsapp mr-1.5 text-[#25D366]" aria-hidden="true"></i>
         Support WhatsApp humain
       </span>
-      <a class="font-semibold text-aura underline decoration-aura/40 underline-offset-4 hover:text-white" href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">
+      <a class="support-strip-link font-semibold underline underline-offset-4 hover:text-white" href="https://wa.me/213557828812" target="_blank" rel="noopener noreferrer">
         Nous écrire →
       </a>
     </div>
@@ -151,7 +151,7 @@
     </div>
   </div>
 
-  <main id="main-content">
+  <main id="main-content" tabindex="-1">
     <!-- HOME -->
     <section id="view-home" class="page-view" data-view="home">
       <section class="hero-grid overflow-hidden bg-graphite text-ivory">
@@ -560,31 +560,43 @@
               <h1 class="mt-3 font-title text-2xl font-extrabold sm:text-3xl">Vos informations</h1>
               <p id="customer-info-description" class="mt-3 text-sm leading-6 text-black/55">Tes informations servent à rattacher la commande à ton compte et à te prévenir sur WhatsApp.</p>
 
-              <form id="customer-form" class="mt-8 grid gap-5 sm:grid-cols-2">
-                <label class="grid gap-2 text-sm font-semibold">
-                  Prénom
-                  <input id="customer-first-name" required autocomplete="given-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Nassym">
-                </label>
-                <label class="grid gap-2 text-sm font-semibold">
-                  Nom
-                  <input id="customer-last-name" required autocomplete="family-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Yaker">
-                </label>
-                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">
-                  Adresse e-mail
-                  <input id="customer-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com">
-                </label>
-                <label class="grid gap-2 text-sm font-semibold sm:col-span-2">
-                  Numéro WhatsApp
-                  <input id="customer-whatsapp" required autocomplete="tel" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="tel" placeholder="+213 5 00 00 00 00">
-                </label>
+              <form id="customer-form" class="mt-8 grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-2">
+                <div class="min-w-0" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">
+                    Prénom
+                    <input id="customer-first-name" required autocomplete="given-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Nassym">
+                  </label>
+                </div>
+                <div class="min-w-0" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">
+                    Nom
+                    <input id="customer-last-name" required autocomplete="family-name" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="text" placeholder="Yaker">
+                  </label>
+                </div>
+                <div class="min-w-0 sm:col-span-2" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">
+                    Adresse e-mail
+                    <input id="customer-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com">
+                  </label>
+                </div>
+                <div class="min-w-0 sm:col-span-2" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">
+                    Numéro WhatsApp
+                    <input id="customer-whatsapp" required autocomplete="tel" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="tel" placeholder="+213 5 00 00 00 00">
+                  </label>
+                </div>
                 <p id="profile-save-status" class="hidden text-xs font-medium text-black/60 sm:col-span-2" role="status" aria-live="polite"></p>
 
                 <div id="snapchat-activation-panel" class="hidden rounded-2xl border border-yellow-300 bg-yellow-50 p-5 sm:col-span-2">
                   <div class="flex items-center gap-3"><img src="/snapchat.svg" alt="" aria-hidden="true" class="h-8 w-8"><h2 class="font-title text-sm font-bold">Ton compte Snapchat</h2></div>
-                  <label class="mt-4 grid gap-2 text-sm font-semibold">Nom d’utilisateur Snapchat<input id="snapchat-username" disabled type="text" dir="ltr" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="16" pattern="@?[A-Za-z][A-Za-z0-9._\-]{1,13}[A-Za-z0-9]" placeholder="@tonpseudo" class="min-h-12 w-full rounded-xl border border-black/20 bg-white px-4 font-normal outline-none focus:border-aura"></label>
+                  <div class="min-w-0" data-validation-field>
+                    <label class="mt-4 grid gap-2 text-sm font-semibold">Nom d’utilisateur Snapchat<input id="snapchat-username" disabled type="text" dir="ltr" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="16" pattern="@?[A-Za-z][A-Za-z0-9._\-]{1,13}[A-Za-z0-9]" placeholder="@tonpseudo" class="min-h-12 w-full rounded-xl border border-black/20 bg-white px-4 font-normal outline-none focus:border-aura"></label>
+                  </div>
                   <p class="mt-2 text-xs leading-5 text-black/60">Renseigne ton nom d’utilisateur Snapchat, pas ton nom d’affichage.</p>
                   <p class="my-4 text-sm leading-6">Ajoute @aura-stream sur Snapchat pour recevoir ton abonnement.</p><a class="inline-flex min-h-11 items-center rounded-xl bg-graphite px-4 text-sm font-bold text-white" href="https://www.snapchat.com/add/aura-stream" target="_blank" rel="noopener noreferrer">Ajouter @aura-stream</a>
-                  <label class="mt-4 flex items-start gap-3 text-sm"><input id="snapchat-friend-added" disabled type="checkbox" class="mt-1 h-4 w-4 accent-[#D93646]"><span>J’ai ajouté @aura-stream sur Snapchat et vérifié mon nom d’utilisateur.</span></label>
+                  <div class="min-w-0" data-validation-field>
+                    <label class="mt-4 flex items-start gap-3 text-sm"><input id="snapchat-friend-added" disabled type="checkbox" class="mt-1 h-4 w-4 accent-[#D93646]"><span>J’ai ajouté @aura-stream sur Snapchat et vérifié mon nom d’utilisateur.</span></label>
+                  </div>
                   <p class="mt-3 text-xs text-black/60">Aucun mot de passe Snapchat n’est demandé.</p>
                 </div>
                 <div id="spotify-credentials-panel" class="hidden rounded-2xl border border-[#D9C39F]/60 bg-[#FBF4E9] p-5 sm:col-span-2">
@@ -593,8 +605,12 @@
                     <p class="font-title text-sm font-bold">Identifiants Spotify requis avant paiement</p>
                   </div>
                   <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label class="grid gap-2 text-xs font-bold">E-mail du compte Spotify<input id="spotify-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="spotify@exemple.com"></label>
-                    <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="spotify-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                    <div class="min-w-0" data-validation-field>
+                      <label class="grid gap-2 text-xs font-bold">E-mail du compte Spotify<input id="spotify-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="spotify@exemple.com"></label>
+                    </div>
+                    <div class="min-w-0" data-validation-field>
+                      <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="spotify-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#D9C39F] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                    </div>
                   </div>
                   <p class="mt-3 text-xs leading-5 text-[#7A6040]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire et unique. Les informations sont chiffrées côté serveur, transmises à l’équipe uniquement après confirmation du paiement, puis supprimées après l’activation.</p>
                 </div>
@@ -604,8 +620,12 @@
                     <p class="font-title text-sm font-bold">Identifiants Crunchyroll requis avant paiement</p>
                   </div>
                   <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                    <label class="grid gap-2 text-xs font-bold">E-mail du compte Crunchyroll<input id="crunchyroll-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="crunchyroll@exemple.com"></label>
-                    <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="crunchyroll-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                    <div class="min-w-0" data-validation-field>
+                      <label class="grid gap-2 text-xs font-bold">E-mail du compte Crunchyroll<input id="crunchyroll-account-email" disabled autocomplete="username" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="crunchyroll@exemple.com"></label>
+                    </div>
+                    <div class="min-w-0" data-validation-field>
+                      <label class="grid gap-2 text-xs font-bold">Mot de passe temporaire<input id="crunchyroll-account-password" disabled autocomplete="new-password" class="min-h-12 rounded-xl border border-[#E7C8B0] bg-white px-4 text-sm font-normal text-graphite outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" maxlength="256" placeholder="Mot de passe temporaire"></label>
+                    </div>
                   </div>
                   <p class="mt-3 text-xs leading-5 text-[#8B5436]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire et unique. Les informations sont chiffrées côté serveur, transmises à l’équipe uniquement après confirmation du paiement, puis supprimées après l’activation.</p>
                 </div>
@@ -614,7 +634,7 @@
                   <span>J’accepte que mes données de commande soient utilisées pour mesurer les publicités Aura Stream sur Meta. Ce choix est facultatif.</span>
                 </label>
               </form>
-              <button id="to-payment" type="button" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">Continuer vers le paiement</button>
+              <button id="to-payment" type="submit" form="customer-form" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">Continuer vers le paiement</button>
             </section>
 
             <section id="checkout-payment" class="hidden" data-checkout-panel="2">
@@ -746,8 +766,12 @@
               <h2 class="font-title text-2xl font-extrabold">Bon retour !</h2>
               <p class="mt-2 text-sm text-black/60">Connecte-toi pour retrouver tes commandes.</p>
               <div class="mt-6 grid gap-5">
-                <label class="grid gap-2 text-sm font-semibold">Adresse e-mail<input id="signin-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com"></label>
-                <label class="grid gap-2 text-sm font-semibold">Mot de passe<input id="signin-password" required autocomplete="current-password" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" placeholder="••••••••"></label>
+                <div class="min-w-0" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">Adresse e-mail<input id="signin-email" required autocomplete="email" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="email" placeholder="vous@exemple.com"></label>
+                </div>
+                <div class="min-w-0" data-validation-field>
+                  <label class="grid gap-2 text-sm font-semibold">Mot de passe<input id="signin-password" required autocomplete="current-password" class="min-h-12 rounded-xl border border-black/15 bg-white px-4 font-normal outline-none focus:border-aura focus:ring-2 focus:ring-aura/20" type="password" placeholder="••••••••"></label>
+                </div>
                 <label class="flex items-center gap-3 text-sm"><input id="remember-me" class="h-4 w-4 accent-[#D93646]" type="checkbox" checked>Se souvenir de moi</label>
               </div>
               <button type="submit" class="mt-6 min-h-12 w-full rounded-xl bg-aura font-title text-sm font-bold text-white transition hover:bg-[#BE2E3D]">Se connecter</button>
@@ -836,20 +860,20 @@
       </section>
 
       <div id="admin-tabs" class="sticky top-16 z-30 hidden border-b border-black/10 bg-ivory/95 backdrop-blur-xl lg:top-[72px]">
-        <div class="admin-tabs-scroll mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8" role="tablist" aria-label="Sections administrateur">
-          <button class="admin-tab shrink-0 rounded-xl bg-graphite px-4 py-2.5 text-sm font-bold text-white" type="button" role="tab" aria-selected="true" data-admin-tab="overview"><i class="fa-solid fa-chart-line mr-2" aria-hidden="true"></i>Vue d’ensemble</button>
-          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="orders"><i class="fa-solid fa-receipt mr-2" aria-hidden="true"></i>Commandes</button>
-          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="stock"><i class="fa-solid fa-boxes-stacked mr-2" aria-hidden="true"></i>Stock Netflix</button>
-          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="promos"><i class="fa-solid fa-ticket mr-2" aria-hidden="true"></i>Codes promo</button>
-          <button class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="activity"><i class="fa-solid fa-shield-halved mr-2" aria-hidden="true"></i>Activité</button>
-          <button id="admin-partner-tab" class="admin-tab hidden shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="partners">Demandes Partenaires</button>
+        <div class="admin-tabs-scroll mx-auto flex max-w-7xl flex-wrap gap-2 px-4 py-3 sm:px-6 lg:px-8" role="tablist" aria-label="Sections administrateur">
+          <button id="admin-overview-tab" class="admin-tab shrink-0 rounded-xl bg-graphite px-4 py-2.5 text-sm font-bold text-white" type="button" role="tab" aria-selected="true" data-admin-tab="overview" aria-controls="admin-overview-panel" tabindex="0"><i class="fa-solid fa-chart-line mr-2" aria-hidden="true"></i>Vue d’ensemble</button>
+          <button id="admin-orders-tab" class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="orders" aria-controls="admin-orders-panel" tabindex="-1"><i class="fa-solid fa-receipt mr-2" aria-hidden="true"></i>Commandes</button>
+          <button id="admin-stock-tab" class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="stock" aria-controls="admin-stock-panel" tabindex="-1"><i class="fa-solid fa-boxes-stacked mr-2" aria-hidden="true"></i>Stock Netflix</button>
+          <button id="admin-promos-tab" class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="promos" aria-controls="admin-promos-panel" tabindex="-1"><i class="fa-solid fa-ticket mr-2" aria-hidden="true"></i>Codes promo</button>
+          <button id="admin-activity-tab" class="admin-tab shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 transition hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="activity" aria-controls="admin-activity-panel" tabindex="-1"><i class="fa-solid fa-shield-halved mr-2" aria-hidden="true"></i>Activité</button>
+          <button id="admin-partner-tab" class="admin-tab hidden shrink-0 rounded-xl px-4 py-2.5 text-sm font-bold text-black/55 hover:bg-black/5" type="button" role="tab" aria-selected="false" data-admin-tab="partners" aria-controls="admin-partners-panel" tabindex="-1">Demandes Partenaires</button>
         </div>
       </div>
 
       <div id="admin-data" class="mx-auto hidden max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <div id="admin-global-feedback" class="mb-6 hidden rounded-2xl border px-5 py-4 text-sm" role="alert"></div>
 
-        <section data-admin-panel="overview">
+        <section data-admin-panel="overview" id="admin-overview-panel" role="tabpanel" aria-labelledby="admin-overview-tab" tabindex="0">
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <article class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft">
               <div class="flex items-center justify-between"><p class="text-sm font-semibold text-black/60">Chiffre d’affaires</p><span class="grid h-10 w-10 place-items-center rounded-xl bg-green-50 text-green-700"><i class="fa-solid fa-coins" aria-hidden="true"></i></span></div>
@@ -901,7 +925,7 @@
           </div>
         </section>
 
-        <section class="hidden" data-admin-panel="orders">
+        <section class="hidden" data-admin-panel="orders" id="admin-orders-panel" role="tabpanel" aria-labelledby="admin-orders-tab" tabindex="0">
           <div class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-7">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -912,30 +936,24 @@
               <form id="admin-order-filters" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                 <label class="sr-only" for="admin-order-search">Rechercher</label>
                 <input id="admin-order-search" class="min-h-11 rounded-xl border border-black/15 px-3 text-sm outline-none focus:border-aura" type="search" placeholder="N° ou e-mail">
-                <div class="custom-select" data-custom-select>
-                  <input id="admin-order-service" type="hidden" value="">
-                  <button class="custom-select-trigger" type="button" role="combobox" aria-controls="admin-service-options" aria-expanded="false" aria-haspopup="listbox"><span>Tous les services</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
-                  <div id="admin-service-options" class="custom-select-options hidden" role="listbox" aria-label="Filtrer par service">
-                    <button type="button" role="option" aria-selected="true" data-value="">Tous les services</button>
-                    <button type="button" role="option" aria-selected="false" data-value="Netflix">Netflix</button>
-                    <button type="button" role="option" aria-selected="false" data-value="Spotify">Spotify</button>
-                    <button type="button" role="option" aria-selected="false" data-value="Crunchyroll">Crunchyroll</button>
-                    <button type="button" role="option" aria-selected="false" data-value="Snapchat">Snapchat+</button>
-                  </div>
-                </div>
-                <div class="custom-select" data-custom-select>
-                  <input id="admin-order-status" type="hidden" value="">
-                  <button class="custom-select-trigger" type="button" role="combobox" aria-controls="admin-status-options" aria-expanded="false" aria-haspopup="listbox"><span>Tous les statuts</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>
-                  <div id="admin-status-options" class="custom-select-options hidden" role="listbox" aria-label="Filtrer par statut">
-                    <button type="button" role="option" aria-selected="true" data-value="">Tous les statuts</button>
-                    <button type="button" role="option" aria-selected="false" data-value="pending">En attente</button>
-                    <button type="button" role="option" aria-selected="false" data-value="active">Activé</button>
-                    <button type="button" role="option" aria-selected="false" data-value="completed">Terminé</button>
-                    <button type="button" role="option" aria-selected="false" data-value="cancelled">Annulé</button>
-                    <button type="button" role="option" aria-selected="false" data-value="expiring">Expire sous 3 jours</button>
-                    <button type="button" role="option" aria-selected="false" data-value="disconnect">À déconnecter</button>
-                  </div>
-                </div>
+                <label class="sr-only" for="admin-order-service">Filtrer par service</label>
+                <select id="admin-order-service" class="w-full text-sm">
+                  <option value="">Tous les services</option>
+                  <option value="Netflix">Netflix</option>
+                  <option value="Spotify">Spotify</option>
+                  <option value="Crunchyroll">Crunchyroll</option>
+                  <option value="Snapchat">Snapchat+</option>
+                </select>
+                <label class="sr-only" for="admin-order-status">Filtrer par statut</label>
+                <select id="admin-order-status" class="w-full text-sm">
+                  <option value="">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="active">Activé</option>
+                  <option value="completed">Terminé</option>
+                  <option value="cancelled">Annulé</option>
+                  <option value="expiring">Expire sous 3 jours</option>
+                  <option value="disconnect">À déconnecter</option>
+                </select>
                 <button class="min-h-11 rounded-xl bg-graphite px-4 text-sm font-bold text-white transition hover:bg-aura" type="submit">Filtrer</button>
               </form>
             </div>
@@ -948,7 +966,7 @@
           </div>
         </section>
 
-        <section class="hidden" data-admin-panel="stock">
+        <section class="hidden" data-admin-panel="stock" id="admin-stock-panel" role="tabpanel" aria-labelledby="admin-stock-tab" tabindex="0">
           <div class="grid gap-6 lg:grid-cols-[380px_1fr]">
             <form id="admin-stock-form" class="h-fit rounded-2xl bg-graphite p-5 text-ivory shadow-soft sm:p-7">
               <p class="text-xs font-bold uppercase tracking-[0.14em] text-sand">Netflix Premium</p>
@@ -971,9 +989,9 @@
           </div>
         </section>
 
-        <dialog id="admin-stock-dialog" class="admin-stock-dialog m-auto w-[min(94vw,660px)] rounded-3xl border border-black/10 bg-white p-0 text-graphite shadow-2xl">
+        <dialog id="admin-stock-dialog" aria-labelledby="admin-stock-dialog-title" class="admin-stock-dialog m-auto w-[min(94vw,660px)] rounded-3xl border border-black/10 bg-white p-0 text-graphite shadow-2xl">
           <form id="admin-stock-edit-form" class="max-h-[88vh] overflow-y-auto p-5 sm:p-7">
-            <div class="flex items-start justify-between gap-4 border-b border-black/10 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.14em] text-aura">Stock Netflix</p><h2 class="mt-2 font-title text-2xl font-extrabold">Modifier le compte</h2><p class="mt-1 text-sm text-black/60">L’accès au compte se fait uniquement par code OTP.</p></div><button id="admin-stock-dialog-close" class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/10 text-black/55 transition hover:border-aura hover:text-aura" type="button" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+            <div class="flex items-start justify-between gap-4 border-b border-black/10 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.14em] text-aura">Stock Netflix</p><h2 id="admin-stock-dialog-title" class="mt-2 font-title text-2xl font-extrabold">Modifier le compte</h2><p class="mt-1 text-sm text-black/60">L’accès au compte se fait uniquement par code OTP.</p></div><button id="admin-stock-dialog-close" autofocus class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/10 text-black/55 transition hover:border-aura hover:text-aura" type="button" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
             <input name="id" type="hidden">
             <div class="mt-6 grid gap-4">
               <label class="grid gap-2 text-xs font-bold">E-mail du compte<input name="account_email" required autocomplete="off" class="min-h-12 rounded-xl border border-black/15 bg-ivory px-4 text-sm font-normal outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/15" type="email"></label>
@@ -988,9 +1006,9 @@
           </form>
         </dialog>
 
-        <dialog id="admin-assignment-dialog" class="admin-stock-dialog m-auto w-[min(94vw,660px)] rounded-3xl border border-black/10 bg-white p-0 text-graphite shadow-2xl">
+        <dialog id="admin-assignment-dialog" aria-labelledby="admin-assignment-dialog-title" class="admin-stock-dialog m-auto w-[min(94vw,660px)] rounded-3xl border border-black/10 bg-white p-0 text-graphite shadow-2xl">
           <form id="admin-assignment-form" class="max-h-[88vh] overflow-y-auto p-5 sm:p-7">
-            <div class="flex items-start justify-between gap-4 border-b border-black/10 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.14em] text-aura">Stock Netflix</p><h2 class="mt-2 font-title text-2xl font-extrabold">Attribution manuelle</h2><p class="mt-1 text-sm text-black/60">Choisis la commande payée qui doit recevoir ce profil.</p></div><button id="admin-assignment-dialog-close" class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/10 text-black/55 transition hover:border-aura hover:text-aura" type="button" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+            <div class="flex items-start justify-between gap-4 border-b border-black/10 pb-5"><div><p class="text-xs font-bold uppercase tracking-[0.14em] text-aura">Stock Netflix</p><h2 id="admin-assignment-dialog-title" class="mt-2 font-title text-2xl font-extrabold">Attribution manuelle</h2><p class="mt-1 text-sm text-black/60">Choisis la commande payée qui doit recevoir ce profil.</p></div><button id="admin-assignment-dialog-close" autofocus class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/10 text-black/55 transition hover:border-aura hover:text-aura" type="button" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
             <input name="inventory_id" type="hidden">
             <div class="mt-6 grid gap-3"><label for="admin-assignment-order" class="text-xs font-bold">Commande à servir</label><select id="admin-assignment-order" name="order_id" required class="min-h-12 w-full rounded-xl border border-black/15 bg-ivory px-4 text-sm outline-none transition focus:border-aura focus:ring-2 focus:ring-aura/15"><option value="">Chargement des commandes…</option></select><p id="admin-assignment-empty" class="hidden rounded-xl bg-sand/15 px-4 py-3 text-xs leading-5 text-[#7A4B20]">Aucune commande Netflix payée n’attend actuellement ce profil.</p></div>
             <p id="admin-assignment-feedback" class="mt-4 hidden rounded-xl px-4 py-3 text-sm" role="status"></p>
@@ -998,7 +1016,7 @@
           </form>
         </dialog>
 
-        <section class="hidden" data-admin-panel="promos">
+        <section class="hidden" data-admin-panel="promos" id="admin-promos-panel" role="tabpanel" aria-labelledby="admin-promos-tab" tabindex="0">
           <div class="grid gap-6 lg:grid-cols-[380px_1fr]">
             <form id="admin-promo-form" class="h-fit rounded-2xl bg-graphite p-5 text-ivory shadow-soft sm:p-7">
               <p class="text-xs font-bold uppercase tracking-[0.14em] text-sand">Acquisition</p>
@@ -1026,7 +1044,7 @@
           </div>
         </section>
 
-        <section class="hidden" data-admin-panel="partners">
+        <section class="hidden" data-admin-panel="partners" id="admin-partners-panel" role="tabpanel" aria-labelledby="admin-partner-tab" tabindex="0">
           <section class="mb-6 rounded-2xl border border-black/10 bg-white p-5">
             <h2 class="mb-3 font-title text-xl font-extrabold">Assistance partenaires</h2>
             <div id="admin-partner-support"></div>
@@ -1034,10 +1052,10 @@
           <h2 class="mb-4 font-title text-xl font-extrabold">Demandes Partenaires</h2>
           <div id="admin-partner-content" aria-live="polite"></div>
         </section>
-        <section class="hidden" data-admin-panel="activity">
+        <section class="hidden" data-admin-panel="activity" id="admin-activity-panel" role="tabpanel" aria-labelledby="admin-activity-tab" tabindex="0">
           <div class="rounded-2xl border border-black/10 bg-white p-5 shadow-soft sm:p-7">
             <div><h2 class="font-title text-2xl font-extrabold">Journal d’activité</h2><p class="mt-1 text-sm text-black/60">Actions administrateur importantes, sans données sensibles.</p></div>
-            <div id="admin-audit-list" class="mt-6 grid gap-3"></div>
+            <div id="admin-audit-list" class="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3"></div>
           </div>
         </section>
       </div>

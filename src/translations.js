@@ -1028,6 +1028,13 @@ const phrases = [
   ["Vérifie les informations de la demande.", "Check the request details.", "تحقق من تفاصيل طلب الدعم."],
   ["Prix de revente invalide.", "Invalid resale price.", "سعر إعادة البيع غير صالح."],
   ["Préférence invalide.", "Invalid preference.", "التفضيل غير صالح."],
+  ["Statut de la commande {reference}", "Order status for {reference}", "حالة الطلب {reference}"],
+  ["Renseigne ce champ.", "Fill in this field.", "املأ هذا الحقل."],
+  ["Saisis une adresse e-mail valide.", "Enter a valid email address.", "أدخل بريدًا إلكترونيًا صالحًا."],
+  ["Saisis un nom d’utilisateur Snapchat valide.", "Enter a valid Snapchat username.", "أدخل اسم مستخدم صالحًا على Snapchat."],
+  ["Confirme l’ajout de @aura-stream.", "Confirm that you added @aura-stream.", "أكّد أنك أضفت @aura-stream."],
+  ["Vérifie le format de ce champ.", "Check the format of this field.", "تحقّق من صيغة هذا الحقل."],
+  ["Snapchat+", "Snapchat+", "Snapchat+"],
 ];
 
 export const TRANSLATIONS = {

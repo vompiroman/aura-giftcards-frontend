@@ -22,7 +22,26 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
   --menu-selected-text: #F6F2EC;
   --menu-shadow: 0 18px 45px rgb(25 26 31 / .16);
   --menu-ring: 0 0 0 3px rgb(217 54 70 / .14);
+  --support-link-on-dark: #F47C87;
+  --placeholder-text: #6B6663;
 }
+
+#main-content { scroll-margin-block-start: 4.75rem; }
+.support-strip-link {
+  color: var(--support-link-on-dark);
+  text-decoration-color: currentColor;
+}
+:is(input, textarea)::placeholder {
+  color: var(--placeholder-text);
+  opacity: 1;
+}
+.form-field-error {
+  margin-block-start: .5rem;
+  color: var(--menu-hover-text);
+  font-size: .875rem;
+  font-weight: 500;
+}
+[data-validation-field] [aria-invalid="true"] { border-color: var(--menu-hover-text); }
 
 /* Arabic is a first-class layout, not a mirrored afterthought. */
 html[lang="ar"] body,
@@ -173,7 +192,7 @@ html[lang="ar"] .language-menu-current { font-family: "Tajawal", sans-serif; fon
   pointer-events: none;
   transform: translateY(-.4rem) scale(.98);
   transform-origin: top right;
-  transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+  transition: opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
 }
 .language-menu-panel::before {
   position: absolute;
@@ -187,6 +206,7 @@ html[lang="ar"] .language-menu-current { font-family: "Tajawal", sans-serif; fon
 html[dir="rtl"] .language-menu-panel { transform-origin: top left; }
 .language-menu[data-open="true"] .language-menu-panel {
   visibility: visible;
+  transition-delay: 0s;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);
@@ -266,9 +286,10 @@ html[lang="ar"] .language-menu-title { letter-spacing: 0; text-transform: none; 
   padding-block: 0;
   box-shadow: none;
   transform: translateY(-.25rem);
-  transition: max-height .2s ease, margin-top .2s ease, padding .2s ease, opacity .16s ease, transform .16s ease, visibility .16s ease;
+  transition: max-height .2s ease, margin-top .2s ease, padding .2s ease, opacity .16s ease, transform .16s ease, visibility 0s linear .16s;
 }
 .language-menu-mobile[data-open="true"] .language-menu-panel {
+  transition-delay: 0s;
   max-height: 15rem;
   border-width: 1px;
   margin-top: .5rem;
@@ -418,15 +439,18 @@ body[data-route="cart"] .whatsapp-float,
 body[data-route="order"] .whatsapp-float,
 body[data-route="login"] .whatsapp-float,
 body[data-route="admin"] .whatsapp-float { display: none; }
-.admin-tabs-scroll {
-  overscroll-behavior-inline: contain;
-  scrollbar-width: none;
-  scroll-snap-type: inline proximity;
+.admin-tab {
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
 }
-.admin-tabs-scroll::-webkit-scrollbar { display: none; }
-.admin-tabs-scroll .admin-tab { scroll-snap-align: start; }
+.admin-tab:focus-visible {
+  outline: 2px solid var(--menu-hover-text);
+  outline-offset: 2px;
+}
+@media (max-width: 639px) {
+  #admin-tabs { position: static; }
+}
 select:not([multiple]):not([size]),
-.custom-select-trigger,
 details > summary {
   min-block-size: 2.75rem;
   border: 1px solid var(--menu-border);
@@ -453,11 +477,10 @@ html[dir="rtl"] select:not([multiple]):not([size]) {
   background-position: left .875rem center, left 1.2rem center;
 }
 select:not([multiple]):not([size]):disabled { cursor: not-allowed; opacity: .6; }
-:is(select:not([multiple]):not([size]):enabled, .custom-select-trigger, details > summary):hover {
+:is(select:not([multiple]):not([size]):enabled, details > summary):hover {
   border-color: rgb(217 54 70 / .65);
 }
-:is(select:not([multiple]):not([size]), .custom-select-trigger, details > summary):focus-visible,
-.custom-select-trigger[aria-expanded="true"] {
+:is(select:not([multiple]):not([size]), details > summary):focus-visible {
   border-color: var(--menu-accent);
   box-shadow: var(--menu-ring);
   outline: 2px solid transparent;
@@ -537,31 +560,11 @@ details[open] > summary::after { transform: rotate(225deg); }
 }
 @media (forced-colors: active) {
   select:not([multiple]):not([size]) { appearance: auto; background-image: none; }
-  :is(select:not([multiple]):not([size]), .custom-select-trigger, details > summary):focus-visible {
+  :is(select:not([multiple]):not([size]), details > summary):focus-visible {
     outline-color: Highlight;
   }
   details > summary::after { border-color: ButtonText; }
 }
-.custom-select { position: relative; min-width: 0; }
-.custom-select-trigger {
-  display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem;
-  padding: .625rem .875rem; font-size: .875rem;
-}
-.custom-select-trigger i { color: rgb(35 36 42 / .5); font-size: .75rem; transition: transform .2s; }
-.custom-select-trigger[aria-expanded="true"] i { transform: rotate(180deg); }
-.custom-select-options {
-  position: absolute; z-index: 60; top: calc(100% + .5rem); left: 0; right: 0; overflow: hidden;
-  border: 1px solid var(--menu-border); border-radius: .9rem; background: var(--menu-surface); padding: .35rem;
-  box-shadow: var(--menu-shadow);
-}
-.custom-select-options button {
-  display: flex; width: 100%; min-height: 2.75rem; align-items: center; border-radius: .65rem;
-  padding: .55rem .7rem; color: var(--menu-text); font-size: .875rem; text-align: start;
-  transition: background-color .15s, color .15s;
-}
-.custom-select-options button:hover,
-.custom-select-options button:focus-visible { background: var(--menu-hover); color: var(--menu-hover-text); outline: none; }
-.custom-select-options button[aria-selected="true"] { background: var(--menu-selected); color: var(--menu-selected-text); font-weight: 700; }
 .filter-btn, .admin-tab, .admin-open-tab, .admin-toggle-promo, .admin-delete-stock { transition: color .2s, background-color .2s, border-color .2s, box-shadow .2s, transform .2s; }
 .filter-btn:hover { border-color: #D93646; color: #D93646; transform: translateY(-1px); }
 .filter-btn[aria-pressed="true"]:hover { color: #F6F2EC; background: #23242A; }
