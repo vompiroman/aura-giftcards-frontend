@@ -47,7 +47,6 @@ test("mesure consentie seule, persistante au rechargement et révocable", async 
     await accept.waitFor();
     assert.equal(events.length, 0);
     await page.locator("#preferences-checkout").check();
-    assert.equal(await page.locator("#preferences-meta").isChecked(), false);
     await accept.click();
     await page.locator(".landing-add-product:visible").first().dblclick();
     await page.locator("#header-cart-button").click();
@@ -58,18 +57,65 @@ test("mesure consentie seule, persistante au rechargement et révocable", async 
     await page.locator("#signin-form button[type=submit]").click();
     await page.locator("#to-payment").click();
     await page.locator("#checkout-payment").waitFor();
-    await page.waitForFunction(() => JSON.parse(sessionStorage.getItem("aura_checkout_journey")).seen.length === 6);
+    await page.locator("#back-to-information").click();
+    await page.locator("#to-payment").click();
+    await page.locator("#checkout-payment").waitFor();
+    await page.waitForFunction(() => !sessionStorage.getItem("aura_checkout_outbox"));
     assert.deepEqual(events.map(event => event.stage), [
       "product_view", "add_to_cart", "cart_view", "login_view", "customer_info", "summary_view",
     ]);
     assert.equal(new Set(events.map(event => event.journey_id)).size, 1);
-    assert.ok(events.every(event => Object.keys(event).length === 3 && event.services.join() === "netflix"));
+    assert.ok(events.every(event => Object.keys(event).length === 4
+      && Number.isInteger(event.occurred_at) && event.services.join() === "netflix"));
     await page.locator("#open-cookie-preferences").click();
     await page.locator("#decline-marketing").click();
     assert.equal(await page.evaluate(() => sessionStorage.getItem("aura_checkout_journey")), null);
     await page.goto(server.origin + "/spotify-family-algerie");
     await page.locator(".landing-add-product:visible").first().click();
     assert.equal(events.length, 6);
+  } finally {
+    await context.close();
+  }
+});
+
+test("aucun transport Meta, aucune étape créée sur les pages privées et reprise après 503", async () => {
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    localStorage.setItem("aura_marketing_consent", JSON.stringify({ status: "granted", version: "2026-07-26" }));
+    localStorage.setItem("aura_checkout_measurement", "true");
+  });
+  const attempts = [], external = [];
+  await context.route("**/*", route => {
+    const url = new URL(route.request().url());
+    if (url.origin !== server.origin) {
+      external.push(url.hostname);
+      return route.abort();
+    }
+    if (url.pathname === "/api/checkout-funnel") {
+      attempts.push(route.request().postDataJSON());
+      return route.fulfill({ status: attempts.length === 1 ? 503 : 204 });
+    }
+    if (url.pathname === "/api/reset-password") return route.fulfill({ status: 400, json: {} });
+    return route.continue();
+  });
+  try {
+    const page = await context.newPage();
+    await page.goto(server.origin + "/netflix-algerie?utm_content=fixture%40example.invalid");
+    await page.locator(".landing-add-product:visible").first().click();
+    await page.waitForFunction(() => JSON.parse(sessionStorage.getItem("aura_checkout_outbox"))?.length === 2);
+    await page.reload();
+    await page.waitForFunction(() => !sessionStorage.getItem("aura_checkout_outbox"));
+    assert.deepEqual(attempts.map(e => e.stage), ["product_view", "product_view", "add_to_cart"]);
+    assert.deepEqual(attempts[0], attempts[1]);
+    for (const path of ["/#login", "/#order", "/#partner", "/#admin", "/?token_hash=fake-recovery-token&type=recovery"]) {
+      await page.goto(server.origin + path);
+      await page.waitForFunction(() => Boolean(document.body.dataset.route));
+    }
+    assert.equal(attempts.length, 3);
+    assert.deepEqual(external, []);
+    assert.equal(await page.evaluate(() => typeof window.fbq), "undefined");
+    assert.equal(await page.evaluate(() => localStorage.getItem("aura_marketing_consent")), null);
+    assert.doesNotMatch(JSON.stringify(attempts), /@|email|password|token_hash/);
   } finally {
     await context.close();
   }
@@ -112,9 +158,17 @@ test("les deux durées Netflix décrivent le stock réel sans modifier le prix d
 
 test("l’admin voit les étapes et les paiements rapprochés sans débordement en arabe", async () => {
   const context = await browser.newContext({ locale: "ar-DZ", viewport: { width: 320, height: 844 } });
+  const measurementRequests = [];
+  await context.addInitScript(() => {
+    localStorage.setItem("aura_marketing_consent", JSON.stringify({ status: "granted", version: "2026-07-26" }));
+    localStorage.setItem("aura_checkout_measurement", "true");
+  });
   await context.route("**/*", route => {
     const url = new URL(route.request().url());
-    if (url.origin !== server.origin) return route.abort();
+    if (url.origin !== server.origin || url.pathname === "/api/checkout-funnel") {
+      measurementRequests.push(url.pathname);
+      return route.abort();
+    }
     if (url.pathname === "/api/session") {
       return route.fulfill({ json: { authenticated: true, user: {
         id: "admin-fixture", email: "admin@example.invalid", is_admin: true,
@@ -129,11 +183,11 @@ test("l’admin voit les étapes et les paiements rapprochés sans débordement 
   try {
     const page = await context.newPage();
     await page.goto(server.origin + "/#admin");
-    await page.locator("#decline-marketing").click();
     await page.locator("#admin-funnel-results h3").waitFor();
     assert.match(await page.locator("#admin-funnel-results").innerText(), /Netflix Premium[\s\S]*5 \/ 9/);
     assert.match(await page.locator("#admin-funnel-status").innerText(), /5 \/ 11/);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 320);
+    assert.deepEqual(measurementRequests, []);
   } finally {
     await context.close();
   }

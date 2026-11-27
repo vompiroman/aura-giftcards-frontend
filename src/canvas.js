@@ -1,10 +1,3 @@
-import {
-  META_CONSENT_VERSION,
-  getMetaMarketingConsent,
-  initializeMetaPixel,
-  setMetaMarketingConsent,
-  trackMeta,
-} from "./meta.js";
 import { clearAuthSession, readRecoveryLocation, recoveryRouteHash } from "./session.js";
 import { createSessionRecovery } from "./session-recovery.js";
 import { authenticatedRequest } from "./authenticated-request.js";
@@ -38,7 +31,6 @@ function captureRecoveryLocation() {
   recoveryRequested = recovery;
   capturedRecoveryToken = token;
   if (sensitive) {
-    window.__auraSensitiveAuthFlow = true;
     if (window.location.hash !== recoveryRouteHash || window.location.search) {
       window.history.replaceState({}, document.title, window.location.pathname + (recovery ? recoveryRouteHash : "#login"));
     }
@@ -57,23 +49,21 @@ const views = [...document.querySelectorAll("[data-view]")];
     const adminLinks = [...document.querySelectorAll(".admin-link")];
     const sessionSignoutButtons = [...document.querySelectorAll(".session-signout")];
 const profileSaveStatus = document.getElementById("profile-save-status");
-const marketingConsentInput = document.getElementById("marketing-consent");
 const marketingConsentBanner = document.getElementById("marketing-consent-banner");
 const funnel = createCheckoutFunnel({
   settings: localStorage,
   session: sessionStorage,
   uuid: () => crypto.randomUUID(),
-  send: async payload => (await fetch("/api/checkout-funnel", {
+  send: async (payload, signal) => (await fetch("/api/checkout-funnel", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "omit",
     referrerPolicy: "no-referrer",
     keepalive: true,
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]),
     body: JSON.stringify(payload),
   })).ok,
 });
-const bannerMarketing = document.getElementById("preferences-meta");
 const bannerMeasurement = document.getElementById("preferences-checkout");
 let consentOpener = null;
     // Keep authentication same-origin. Vercel and the local Vite server proxy
@@ -149,15 +139,7 @@ let consentOpener = null;
           return;
         }
         if (activeRoute === "admin" && result.user.is_admin === true) void loadAdminDashboard();
-        else if (activeRoute === "order") {
-          const walletOrder = sessionStorage.getItem("aura_wallet_order_notice");
-          if (walletOrder) {
-            sessionStorage.removeItem("aura_wallet_order_notice");
-            highlightedOrderId = walletOrder;
-            showToast("Commande réglée avec ton portefeuille.");
-          }
-          void loadMyOrders();
-        }
+        else if (activeRoute === "order") void loadMyOrders();
         if (activeRoute === "login" && !recoveryRequested) {
           showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order", undefined, { replace: true });
         }
@@ -207,40 +189,29 @@ const netflixLoginRequests = new Map();
       window.setTimeout(warmApiConnection, 0);
     }
 
-const storedMarketingConsent = getMetaMarketingConsent();
-if (marketingConsentInput) {
-  marketingConsentInput.checked = storedMarketingConsent?.status === "granted";
-  marketingConsentInput.addEventListener("change", () => {
-    setMetaMarketingConsent(marketingConsentInput.checked);
-    if (marketingConsentInput.checked) trackLandingView(activeRoute);
-    bannerMarketing.checked = marketingConsentInput.checked;
-  });
-}
-if (storedMarketingConsent) initializeMetaPixel();
+try {
+  localStorage.removeItem("aura_marketing_consent");
+  localStorage.removeItem("aura_marketing_attribution");
+} catch { /* Browser storage can be blocked. */ }
 function openConsentPreferences() {
-  bannerMarketing.checked = getMetaMarketingConsent()?.status === "granted";
   bannerMeasurement.checked = funnel.consent() === true;
   marketingConsentBanner.classList.remove("hidden");
 }
-function saveConsentPreferences(marketing, measurement) {
-  setMetaMarketingConsent(marketing);
+function saveConsentPreferences(measurement) {
   funnel.setConsent(measurement);
-  if (marketingConsentInput) marketingConsentInput.checked = marketing;
-  marketingConsentBanner?.classList.add("hidden");
-  if (marketing) trackLandingView(activeRoute);
+  marketingConsentBanner.classList.add("hidden");
   if (measurement) recordCheckoutView();
   consentOpener?.focus({ preventScroll: true });
   consentOpener = null;
 }
-if (!storedMarketingConsent || funnel.consent() === null) openConsentPreferences();
+if (funnel.consent() === null) openConsentPreferences();
 document.getElementById("open-cookie-preferences").addEventListener("click", event => {
   consentOpener = event.currentTarget;
   openConsentPreferences();
-  bannerMarketing.focus();
+  bannerMeasurement.focus();
 });
-document.getElementById("accept-marketing")?.addEventListener("click", () =>
-  saveConsentPreferences(bannerMarketing.checked, bannerMeasurement.checked));
-document.getElementById("decline-marketing")?.addEventListener("click", () => saveConsentPreferences(false, false));
+document.getElementById("accept-marketing").addEventListener("click", () => saveConsentPreferences(bannerMeasurement.checked));
+document.getElementById("decline-marketing").addEventListener("click", () => saveConsentPreferences(false));
 marketingConsentBanner.addEventListener("keydown", event => {
   if (event.key !== "Escape" || !consentOpener) return;
   marketingConsentBanner.classList.add("hidden");
@@ -340,7 +311,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
     activeRenewalOffer = renewalOrderId ? loadSavedRenewalOffer() : null;
     let activeRoute = "home";
     let renderedLocation = "";
-    let lastTrackedLanding = "";
     let netflixAvailability;
     let availabilityCheckedAt = 0;
     let checkingAvailability = false;
@@ -388,21 +358,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
         }));
         document.head.append(schema);
       }
-    }
-
-    function trackLandingView(route) {
-      const landing = landingRoutes[route];
-      if (!landing || lastTrackedLanding === route) return false;
-      const tracked = trackMeta("ViewContent", {
-        content_name: landing.product,
-        content_category: "Streaming",
-        content_type: "product",
-        content_ids: [landing.product],
-        value: landing.offers[0][1],
-        currency: "DZD",
-      });
-      if (tracked) lastTrackedLanding = route;
-      return tracked;
     }
 
     async function refreshNetflixAvailability() {
@@ -553,7 +508,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
       if (accountChanged) {
         authRevision += 1;
         if (currentUser) {
-          funnel.reset();
+          funnel.reset({ discard: true });
           setRenewalOrderId(null);
           sessionStorage.removeItem("aura_partner_checkout_attempt");
         }
@@ -566,7 +521,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
         pendingProfileSave = null;
         checkoutProfileSubmit = null;
         document.getElementById("to-payment").disabled = false;
-        setCheckoutStep(1, { scroll: false });
+        setCheckoutStep(1, { scroll: false, measure: false });
         pendingPaymentAttempt = null;
         clearPromo();
       }
@@ -576,7 +531,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
         netflixLoginRequests.clear();
       }
       currentUser = user || null;
-      if (currentUser && activeRoute === "cart") recordCheckoutView();
       if (partnerUI) void partnerUI.refresh({force:true}).catch(()=>undefined);
       if (currentUser) sessionRecovery.resume();
       const authenticated = Boolean(currentUser);
@@ -590,6 +544,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
       const adminIdentity = document.getElementById("admin-identity");
       if (adminIdentity) adminIdentity.textContent = isAdminUser ? `Connecté en tant que ${currentUser.email || t("administrateur")}` : "";
       syncCheckoutAccess();
+      if (activeRoute === "cart") recordCheckoutView();
       if (!authenticated) return;
 
       const metadata = currentUser.user_metadata || {};
@@ -1179,20 +1134,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
       }
       if (route === "products") applyProductFilter("all");
       if (route === "login" && !recoveryRequested) showAuthPanel("signin");
-      if (
-        ["login", "order", "admin", "partner"].includes(route)
-        && window.__metaPixelInitialized
-        && !window.__auraSensitiveAuthFlow
-      ) {
-        window.__auraSensitiveAuthFlow = true;
-        persistCart();
-        const privateUrl = new URL(window.location.origin + window.location.pathname);
-        privateUrl.searchParams.set("account", "1");
-        privateUrl.hash = route;
-        if (replace) window.location.replace(privateUrl.toString());
-        else window.location.assign(privateUrl.toString());
-        return;
-      }
       if (route === "admin" && currentUser && currentUser.is_admin !== true) {
         showToast("Accès administrateur requis");
         route = "home";
@@ -1219,7 +1160,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
       updateRouteMetadata(route);
       updateMobileCartBar();
 
-      trackLandingView(route);
       if (route !== "cart") recordCheckoutView();
       if (route === "landing-netflix") void refreshNetflixAvailability();
       if (route === "order") loadMyOrders();
@@ -1324,13 +1264,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
       clearPromo();
       updateCart();
       showToast(`${item.name} ajouté au panier`);
-      trackMeta("AddToCart", {
-        value: item.price,
-        currency: "DZD",
-        content_type: "product",
-        content_ids: [apiProductName(item)],
-        contents: [{ id: apiProductName(item), quantity: 1 }],
-      });
       if (button) {
         const original = button.textContent;
         button.textContent = t("Ajouté !");
@@ -1498,14 +1431,11 @@ marketingConsentBanner.addEventListener("keydown", event => {
         void funnel.track("product_view", [landing.service]);
         return;
       }
-      if (!cart.length) return;
+      if (activeRoute !== "cart" || !cart.length) return;
       const products = cart.map(item => item.service);
-      if (activeRoute === "login" && !recoveryRequested && !currentUser) {
-        void funnel.track("login_view", products);
-      } else if (activeRoute === "cart") {
-        void funnel.track("cart_view", products);
-        if (currentUser) void funnel.track(currentCheckoutStep === 2 ? "summary_view" : "customer_info", products);
-      }
+      void funnel.track("cart_view", products);
+      if (currentUser) void funnel.track(currentCheckoutStep === 2 ? "summary_view" : "customer_info", products);
+      else if (!sessionCheckPending) void funnel.track("login_view", products);
     }
 
     function syncCheckoutAccess() {
@@ -1516,10 +1446,10 @@ marketingConsentBanner.addEventListener("keydown", event => {
       });
     }
 
-    function setCheckoutStep(step, { scroll = true } = {}) {
+    function setCheckoutStep(step, { scroll = true, measure = true } = {}) {
       currentCheckoutStep = step;
       syncCheckoutAccess();
-      recordCheckoutView();
+      if (measure) recordCheckoutView();
       document.querySelectorAll("[data-step-indicator]").forEach(indicator => {
         indicator.classList.toggle("opacity-40", Number(indicator.dataset.stepIndicator) > step);
       });
@@ -1562,13 +1492,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
         return;
       }
       if (lastSavedProfile !== JSON.stringify(checkoutProfileData())) return;
-      trackMeta("InitiateCheckout", {
-        value: activeRenewalOffer?.total ?? activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
-        currency: "DZD",
-        content_type: "product",
-        content_ids: cart.map(apiProductName),
-        num_items: cart.length,
-      });
       setCheckoutStep(2);
     });
 
@@ -1603,8 +1526,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
       try {
         const orderPayload = {
           items: cart.map(item => ({ name: apiProductName(item), quantity: 1 })),
-          marketing_consent: marketingConsentInput?.checked === true,
-          marketing_consent_version: marketingConsentInput?.checked === true ? META_CONSENT_VERSION : undefined,
           promo_code: activePromo?.code || undefined,
           customer_whatsapp: document.getElementById("customer-whatsapp")?.value.trim() || undefined,
           activation_credentials: checkoutActivationCredentials(),
@@ -1657,9 +1578,6 @@ marketingConsentBanner.addEventListener("keydown", event => {
           setRenewalOffer(null);
           updateCart();
           void partnerUI.refresh({force:true}).catch(()=>undefined);
-          if (window.__metaPixelInitialized && !window.__auraSensitiveAuthFlow) {
-            sessionStorage.setItem("aura_wallet_order_notice", activeOrderId);
-          }
           showRoute("order");
           showToast("Commande réglée avec ton portefeuille.");
           return;
@@ -1924,9 +1842,10 @@ marketingConsentBanner.addEventListener("keydown", event => {
       product_view: "Fiche → ajout au panier",
       add_to_cart: "Ajout → ouverture du panier",
       cart_view: "Panier → connexion ou coordonnées",
-      login_view: "Connexion → coordonnées",
+      login_view: "Connexion requise → coordonnées",
       customer_info: "Coordonnées → récapitulatif",
-      summary_view: "Récapitulatif → paiement confirmé",
+      summary_view: "Récapitulatif → paiement préparé",
+      payment_prepared: "Paiement préparé → paiement confirmé",
     };
     let adminFunnelLoad = 0;
 
@@ -3215,8 +3134,13 @@ marketingConsentBanner.addEventListener("keydown", event => {
     });
     updateCart();
     showLocationRoute();
+    void funnel.flush();
+    window.addEventListener("storage", () => funnel.syncConsent());
     void sessionRecovery.check();
-    window.addEventListener("online", () => { void sessionRecovery.check({ force: true }); });
+    window.addEventListener("online", () => {
+      void sessionRecovery.check({ force: true });
+      void funnel.flush();
+    });
     window.addEventListener("focus", () => { void sessionRecovery.check(); });
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") void sessionRecovery.check();
