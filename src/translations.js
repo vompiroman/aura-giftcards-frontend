@@ -694,6 +694,8 @@ const phrases = [
   ["Le montant du paiement n'a pas pu être vérifié.", "The payment amount could not be verified.", "تعذر التحقق من مبلغ الدفع."],
   ["Le montant vérifié ne correspond pas à la commande.", "The verified amount does not match the order.", "المبلغ المتحقق منه لا يطابق الطلب."],
   ["Le nouveau mot de passe doit contenir 12 à 128 caractères.", "The new password must contain 12 to 128 characters.", "يجب أن تتكون كلمة المرور الجديدة من 12 إلى 128 حرفاً."],
+  ["Vérification du lien de réinitialisation…", "Checking the password reset link…", "جارٍ التحقق من رابط إعادة التعيين…"],
+  ["Réessayer", "Try again", "إعادة المحاولة"],
   ["Le paiement ne peut pas être initialisé. Contactez le support.", "Payment cannot be started. Contact support.", "لا يمكن بدء الدفع. اتصل بالدعم."],
   ["Le prestataire de paiement est momentanément indisponible.", "The payment provider is temporarily unavailable.", "مزود الدفع غير متاح مؤقتاً."],
   ["Le service de paiement n'est pas configuré.", "The payment service is not configured.", "خدمة الدفع غير مُعدّة."],

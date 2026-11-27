@@ -14,7 +14,7 @@
     "test:i18n": "node scripts/test-i18n.mjs",
     "test:orders": "node scripts/test-order-display.mjs",
     "test:inventory": "node scripts/test-inventory-groups.mjs",
-    "test:interface": "node --test scripts/test-interface.mjs",
+    "test:interface": "node --test scripts/test-interface.mjs scripts/test-audit-regressions.mjs",
     "check": "npm run build && npm run test:meta && npm run test:session && npm run test:phone && npm run test:i18n && npm run test:orders && npm run test:inventory && node scripts/validate-site.mjs"
   },
   "devDependencies": {

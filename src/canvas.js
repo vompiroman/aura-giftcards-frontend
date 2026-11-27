@@ -28,6 +28,8 @@ initializeI18n();
 const initialQueryParams = new URLSearchParams(window.location.search);
 let capturedRecoveryToken = null;
 let recoveryRequested = false;
+let recoveryCheck = Promise.resolve();
+let recoveryVersion = 0;
 
 function captureRecoveryLocation() {
   const { recovery, token, sensitive } = readRecoveryLocation(window.location, capturedRecoveryToken);
@@ -35,7 +37,9 @@ function captureRecoveryLocation() {
   capturedRecoveryToken = token;
   if (sensitive) {
     window.__auraSensitiveAuthFlow = true;
-    window.history.replaceState({}, document.title, window.location.pathname + (recovery ? recoveryRouteHash : "#login"));
+    if (window.location.hash !== recoveryRouteHash || window.location.search) {
+      window.history.replaceState({}, document.title, window.location.pathname + (recovery ? recoveryRouteHash : "#login"));
+    }
   }
 }
 captureRecoveryLocation();
@@ -122,7 +126,7 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
         setAccountState(result.authenticated ? result.user : null);
         if (!result.authenticated) {
           adminLoaded = false;
-          if (activeRoute === "admin") showRoute("login");
+          if (activeRoute === "admin") showRoute("login", undefined, { replace: true });
           if (partnerWasOpen && previousUser) partnerUI.draw();
           return;
         }
@@ -137,22 +141,27 @@ const marketingConsentBanner = document.getElementById("marketing-consent-banner
           void loadMyOrders();
         }
         if (activeRoute === "login" && !recoveryRequested) {
-          showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order");
+          showRoute(cart.length ? "cart" : result.user.is_admin === true ? "admin" : "order", undefined, { replace: true });
         }
         if (partnerWasOpen && activeRoute === "partner" && previousUser !== result.user.id) void partnerUI.open();
         void restorePartnerApplication(result.user).then(applied=>{
-          if (applied && activeRoute !== "partner") showRoute("partner");
+          if (applied && activeRoute !== "partner") showRoute("partner", undefined, { replace: true });
         });
         if (!paymentReturnHandled) { paymentReturnHandled = true; void verifyPaymentReturn(); }
       },
     });
     let lastSavedProfile = "";
+    let profileSaveQueue = Promise.resolve();
+    let pendingProfileSave = null;
+    let checkoutProfileSubmit = null;
 let loadedOrders = [];
 let activePromo = null;
+let promoValidation = null;
 let activeRenewalOffer = null;
 let pendingPaymentAttempt = null;
 let adminOrdersPage = 1;
 let adminOrdersTotalPages = 1;
+let adminOrdersLoad = 0;
 let adminLoaded = false;
 const adminSecurity = createAdminSecurity({ api: apiRequest, t, onVerified: () => void loadAdminDashboard() });
 let adminRevenueReport = null;
@@ -307,6 +316,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     let renewalOrderId = loadSavedRenewalOrderId();
     activeRenewalOffer = renewalOrderId ? loadSavedRenewalOffer() : null;
     let activeRoute = "home";
+    let renderedLocation = "";
     let lastTrackedLanding = "";
     const landingRoutes = {
       "landing-snapchat": {
@@ -459,7 +469,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       setAccountState(null);
       adminLoaded = false;
       adminRevenueReport = null;
-      if (redirectToLogin && ["admin", "order"].includes(activeRoute)) showRoute("login");
+      if (redirectToLogin && ["admin", "order"].includes(activeRoute)) showRoute("login", undefined, { replace: true });
     }
 
     async function refreshAuthSession() {
@@ -493,7 +503,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           const message = typeof payload?.error === "string"
             ? payload.error
             : typeof payload?.message === "string" ? payload.message : `Erreur API (${response.status})`;
-          throw Object.assign(new Error(t(message)), {code:payload?.code,status:response.status});
+          throw Object.assign(new Error(t(message)), { code: payload?.code, status: response.status, originalMessage: message });
         }
         return payload;
       } catch (error) {
@@ -542,7 +552,27 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     }
 
     function setAccountState(user) {
-      if (currentUser?.id !== user?.id || currentUser?.is_admin !== user?.is_admin) {
+      const accountChanged = (currentUser?.id ?? currentUser?.email) !== (user?.id ?? user?.email);
+      if (accountChanged) {
+        authRevision += 1;
+        if (currentUser) {
+          setRenewalOrderId(null);
+          sessionStorage.removeItem("aura_partner_checkout_attempt");
+        }
+        customerForm.reset();
+        validateCheckoutFields.clear();
+        profileSaveStatus.textContent = "";
+        profileSaveStatus.classList.add("hidden");
+        lastSavedProfile = "";
+        profileSaveQueue = Promise.resolve();
+        pendingProfileSave = null;
+        checkoutProfileSubmit = null;
+        document.getElementById("to-payment").disabled = false;
+        setCheckoutStep(1, { scroll: false });
+        pendingPaymentAttempt = null;
+        clearPromo();
+      }
+      if (accountChanged || currentUser?.is_admin !== user?.is_admin) {
         adminLoaded = false;
         adminSecurity.reset();
         netflixLoginRequests.clear();
@@ -575,10 +605,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const input = document.getElementById(id);
         if (input && !input.value.trim() && value) input.value = value;
       });
-      lastSavedProfile = JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        phone: String(metadata.phone || "").trim()
+      if (accountChanged) lastSavedProfile = JSON.stringify({
+        first_name: firstName, last_name: lastName, phone: String(metadata.phone || "").trim()
       });
     }
 
@@ -640,31 +668,41 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       }
     }
 
-    async function saveCheckoutProfile({ quiet = false } = {}) {
-      if (!currentUser) return false;
+    function saveCheckoutProfile({ quiet = false } = {}) {
+      if (!currentUser) return Promise.resolve(false);
       const profile = checkoutProfileData();
-      if (!profile.first_name && !profile.last_name && !profile.phone) return false;
+      if (!profile.first_name && !profile.last_name && !profile.phone) return Promise.resolve(false);
       const signature = JSON.stringify(profile);
-      if (signature === lastSavedProfile) return true;
-
-      profileSaveStatus.textContent = "Enregistrement dans ton compte…";
-      profileSaveStatus.classList.remove("hidden", "text-green-700", "text-red-700");
-      try {
-        await apiRequest("/update-profile", {
-          method: "POST",
-          body: JSON.stringify(profile)
-        });
-        currentUser.user_metadata = { ...(currentUser.user_metadata || {}), ...profile };
-        lastSavedProfile = signature;
-        profileSaveStatus.textContent = "Informations enregistrées dans ton compte.";
-        profileSaveStatus.classList.add("text-green-700");
-        return true;
-      } catch (error) {
-        profileSaveStatus.textContent = error.message || "Impossible d’enregistrer ces informations.";
-        profileSaveStatus.classList.add("text-red-700");
-        if (!quiet) showToast(profileSaveStatus.textContent);
-        return false;
+      const revision = authRevision;
+      if (pendingProfileSave?.signature === signature && pendingProfileSave.revision === revision) {
+        return pendingProfileSave.promise;
       }
+      const save = profileSaveQueue.then(async () => {
+        if (revision !== authRevision) return false;
+        if (signature === lastSavedProfile) return true;
+        profileSaveStatus.textContent = "Enregistrement dans ton compte…";
+        profileSaveStatus.classList.remove("hidden", "text-green-700", "text-red-700");
+        try {
+          await apiRequest("/update-profile", { method: "POST", body: signature });
+          if (revision !== authRevision) return false;
+          currentUser.user_metadata = { ...(currentUser.user_metadata || {}), ...profile };
+          lastSavedProfile = signature;
+          profileSaveStatus.textContent = "Informations enregistrées dans ton compte.";
+          profileSaveStatus.classList.add("text-green-700");
+          return true;
+        } catch (error) {
+          if (revision !== authRevision) return false;
+          profileSaveStatus.textContent = error.message || "Impossible d’enregistrer ces informations.";
+          profileSaveStatus.classList.add("text-red-700");
+          if (!quiet) showToast(profileSaveStatus.textContent);
+          return false;
+        }
+      }).finally(() => {
+        if (pendingProfileSave?.promise === save) pendingProfileSave = null;
+      });
+      pendingProfileSave = { signature, revision, promise: save };
+      profileSaveQueue = save;
+      return save;
     }
 
     function interruptSessionRestore() {
@@ -1054,14 +1092,27 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
 
     function clearPromo(message = "") {
       activePromo = null;
+      promoValidation = null;
       const input = document.getElementById("promo-code");
       if (input) input.value = "";
+      syncPromoButton();
       setPromoFeedback(message);
+    }
+
+    function syncPromoButton() {
+      const button = document.getElementById("promo-apply");
+      const code = document.getElementById("promo-code").value.trim().toUpperCase();
+      const checking = promoValidation?.code === code;
+      button.disabled = Boolean(activeRenewalOffer) || checking;
+      button.textContent = t(checking ? "Vérification…" : "Appliquer");
+    }
+
+    function promoItems() {
+      return cart.map(item => ({ name: apiProductName(item), quantity: 1 }));
     }
 
     async function applyPromoCode() {
       const input = document.getElementById("promo-code");
-      const button = document.getElementById("promo-apply");
       const code = String(input?.value || "").trim().toUpperCase();
       if (renewalOrderId && activeRenewalOffer) {
         setPromoFeedback("La remise fidélité ne peut pas être cumulée avec un code promo.", true);
@@ -1080,46 +1131,52 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         setPromoFeedback("Saisis un code promo.", true);
         return;
       }
-      const originalLabel = button?.textContent || "Appliquer";
-      if (button) {
-        button.disabled = true;
-        button.textContent = "Vérification…";
-      }
+      const items = promoItems();
+      const composition = JSON.stringify(items);
+      if (promoValidation?.code === code && promoValidation.composition === composition) return;
+      const revision = authRevision;
+      const attempt = { code, composition };
+      promoValidation = attempt;
+      syncPromoButton();
+      const ownsResult = () => promoValidation === attempt && revision === authRevision
+        && input.value.trim().toUpperCase() === code && JSON.stringify(promoItems()) === composition;
       try {
         const result = await apiRequest("/validate-promo", {
           method: "POST",
-          body: JSON.stringify({
-            code,
-            items: cart.map(item => ({ name: apiProductName(item), quantity: 1 }))
-          })
+          body: JSON.stringify({ code, items })
         });
+        if (!ownsResult()) return;
+        const discountAmount = Number(result.discount_amount || 0);
         activePromo = {
           code,
+          composition,
           subtotal: Number(result.subtotal || 0),
-          discount_amount: Number(result.discount_amount || 0),
+          discount_amount: discountAmount,
           total: Number(result.total || 0)
         };
         if (input) input.value = code;
         updateCart();
-        setPromoFeedback(`${code} appliqué : −${formatPrice(activePromo.discount_amount)}`);
+        if (activePromo) setPromoFeedback(`${code} appliqué : −${formatPrice(discountAmount)}`);
       } catch (error) {
+        if (!ownsResult()) return;
         activePromo = null;
         updateCart();
         setPromoFeedback(error.message || "Ce code promo n’est pas valide.", true);
       } finally {
-        if (button) {
-          button.disabled = false;
-          button.textContent = originalLabel;
+        if (promoValidation === attempt) {
+          promoValidation = null;
+          syncPromoButton();
         }
       }
     }
 
-    function showRoute(route, scrollTarget) {
+    function showRoute(route, scrollTarget, { replace = false } = {}) {
       if (!routeNames.has(route)) route = "home";
       if (activeRoute === "partner" && route !== "partner") partnerUI?.close();
       if (route !== "login") {
         recoveryRequested = false;
         capturedRecoveryToken = null;
+        recoveryVersion += 1;
       }
       if (route === "products") applyProductFilter("all");
       if (route === "login" && !recoveryRequested) showAuthPanel("signin");
@@ -1133,7 +1190,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         const privateUrl = new URL(window.location.origin + window.location.pathname);
         privateUrl.searchParams.set("account", "1");
         privateUrl.hash = route;
-        window.location.replace(privateUrl.toString());
+        if (replace) window.location.replace(privateUrl.toString());
+        else window.location.assign(privateUrl.toString());
         return;
       }
       if (route === "admin" && currentUser && currentUser.is_admin !== true) {
@@ -1151,9 +1209,14 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.body.dataset.route = route;
       const landing = landingRoutes[route];
       const content = contentRoutes[route];
-      const nextUrl = landing?.path || content?.path
+      let nextUrl = landing?.path || content?.path
         || (route === "home" ? "/" : route === "login" && recoveryRequested ? "/" + recoveryRouteHash : `/#${route}`);
-      window.history.replaceState({ route }, "", nextUrl);
+      if (scrollTarget && (landing || content || route === "home")) nextUrl += `#${scrollTarget}`;
+      const changedUrl = new URL(nextUrl, window.location.origin).href !== window.location.href;
+      const updateHistory = replace || !changedUrl ? "replaceState" : "pushState";
+      const recoveryId = recoveryRequested ? window.history.state?.recoveryId : undefined;
+      window.history[updateHistory]({ route, scrollTarget, recoveryId }, "", nextUrl);
+      renderedLocation = window.location.href;
       updateRouteMetadata(route);
       updateMobileCartBar();
 
@@ -1200,13 +1263,11 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       window.setTimeout(() => example.classList.remove("tracking-example-highlight"), 1400);
     });
 
-    function showLocationRoute() {
+    function showLocationRoute(event) {
+      if (event?.type === "hashchange" && renderedLocation === window.location.href) return;
       captureRecoveryLocation();
-      showRoute(recoveryRequested ? "login" : routeFromLocation());
-      if (recoveryRequested) {
-        showAuthPanel(capturedRecoveryToken ? "reset" : "forgot");
-        setAuthFeedback(capturedRecoveryToken ? "" : "Le lien de réinitialisation est invalide ou expiré.");
-      }
+      showRoute(recoveryRequested ? "login" : routeFromLocation(), window.history.state?.scrollTarget, { replace: true });
+      if (recoveryRequested) void openPasswordRecovery();
     }
     window.addEventListener("hashchange", showLocationRoute);
     window.addEventListener("popstate", showLocationRoute);
@@ -1361,7 +1422,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       if (activeRenewalOffer && Number(activeRenewalOffer.subtotal) !== subtotal) {
         setRenewalOrderId(null);
       }
-      if (activePromo && Number(activePromo.subtotal) !== subtotal) activePromo = null;
+      if (activePromo && (activePromo.subtotal !== subtotal || activePromo.composition !== JSON.stringify(promoItems()))) activePromo = null;
       const discount = cartSavings(subtotal);
       const total = Math.max(0, subtotal - discount);
       document.getElementById("subtotal-value").textContent = formatPrice(subtotal);
@@ -1387,9 +1448,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         ? `${t("Solde disponible")} : ${formatPrice(Number(wallet.wallet_balance))}${Number(wallet.wallet_balance)<total ? " · "+t("Ton solde est insuffisant.") : ""}` : "";
       document.getElementById("promo-remove")?.classList.toggle("hidden", !activePromo);
       const promoInput = document.getElementById("promo-code");
-      const promoButton = document.getElementById("promo-apply");
       if (promoInput) promoInput.disabled = Boolean(activeRenewalOffer);
-      if (promoButton) promoButton.disabled = Boolean(activeRenewalOffer);
+      syncPromoButton();
       if (activeRenewalOffer) {
         setPromoFeedback("Remise fidélité appliquée automatiquement.");
       } else if (!activePromo && document.getElementById("promo-feedback-message")?.textContent === t("Remise fidélité appliquée automatiquement.")) {
@@ -1415,6 +1475,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     });
 
     document.getElementById("promo-apply")?.addEventListener("click", applyPromoCode);
+    document.getElementById("promo-code")?.addEventListener("input", syncPromoButton);
     document.getElementById("promo-code")?.addEventListener("keydown", event => {
       if (event.key === "Enter") {
         event.preventDefault();
@@ -1436,19 +1497,20 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     }
 
-    function setCheckoutStep(step) {
+    function setCheckoutStep(step, { scroll = true } = {}) {
       currentCheckoutStep = step;
       syncCheckoutAccess();
       document.querySelectorAll("[data-step-indicator]").forEach(indicator => {
         indicator.classList.toggle("opacity-40", Number(indicator.dataset.stepIndicator) > step);
       });
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     const customerForm = document.getElementById("customer-form");
     const validateCheckoutFields = bindFieldValidation(customerForm);
     customerForm.addEventListener("submit", async event => {
       event.preventDefault();
+      if (checkoutProfileSubmit) return;
       const invalidField = validateCheckoutFields();
       if (invalidField) {
         invalidField.focus();
@@ -1465,11 +1527,21 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         showRoute("products");
         return;
       }
-      const profileSaved = await saveCheckoutProfile({ quiet: true });
+      const revision = authRevision;
+      const submit = document.getElementById("to-payment");
+      const attempt = saveCheckoutProfile({ quiet: true });
+      checkoutProfileSubmit = attempt;
+      submit.disabled = true;
+      const profileSaved = await attempt;
+      if (checkoutProfileSubmit !== attempt) return;
+      checkoutProfileSubmit = null;
+      submit.disabled = false;
+      if (revision !== authRevision || activeRoute !== "cart" || !cart.length) return;
       if (!profileSaved) {
         showToast(profileSaveStatus?.textContent || "Impossible d’enregistrer ces informations.");
         return;
       }
+      if (lastSavedProfile !== JSON.stringify(checkoutProfileData())) return;
       trackMeta("InitiateCheckout", {
         value: activeRenewalOffer?.total ?? activePromo?.total ?? cart.reduce((sum, item) => sum + item.price, 0),
         currency: "DZD",
@@ -1504,6 +1576,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         return;
       }
       const originalLabel = button.innerHTML;
+      const revision = authRevision;
       checkoutBusy = true;
       button.disabled = true;
       button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2" aria-hidden="true"></i>Préparation…';
@@ -1520,10 +1593,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           renewal_order_id: renewalOrderId || undefined
         };
         if (!wallet && !partnerUI.state()) await partnerUI.refresh().catch(()=>null);
+        if (revision !== authRevision) return;
         const isPartner = partnerUI.state()?.partner_status === "APPROVED";
         const subtotal = cart.reduce((sum,item)=>sum+item.price,0);
         const expected = subtotal-cartSavings(subtotal);
         const fingerprint = await checkoutPayloadFingerprint({...orderPayload,wallet});
+        if (revision !== authRevision) return;
         if (isPartner) {
           const keyName = "aura_partner_checkout_attempt";
           let existing;
@@ -1542,6 +1617,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
             method: "POST",
             body: JSON.stringify(orderPayload)
           });
+          if (revision !== authRevision) return;
           activeOrderId = order.order_id || order.id;
           if (activeOrderId) pendingPaymentAttempt = { fingerprint, orderId: activeOrderId };
         }
@@ -1571,10 +1647,12 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           method: "POST",
           body: JSON.stringify({ order_id: activeOrderId })
         });
+        if (revision !== authRevision) return;
         if (!invoice?.payment_url) throw new Error("Le prestataire de paiement n’a pas renvoyé de lien.");
         clearCheckoutCredentialPasswords();
         window.location.assign(invoice.payment_url);
       } catch (error) {
+        if (revision !== authRevision) return;
         reportClientError({
           event: "checkout",
           message: error instanceof Error ? error.message : "Checkout preparation failed",
@@ -1898,6 +1976,8 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
     async function loadAdminOrders() {
       const list = document.getElementById("admin-orders-list");
       if (!list || currentUser?.is_admin !== true) return;
+      const load = ++adminOrdersLoad;
+      const revision = authRevision;
       list.innerHTML = '<p class="py-8 text-center text-sm text-black/60"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Chargement…</p>';
       const params = new URLSearchParams({
         page: String(adminOrdersPage),
@@ -1908,6 +1988,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
       try {
         const result = await apiRequest(`/admin/all-orders?${params}`);
+        if (load !== adminOrdersLoad || revision !== authRevision) return;
         const orders = Array.isArray(result.orders) ? result.orders : [];
         adminOrdersTotalPages = Math.max(1, Number(result.total_pages || 1));
         document.getElementById("admin-orders-page").textContent = adminOrdersPageLabel(Number(result.total || 0));
@@ -2003,6 +2084,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           });
         });
       } catch (error) {
+        if (load !== adminOrdersLoad || revision !== authRevision) return;
         list.innerHTML = `<p class="rounded-xl bg-red-50 p-4 text-sm text-red-800">${escapeHTML(error.message || "Chargement impossible.")}</p>`;
       }
     }
@@ -2582,7 +2664,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         clearCurrentAuthSession({ redirectToLogin: false });
         sessionStorage.removeItem("aura_order_id");
         activeOrderId = "";
-        showRoute("home");
+        showRoute("home", undefined, { replace: true });
       } catch (error) {
         // Do not pretend a persistent cookie was revoked when the server is offline.
         sessionRecovery.resume();
@@ -2615,8 +2697,68 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       document.getElementById("forgot-password-link")?.classList.toggle("hidden", name !== "signin");
     }
 
+    function showRecoveryUnavailable() {
+      capturedRecoveryToken = null;
+      window.history.replaceState({ route: "login" }, "", window.location.href);
+      showAuthPanel("forgot");
+      setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
+    }
+
+    async function openPasswordRecovery() {
+      const token = capturedRecoveryToken?.token_hash;
+      const expectedId = window.history.state?.recoveryId;
+      if (!token && !expectedId) {
+        showRecoveryUnavailable();
+        return;
+      }
+      const version = ++recoveryVersion;
+      const current = () => version === recoveryVersion && recoveryRequested;
+      showAuthPanel("recovery-check");
+      const retry = document.getElementById("retry-recovery");
+      retry.hidden = true;
+      setAuthFeedback("Vérification du lien de réinitialisation…", false);
+      const task = recoveryCheck.then(() => {
+        if (!current()) return null;
+        return token
+          ? apiRequest("/reset-password", { method: "PUT", body: JSON.stringify({ token_hash: token }) })
+          : apiRequest("/reset-password", { cache: "no-store" });
+      });
+      recoveryCheck = task.catch(() => null);
+      try {
+        const result = await task;
+        if (!current()) return;
+        const id = result?.recovery_id;
+        if (!id || (!token && id !== expectedId)) {
+          showRecoveryUnavailable();
+          return;
+        }
+        capturedRecoveryToken = null;
+        window.history.replaceState({ route: "login", recoveryId: id }, "", window.location.href);
+        showAuthPanel("reset");
+        setAuthFeedback("");
+      } catch (error) {
+        if (!current()) return;
+        if (error.code === "RECOVERY_LINK_INVALID") {
+          showRecoveryUnavailable();
+          return;
+        }
+        setAuthFeedback(error.message);
+        retry.hidden = false;
+      }
+    }
+
+    document.getElementById("retry-recovery").addEventListener("click", () => void openPasswordRecovery());
     document.querySelectorAll(".auth-tab").forEach(tab => {
-      tab.addEventListener("click", () => showAuthPanel(tab.dataset.auth));
+      tab.addEventListener("click", () => {
+        if (recoveryRequested) {
+          recoveryRequested = false;
+          capturedRecoveryToken = null;
+          recoveryVersion += 1;
+          setAuthFeedback("");
+          showRoute("login", undefined, { replace: true });
+        }
+        showAuthPanel(tab.dataset.auth);
+      });
     });
     document.getElementById("forgot-password-link")?.addEventListener("click", () => showAuthPanel("forgot"));
     document.getElementById("back-to-signin-from-forgot")?.addEventListener("click", () => showAuthPanel("signin"));
@@ -2673,10 +2815,19 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
       });
     });
 
-    document.getElementById("forgot-password-form")?.addEventListener("submit", async event => {
+    const forgotPasswordForm = document.getElementById("forgot-password-form");
+    const validateForgotPassword = bindFieldValidation(forgotPasswordForm);
+    forgotPasswordForm.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
       const button = form.querySelector('button[type="submit"]');
+      if (button.disabled) return;
+      const invalid = validateForgotPassword();
+      if (invalid) {
+        setAuthFeedback("");
+        invalid.focus();
+        return;
+      }
       button.disabled = true;
       try {
         const result = await apiRequest("/forgot-password", {
@@ -2685,27 +2836,43 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         });
         setAuthFeedback(result.message || "Si cet email existe, un lien a été envoyé.", false);
       } catch (error) {
-        setAuthFeedback(error.message || "Impossible d'envoyer le lien.");
+        if (error.status === 400 && error.originalMessage) {
+          setAuthFeedback("");
+          validateForgotPassword.showFieldError(document.getElementById("forgot-email"), error.originalMessage);
+        } else {
+          setAuthFeedback(error.message || "Impossible d'envoyer le lien.");
+        }
       } finally {
         button.disabled = false;
       }
     });
 
-    document.getElementById("reset-password-form")?.addEventListener("submit", async event => {
+    const resetPasswordForm = document.getElementById("reset-password-form");
+    const validateResetPassword = bindFieldValidation(resetPasswordForm);
+    resetPasswordForm.addEventListener("submit", async event => {
       event.preventDefault();
       const form = event.currentTarget;
       const password = document.getElementById("reset-password").value;
-      if (!capturedRecoveryToken) {
+      const invalid = validateResetPassword();
+      if (invalid) {
+        setAuthFeedback("");
+        invalid.focus();
+        return;
+      }
+      const recoveryId = window.history.state?.recoveryId;
+      if (!recoveryRequested || !recoveryId) {
         setAuthFeedback("Le lien de réinitialisation est invalide ou expiré.");
         return;
       }
       const button = form.querySelector('button[type="submit"]');
+      if (button.disabled) return;
       button.disabled = true;
       try {
         const result = await apiRequest("/reset-password", {
           method: "POST",
-          body: JSON.stringify({ ...capturedRecoveryToken, password })
+          body: JSON.stringify({ recovery_id: recoveryId, password })
         });
+        form.reset();
         capturedRecoveryToken = null;
         recoveryRequested = false;
         clearCurrentAuthSession({ redirectToLogin: false });
@@ -2714,9 +2881,13 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
         window.history.replaceState({}, document.title, `${window.location.pathname}#login`);
       } catch (error) {
         if (error.code === "RECOVERY_LINK_INVALID") {
-          capturedRecoveryToken = null;
           form.reset();
-          showAuthPanel("forgot");
+          showRecoveryUnavailable();
+        }
+        if (error.code === "PASSWORD_COMPROMISED") {
+          setAuthFeedback("");
+          validateResetPassword.showFieldError(document.getElementById("reset-password"), error.originalMessage || error.message);
+          return;
         }
         setAuthFeedback(error.message || "Lien de réinitialisation invalide ou expiré.");
       } finally {
@@ -2759,7 +2930,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           : result.user?.is_admin === true
             ? "admin"
             : "order";
-        showRoute(nextRoute);
+        showRoute(nextRoute, undefined, { replace: true });
         if (nextRoute === "cart") setCheckoutStep(1);
       } catch (error) {
         setAuthFeedback(error.message || "Connexion impossible.");
@@ -2804,7 +2975,7 @@ document.getElementById("decline-marketing")?.addEventListener("click", () => {
           setAccountState(result.user);
           if (result.partner_application_saved) sessionStorage.removeItem("aura_partner_application");
           else if (wantsPartner) await restorePartnerApplication(result.user);
-          showRoute(wantsPartner ? "partner" : "cart");
+          showRoute(wantsPartner ? "partner" : "cart", undefined, { replace: true });
           if (!wantsPartner) setCheckoutStep(1);
           showToast("Compte créé");
         } else {
