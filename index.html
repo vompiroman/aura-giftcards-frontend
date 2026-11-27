@@ -626,10 +626,6 @@
                   </div>
                   <p class="mt-3 text-xs leading-5 text-[#8B5436]"><i class="fa-solid fa-shield-halved mr-1" aria-hidden="true"></i>Utilise un mot de passe temporaire et unique. Les informations sont chiffrées côté serveur, transmises à l’équipe uniquement après confirmation du paiement, puis supprimées après l’activation.</p>
                 </div>
-                <label class="flex items-start gap-3 rounded-xl border border-black/10 bg-ivory p-4 text-xs leading-5 text-black/60 sm:col-span-2">
-                  <input id="marketing-consent" type="checkbox" class="mt-0.5 h-4 w-4 shrink-0 accent-[#D93646]">
-                  <span>J’accepte que mes données de commande soient utilisées pour mesurer les publicités Aura Stream sur Meta. Ce choix est facultatif.</span>
-                </label>
               </form>
               <button id="to-payment" type="submit" form="customer-form" class="mt-8 min-h-12 w-full rounded-xl bg-aura px-6 font-title text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] sm:w-auto">Continuer vers le paiement</button>
             </section>
@@ -1209,7 +1205,7 @@
             <p>Aura Stream traite les informations de compte, de contact, de commande et de paiement nécessaires à la livraison, au support et à la prévention des abus.</p>
             <p>Pour Snapchat+, le nom d’utilisateur et la confirmation d’ajout de @aura-stream sont enregistrés avec la commande pour permettre son activation.</p>
             <p>Les identifiants temporaires transmis pour une activation manuelle sont chiffrés côté serveur puis supprimés après le traitement. Ils ne sont jamais enregistrés dans le navigateur.</p>
-            <p>La mesure publicitaire Meta reste facultative et n’est activée qu’avec ton accord. Pour demander l’accès, la correction ou la suppression de tes données, contacte le support WhatsApp.</p>
+            <p>Pour demander l’accès, la correction ou la suppression de tes données, contacte le support WhatsApp.</p>
             <p>Si tu acceptes la mesure du parcours d’achat, nous enregistrons le service consulté, les étapes atteintes et l’éventuelle confirmation de commande avec un identifiant aléatoire valable 24 heures. Les mesures sont conservées 45 jours. Tu peux modifier ton choix dans les préférences de confidentialité.</p>
           </div>
         </article>
@@ -1307,18 +1303,14 @@
 
   <aside id="marketing-consent-banner" class="fixed inset-x-3 bottom-3 z-[90] hidden rounded-xl border border-white/10 bg-graphite p-3 text-ivory shadow-2xl sm:inset-x-auto sm:bottom-4 sm:right-4 sm:max-w-md sm:rounded-2xl sm:p-5" aria-labelledby="cookie-preferences-title">
     <h2 id="cookie-preferences-title" class="font-title text-sm font-bold sm:text-base">Préférences de confidentialité</h2>
-    <p class="mt-1 text-xs leading-5 text-white/70">Ces deux choix sont facultatifs. Le site et le paiement restent accessibles.</p>
-    <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
-      <input id="preferences-meta" type="checkbox" class="h-4 w-4 shrink-0 accent-aura">
-      <span>Mesure publicitaire Meta</span>
-    </label>
+    <p class="mt-1 text-xs leading-5 text-white/70">Cette mesure interne est facultative. Le site et le paiement restent accessibles.</p>
     <label class="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
       <input id="preferences-checkout" type="checkbox" class="h-4 w-4 shrink-0 accent-aura">
       <span>Mesure du parcours d’achat</span>
     </label>
     <div class="mt-3 grid grid-cols-2 gap-2 sm:mt-4 sm:flex sm:flex-wrap">
-      <button id="accept-marketing" type="button" class="min-h-11 rounded-lg bg-aura px-4 text-xs font-bold text-white sm:rounded-xl">Enregistrer mes choix</button>
-      <button id="decline-marketing" type="button" class="min-h-11 rounded-lg border border-white/20 px-4 text-xs font-bold text-white sm:rounded-xl">Tout refuser</button>
+      <button id="accept-marketing" type="button" class="min-h-11 rounded-lg bg-aura px-4 text-xs font-bold text-white sm:rounded-xl">Enregistrer mon choix</button>
+      <button id="decline-marketing" type="button" class="min-h-11 rounded-lg border border-white/20 px-4 text-xs font-bold text-white sm:rounded-xl">Refuser</button>
     </div>
   </aside>
 

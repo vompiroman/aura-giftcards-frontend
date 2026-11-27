@@ -1,36 +1,59 @@
 const JOURNEY_KEY = "aura_checkout_journey";
 const CONSENT_KEY = "aura_checkout_measurement";
+const OUTBOX_KEY = "aura_checkout_outbox";
 const DAY_MS = 86_400_000;
-const services = ["netflix", "spotify", "crunchyroll", "snapchat"];
+const SERVICES = new Set(["netflix", "spotify", "crunchyroll", "snapchat"]);
+const RETRY_DELAYS = [2_000, 5_000, 10_000, 30_000, 60_000];
 
-export function createCheckoutFunnel({ settings, session, uuid, send, now = Date.now }) {
-  const read = (storage, key) => {
+export function createCheckoutFunnel({
+  settings, session, uuid, send, now = Date.now, schedule = setTimeout, cancel = clearTimeout,
+}) {
+  function read(storage, key) {
     try { return JSON.parse(storage.getItem(key)); } catch { return null; }
-  };
-  const write = (storage, key, value) => {
+  }
+  function write(storage, key, value) {
     try {
       if (value === null) storage.removeItem(key);
       else storage.setItem(key, JSON.stringify(value));
-    } catch { /* Storage may be unavailable. */ }
-  };
-  let consent = read(settings, CONSENT_KEY);
-  let journey = read(session, JOURNEY_KEY);
-  const pending = new Set();
-  let queued = Promise.resolve();
+    } catch { /* Measurement can still work within this document. */ }
+  }
 
-  function reset() {
+  const consent = () => read(settings, CONSENT_KEY);
+  let journey = read(session, JOURNEY_KEY);
+  const restored = read(session, OUTBOX_KEY);
+  let outbox = Array.isArray(restored) ? restored.filter(entry => entry?.expires > now()) : [];
+  let pending = null;
+  let controller = null;
+  let timer = null;
+  let failures = 0;
+
+  function saveOutbox() {
+    write(session, OUTBOX_KEY, outbox.length ? outbox : null);
+  }
+
+  function reset({ discard = false } = {}) {
     journey = null;
     write(session, JOURNEY_KEY, null);
+    if (!discard) return;
+    if (timer !== null) cancel(timer);
+    timer = null;
+    failures = 0;
+    controller?.abort();
+    outbox = [];
+    saveOutbox();
+  }
+
+  function syncConsent() {
+    if (consent() !== true) reset({ discard: true });
   }
 
   function setConsent(allowed) {
-    consent = Boolean(allowed);
-    write(settings, CONSENT_KEY, consent);
-    if (!consent) reset();
+    write(settings, CONSENT_KEY, Boolean(allowed));
+    syncConsent();
   }
 
   function current() {
-    if (consent !== true) return null;
+    if (consent() !== true) return null;
     if (typeof journey?.id !== "string" || !Array.isArray(journey.seen) || !(journey.expires > now())) {
       journey = { id: uuid(), expires: now() + DAY_MS, seen: [] };
       write(session, JOURNEY_KEY, journey);
@@ -38,28 +61,52 @@ export function createCheckoutFunnel({ settings, session, uuid, send, now = Date
     return journey;
   }
 
-  function track(stage, products) {
-    const active = current();
-    if (!active) return queued;
-    const selected = [...new Set(products.map(product => String(product).toLowerCase()))]
-      .filter(service => services.includes(service))
-      .filter(service => !active.seen.includes(`${stage}:${service}`)
-        && !pending.has(`${active.id}:${stage}:${service}`));
-    if (!selected.length) return queued;
-    const keys = selected.map(service => `${stage}:${service}`);
-    for (const key of keys) pending.add(`${active.id}:${key}`);
-    queued = queued.then(async () => {
-      try {
-        if (consent !== true || journey !== active) return;
-        if (await send({ journey_id: active.id, stage, services: selected }) && journey === active) {
-          active.seen.push(...keys);
-          write(session, JOURNEY_KEY, active);
+  function flush() {
+    syncConsent();
+    if (consent() !== true || pending || timer !== null || !outbox.length) return pending ?? Promise.resolve();
+    const attempt = new AbortController();
+    controller = attempt;
+    pending = (async () => {
+      while (outbox.length && consent() === true && !attempt.signal.aborted) {
+        const entry = outbox[0];
+        if (entry.expires > now()) {
+          let sent = false;
+          try { sent = await send(entry.event, attempt.signal); } catch { /* Retry after a delay. */ }
+          if (attempt.signal.aborted || consent() !== true) return;
+          if (!sent) {
+            const delay = RETRY_DELAYS[Math.min(failures++, RETRY_DELAYS.length - 1)];
+            timer = schedule(() => { timer = null; void flush(); }, delay);
+            return;
+          }
+          failures = 0;
         }
-      } catch { /* A future visit to the same step can retry. */ }
-      finally { for (const key of keys) pending.delete(`${active.id}:${key}`); }
+        outbox.shift();
+        saveOutbox();
+      }
+    })().finally(() => {
+      pending = null;
+      controller = null;
+      if (attempt.signal.aborted && outbox.length && consent() === true) void flush();
     });
-    return queued;
+    return pending;
   }
 
-  return { consent: () => consent, setConsent, track, id: () => current()?.id, reset };
+  function track(stage, products) {
+    const active = current();
+    if (!active) return;
+    const selected = [...new Set(products.map(product => String(product).toLowerCase()))]
+      .filter(service => SERVICES.has(service) && !active.seen.includes(stage + ":" + service));
+    if (selected.length) {
+      outbox.push({
+        expires: active.expires,
+        event: { journey_id: active.id, stage, services: selected, occurred_at: now() },
+      });
+      saveOutbox();
+      active.seen.push(...selected.map(service => stage + ":" + service));
+      write(session, JOURNEY_KEY, active);
+    }
+    return flush();
+  }
+
+  return { consent, setConsent, syncConsent, track, flush, id: () => current()?.id, reset };
 }

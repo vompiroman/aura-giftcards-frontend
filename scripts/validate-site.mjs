@@ -3,11 +3,10 @@ import { landingRoutes, productSchema } from "../src/catalog.js";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-const [html, app, styles, meta, session, catalog, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
+const [html, app, styles, session, catalog, vercel, robots, sitemap, distHtml, distCss] = await Promise.all([
   read("../index.html"),
   read("../src/canvas.js"),
   read("../src/canvas.css"),
-  read("../src/meta.js"),
   read("../src/session.js"),
   read("../src/catalog.js"),
   read("../vercel.json"),
@@ -17,7 +16,10 @@ const [html, app, styles, meta, session, catalog, vercel, robots, sitemap, distH
   read("../dist/canvas.css"),
 ]);
 
-const source = [html, app, styles, meta, session, catalog, vercel, robots, sitemap].join("\n");
+const source = [html, app, styles, session, catalog, vercel, robots, sitemap].join("\n");
+if (/connect\.facebook\.net|graph\.facebook\.com|facebook\.com\/tr\b/i.test(source)) {
+  throw new Error("Transport marketing tiers réintroduit");
+}
 const generatedPages = await Promise.all(Object.values(landingRoutes).map(async landing => ({
   ...landing,
   slug: landing.path.slice(1),
@@ -31,16 +33,10 @@ if (mojibake.test(source)) throw new Error("Texte mal encodé détecté");
 for (const marker of [
   "activation-credentials-form",
   "waiting_for_stock",
-  "InitiateCheckout",
-  "AddToCart",
-  "ViewContent",
   "mobile-cart-bar",
   "landing-netflix",
   "landing-spotify",
   "landing-crunchyroll",
-  "aura_marketing_attribution",
-  "marketing_consent_version",
-  "META_CONSENT_VERSION",
   "forgot-password-form",
   "reset-password-form",
   '<select id="admin-order-service"',
