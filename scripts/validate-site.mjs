@@ -76,7 +76,7 @@ for (const marker of [
   "formatAlgerianPhoneInput",
   "normalizeAlgerianPhone",
   "currentUser?.user_metadata?.phone",
-  "grid cursor-pointer grid-cols-[auto_auto_minmax(0,1fr)]",
+  'id="checkout-review-items"',
   '.admin-tab:focus-visible',
   '.faq-category[aria-pressed="true"]',
   'body[data-route="admin"] .whatsapp-float',

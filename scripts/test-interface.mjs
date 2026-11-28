@@ -25,6 +25,9 @@ const languages = {
     snapchatName: "Saisis un nom d’utilisateur Snapchat valide.",
     snapchatConfirmation: "Confirme l’ajout de @aura-stream.",
     applicationPending: "Candidature en cours d’examen",
+    application: "Questionnaire partenaire",
+    payment: "Cartes CIB et Edahabia via SlickPay",
+    review: "Récapitulatif avant paiement",
   },
   en: {
     service: "Filter by service", status: "Filter by status", order: "Order status for",
@@ -33,6 +36,9 @@ const languages = {
     snapchatName: "Enter a valid Snapchat username.",
     snapchatConfirmation: "Confirm that you added @aura-stream.",
     applicationPending: "Application under review",
+    application: "Partner questionnaire",
+    payment: "CIB and Edahabia cards via SlickPay",
+    review: "Review before payment",
   },
   ar: {
     service: "التصفية حسب الخدمة", status: "التصفية حسب الحالة", order: "حالة الطلب",
@@ -41,6 +47,9 @@ const languages = {
     snapchatName: "أدخل اسم مستخدم صالحًا على Snapchat.",
     snapchatConfirmation: "أكّد أنك أضفت \u2066@aura-stream\u2069.",
     applicationPending: "الطلب قيد المراجعة",
+    application: "استبيان الشراكة",
+    payment: "بطاقتا CIB والذهبية عبر SlickPay",
+    review: "مراجعة الطلب قبل الدفع",
   },
 };
 
@@ -195,6 +204,14 @@ for (const width of [320, 390, 1440]) {
         assert.equal(await signUpTab.getAttribute("aria-pressed"), "true");
         assert.equal(await signInTab.getAttribute("aria-pressed"), "false");
         assert.equal(await page.locator("#signup-form").isVisible(), true);
+        const accountType = page.locator("#signup-account-type");
+        await accountType.selectOption("partner");
+        const signupQuestionnaire = page.locator("#signup-partner-fields");
+        assert.equal(await signupQuestionnaire.isVisible(), true);
+        assert.equal(await signupQuestionnaire.locator("legend").textContent(), copy.application);
+        assert.equal(await signupQuestionnaire.locator('[name="additional_info"]').isVisible(), false);
+        await accountType.selectOption("client");
+        assert.equal(await signupQuestionnaire.isVisible(), false);
         await signInTab.press("Enter");
         await page.locator("#signin-email").focus();
         await page.keyboard.press("Tab");
@@ -225,6 +242,8 @@ for (const width of [320, 390, 1440]) {
         await page.locator('.product-card[data-service=netflix] .add-product').click();
         await page.locator('.product-card[data-service=snapchat] .add-product').first().click();
         await page.locator("#header-cart-button").click();
+        assert.equal(await page.locator("#checkout-glance").isVisible(), width < 1024);
+        assert.equal(await page.locator("#checkout-glance-total").textContent(), await page.locator("#checkout-total").textContent());
         const steps = page.locator(".checkout-step");
         assert.equal(await page.locator('.checkout-step[aria-current="step"]').getAttribute("data-step-indicator"), "1");
         for (const step of await steps.all()) {
@@ -254,6 +273,11 @@ for (const width of [320, 390, 1440]) {
         await page.locator("#to-payment").press("Enter");
         await page.locator("#checkout-payment").waitFor();
         assert.equal(await page.locator("#checkout-payment").isVisible(), true);
+        const review = page.getByRole("heading", { name: copy.review, exact: true });
+        await focused(review);
+        assert.equal(await page.locator("#checkout-review-items li").count(), 2);
+        assert.equal(await page.locator("#checkout-glance-payment").isVisible(), false);
+        assert.equal(await page.locator('#checkout-payment input[name="payment"]').count(), 0);
         assert.equal(await page.locator('.checkout-step[aria-current="step"]').getAttribute("data-step-indicator"), "2");
 
         await open(page, admin.origin, "/#admin");
@@ -371,6 +395,8 @@ for (const width of [320, 390, 1440]) {
         }
 
         await open(page, admin.origin, "/snapchat-plus-algerie");
+        const paymentHint = page.locator("#view-landing-snapchat [data-purchase-payment]");
+        assert.equal(await paymentHint.textContent(), copy.payment);
         if (language === "ar") await checkBidirectionalText(page);
         await open(page, admin.origin, "/#partner");
         const partnerFields = page.locator("#partner-application-form select");
@@ -378,6 +404,12 @@ for (const width of [320, 390, 1440]) {
         assert.equal(await partnerFields.count(), 3);
         assert.equal(await partnerFields.evaluateAll(fields => fields.every(field =>
           field.labels.length && Math.round(field.getBoundingClientRect().height) >= 44)), true);
+        const partnerForm = page.locator("#partner-application-form");
+        const optional = partnerForm.locator('[name="additional_info"]');
+        assert.equal(await optional.isVisible(), false);
+        await partnerForm.locator("details summary").press("Enter");
+        await optional.fill("Candidature fictive");
+        await partnerForm.locator('[name="products"]').fill("Netflix et Snapchat+");
 
         const formMenu = width < 1024 ? "mobile" : "desktop";
         if (formMenu === "mobile") await page.locator("#mobile-menu-toggle").click();
@@ -398,10 +430,13 @@ for (const width of [320, 390, 1440]) {
         await page.locator("#" + formMenu + '-language-options [data-language-option="' + otherLanguage + '"]').press("Enter");
         assert.equal(await page.locator("html").getAttribute("lang"), otherLanguage);
         assert.equal(await partnerFields.count(), 3);
+        await partnerForm.getByRole("heading", { name: languages[otherLanguage].application, exact: true }).waitFor();
+        assert.equal(await optional.isVisible(), true);
+        assert.equal(await optional.inputValue(), "Candidature fictive");
+        assert.equal(await partnerForm.locator('[name="products"]').inputValue(), "Netflix et Snapchat+");
         if (formMenu === "mobile" && await page.locator("#mobile-menu-toggle").getAttribute("aria-expanded") === "true") {
           await page.locator("#mobile-menu-toggle").click();
         }
-        const partnerForm = page.locator("#partner-application-form");
         const answers = {
           monthly_volume: "5000_15000", sales_channel: "WEB", profile: "INDEPENDENT",
           products: "Netflix et Snapchat+", quick_contact: "@aura_ui_test", additional_info: "Candidature fictive",
@@ -412,7 +447,7 @@ for (const width of [320, 390, 1440]) {
           else await field.fill(value);
         }
         await partnerForm.locator('[type="submit"]').click();
-        await page.getByRole("heading", { name: languages[otherLanguage].applicationPending, exact: true }).waitFor();
+        await focused(page.getByRole("heading", { name: languages[otherLanguage].applicationPending, exact: true }));
         assert.deepEqual(application, answers);
         assert.equal(await partnerForm.count(), 0);
         assert.deepEqual(errors, []);
