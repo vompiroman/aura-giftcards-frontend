@@ -1,8 +1,9 @@
 import { TRANSLATIONS } from "./translations.js";
+import { splitLocalizedPath } from "./catalog.js";
 
 const STORAGE_KEY = "aura_language";
 const SUPPORTED_LANGUAGES = new Set(["fr", "en", "ar"]);
-const TRANSLATED_ATTRIBUTES = ["aria-label", "aria-description", "placeholder", "title", "alt"];
+export const TRANSLATED_ATTRIBUTES = ["aria-label", "aria-description", "placeholder", "title", "alt"];
 const LOCALES = { fr: "fr-DZ", en: "en-DZ", ar: "ar-DZ-u-nu-latn" };
 const LANGUAGE_NAMES = {
   fr: { fr: "Français", en: "French", ar: "الفرنسية" },
@@ -16,12 +17,17 @@ let observer = null;
 let initialized = false;
 
 function preferredLanguage() {
+  if (typeof location !== "undefined") {
+    const { language } = splitLocalizedPath(location.pathname);
+    if (language !== "fr") return language;
+  }
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (SUPPORTED_LANGUAGES.has(stored)) return stored;
   } catch {
     // The site still works when storage is disabled.
   }
+  if (typeof document !== "undefined" && document.documentElement.hasAttribute("data-seo-document")) return "fr";
   const browserLanguage = String(typeof navigator === "undefined" ? "fr" : navigator.language || "fr").slice(0, 2).toLowerCase();
   return SUPPORTED_LANGUAGES.has(browserLanguage) ? browserLanguage : "fr";
 }
@@ -151,25 +157,29 @@ export function getLocale() {
 }
 
 export function t(value, variables = {}) {
-  const source = normalize(value);
-  if (!source || currentLanguage === "fr") return interpolate(source, variables);
+  return translateForLanguage(currentLanguage, value, variables);
+}
 
-  const exact = TRANSLATIONS[currentLanguage]?.get(source);
+export function translateForLanguage(language, value, variables = {}) {
+  const source = normalize(value);
+  if (!source || language === "fr") return interpolate(source, variables);
+
+  const exact = TRANSLATIONS[language]?.get(source);
   if (exact) {
     // Isolate the Latin names in RTL sentences and in native option labels.
-    const translation = currentLanguage === "ar"
+    const translation = language === "ar"
       ? exact.replace(/Snapchat\+|@aura-stream/g, name => "\u2066" + name + "\u2069")
       : exact;
     return interpolate(translation, variables);
   }
 
-  for (const [pattern, replacement] of dynamicPatterns[currentLanguage] || []) {
+  for (const [pattern, replacement] of dynamicPatterns[language] || []) {
     if (pattern.test(source)) return interpolate(source.replace(pattern, replacement), variables);
   }
 
   let translated = source;
   for (const [fr, en, ar] of fragmentPhrases) {
-    const replacement = currentLanguage === "ar" ? ar : en;
+    const replacement = language === "ar" ? ar : en;
     translated = translated.replaceAll(fr, replacement);
   }
   return interpolate(translated, variables);
@@ -409,6 +419,15 @@ export function setLanguage(language, { persist = true, announce = true } = {}) 
 export function initializeI18n() {
   if (initialized) return;
   initialized = true;
+  for (const element of document.querySelectorAll("[data-i18n-original]")) {
+    const { text, attributes } = JSON.parse(element.dataset.i18nOriginal);
+    for (const [index, value] of text) {
+      const node = element.childNodes[index];
+      if (node instanceof Text) textSources.set(node, value);
+    }
+    if (attributes.length) attributeSources.set(element, new Map(attributes));
+    element.removeAttribute("data-i18n-original");
+  }
   updateDocumentLanguage();
   translateTree(document, true);
   syncLanguageControls();

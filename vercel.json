@@ -3,12 +3,33 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "trailingSlash": false,
   "alias": [
     "www.aura-stream.com",
     "aura-stream.com",
     "aura-stream-deploy.vercel.app"
   ],
+  "redirects": [
+    {
+      "source": "/:path(.*)",
+      "has": [{ "type": "host", "value": "aura-stream-deploy.vercel.app" }],
+      "destination": "https://www.aura-stream.com/:path*",
+      "permanent": true
+    },
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/:page(netflix-algerie|spotify-family-algerie|crunchyroll-mega-fan-algerie|snapchat-plus-algerie|legal)/index.html", "destination": "/:page", "permanent": true },
+    { "source": "/:locale(en|ar)/index.html", "destination": "/:locale", "permanent": true },
+    { "source": "/:locale(en|ar)/:page(netflix-algerie|spotify-family-algerie|crunchyroll-mega-fan-algerie|snapchat-plus-algerie)/index.html", "destination": "/:locale/:page", "permanent": true }
+  ],
   "rewrites": [
+    {
+      "source": "/:locale(en|ar)",
+      "destination": "/:locale/index.html"
+    },
+    {
+      "source": "/:locale(en|ar)/:page(netflix-algerie|spotify-family-algerie|crunchyroll-mega-fan-algerie|snapchat-plus-algerie)",
+      "destination": "/:locale/:page/index.html"
+    },
     {
       "source": "/snapchat-plus-algerie",
       "destination": "/snapchat-plus-algerie/index.html"

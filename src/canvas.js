@@ -7,7 +7,10 @@ import { orderItemPresentation, prioritizeOrder } from "./order-display.js";
 import { groupInventoryByAccount, groupedInventoryPayload } from "./inventory-groups.js";
 import { createAdminSecurity } from "./admin-security.js";
 import { bindFieldValidation } from "./form-validation.js";
-import { allowedCartPrices, contentRoutes, landingRoutes, productSchema } from "./catalog.js";
+import {
+  allowedCartPrices, contentRoutes, landingRoutes, localizedPath, productSchema,
+  seoAlternates, seoRoutes, siteOrigin, splitLocalizedPath,
+} from "./catalog.js";
 import { createCheckoutFunnel } from "./checkout-funnel.js";
 import {
   formatLocalizedDate,
@@ -15,6 +18,7 @@ import {
   getLanguage,
   getLocale,
   initializeI18n,
+  setLanguage,
   t,
 } from "./i18n.js";
 
@@ -310,6 +314,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
     let renewalOrderId = loadSavedRenewalOrderId();
     activeRenewalOffer = renewalOrderId ? loadSavedRenewalOffer() : null;
     let activeRoute = "home";
+    let routeLanguage = splitLocalizedPath(window.location.pathname).language;
     let renderedLocation = "";
     let netflixAvailability;
     let availabilityCheckedAt = 0;
@@ -321,19 +326,20 @@ marketingConsentBanner.addEventListener("keydown", event => {
     ]);
 
     function routeFromLocation() {
-      const matchingLanding = Object.entries(landingRoutes).find(([, page]) => page.path === window.location.pathname);
+      const { path } = splitLocalizedPath(window.location.pathname);
+      const matchingLanding = Object.entries(landingRoutes).find(([, page]) => page.path === path);
       if (matchingLanding) return matchingLanding[0];
-      const matchingContent = Object.entries(contentRoutes).find(([, page]) => page.path === window.location.pathname);
+      const matchingContent = Object.entries(contentRoutes).find(([, page]) => page.path === path);
       if (matchingContent) return matchingContent[0];
       const hashRoute = window.location.hash.replace("#", "");
       return routeNames.has(hashRoute) ? hashRoute : "home";
     }
 
     function updateRouteMetadata(route) {
-      const page = landingRoutes[route] || contentRoutes[route];
-      const title = t(page?.title || "Aura Stream — Comptes streaming en Algérie");
-      const description = t(page?.description || "Aura Stream — Netflix, Spotify et Crunchyroll au meilleur prix en Algérie.");
-      const canonicalUrl = `https://www.aura-stream.com${page?.path || "/"}`;
+      const page = seoRoutes[route] || contentRoutes[route] || seoRoutes.home;
+      const title = t(page.title);
+      const description = t(page.description);
+      const canonicalUrl = siteOrigin + (contentRoutes[route] ? page.path : localizedPath(page.path, routeLanguage));
       const privateRoute = ["cart", "order", "login", "admin", "partner"].includes(route);
       document.title = title;
       document.querySelector('meta[name="description"]')?.setAttribute("content", description);
@@ -346,6 +352,18 @@ marketingConsentBanner.addEventListener("keydown", event => {
       document.querySelector('meta[name="twitter:description"]')?.setAttribute("content", description);
       document.querySelector('link[rel="canonical"]')?.setAttribute("href", canonicalUrl);
 
+      document.querySelectorAll("link[data-seo-alternate]").forEach(node => node.remove());
+      if (seoRoutes[route]) {
+        for (const [language, href] of seoAlternates(page.path)) {
+          const link = document.createElement("link");
+          link.rel = "alternate";
+          link.hreflang = language;
+          link.href = href;
+          link.dataset.seoAlternate = "";
+          document.head.append(link);
+        }
+      }
+
       document.querySelectorAll("[data-page-schema], [data-route-schema]").forEach(node => node.remove());
       const landing = landingRoutes[route];
       if (landing) {
@@ -357,6 +375,22 @@ marketingConsentBanner.addEventListener("keydown", event => {
           translate: t,
         }));
         document.head.append(schema);
+      }
+    }
+
+    function updateCrawlableLinks(route) {
+      for (const link of document.querySelectorAll("a[data-route]")) {
+        const page = seoRoutes[link.dataset.route];
+        if (!page) continue;
+        link.setAttribute("href", localizedPath(page.path, routeLanguage)
+          + (link.dataset.scroll ? `#${link.dataset.scroll}` : ""));
+      }
+      const path = seoRoutes[route]?.path || "/";
+      for (const link of document.querySelectorAll("a[data-seo-language]")) {
+        const language = link.dataset.seoLanguage;
+        link.setAttribute("href", localizedPath(path, language));
+        if (language === routeLanguage) link.setAttribute("aria-current", "page");
+        else link.removeAttribute("aria-current");
       }
     }
 
@@ -1149,8 +1183,11 @@ marketingConsentBanner.addEventListener("keydown", event => {
       document.body.dataset.route = route;
       const landing = landingRoutes[route];
       const content = contentRoutes[route];
-      let nextUrl = landing?.path || content?.path
-        || (route === "home" ? "/" : route === "login" && recoveryRequested ? "/" + recoveryRouteHash : `/#${route}`);
+      const homePath = localizedPath("/", routeLanguage);
+      let nextUrl = landing ? localizedPath(landing.path, routeLanguage) : content?.path || homePath;
+      if (!landing && !content && route !== "home") {
+        nextUrl += route === "login" && recoveryRequested ? recoveryRouteHash : `#${route}`;
+      }
       if (scrollTarget && (landing || content || route === "home")) nextUrl += `#${scrollTarget}`;
       const changedUrl = new URL(nextUrl, window.location.origin).href !== window.location.href;
       const updateHistory = replace || !changedUrl ? "replaceState" : "pushState";
@@ -1158,6 +1195,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
       window.history[updateHistory]({ route, scrollTarget, recoveryId }, "", nextUrl);
       renderedLocation = window.location.href;
       updateRouteMetadata(route);
+      updateCrawlableLinks(route);
       updateMobileCartBar();
 
       if (route !== "cart") recordCheckoutView();
@@ -1185,6 +1223,13 @@ marketingConsentBanner.addEventListener("keydown", event => {
     });
 
     document.addEventListener("click", event => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const languageLink = event.target.closest("a[data-seo-language]");
+      if (languageLink && seoRoutes[activeRoute]) {
+        event.preventDefault();
+        setLanguage(languageLink.dataset.seoLanguage);
+        return;
+      }
       const link = event.target.closest(".route-link");
       if (!link) return;
       event.preventDefault();
@@ -1206,8 +1251,15 @@ marketingConsentBanner.addEventListener("keydown", event => {
 
     function showLocationRoute(event) {
       if (event?.type === "hashchange" && renderedLocation === window.location.href) return;
+      const nextLocale = splitLocalizedPath(window.location.pathname);
+      if (nextLocale.language !== routeLanguage && nextLocale.path !== "/legal") {
+        routeLanguage = nextLocale.language;
+        setLanguage(routeLanguage, { persist: false, announce: false });
+      }
       captureRecoveryLocation();
-      showRoute(recoveryRequested ? "login" : routeFromLocation(), window.history.state?.scrollTarget, { replace: true });
+      const fragment = window.location.hash.slice(1);
+      const scrollTarget = window.history.state?.scrollTarget || (document.getElementById(fragment) ? fragment : undefined);
+      showRoute(recoveryRequested ? "login" : routeFromLocation(), scrollTarget, { replace: true });
       if (recoveryRequested) void openPasswordRecovery();
     }
     window.addEventListener("hashchange", showLocationRoute);
@@ -3047,8 +3099,18 @@ marketingConsentBanner.addEventListener("keydown", event => {
       }
     }
 
-    document.addEventListener("aura:languagechange", () => {
+    document.addEventListener("aura:languagechange", ({ detail }) => {
+      if (routeLanguage !== detail.language) {
+        routeLanguage = detail.language;
+        const url = new URL(window.location.href);
+        if (!contentRoutes[activeRoute]) {
+          url.pathname = localizedPath(seoRoutes[activeRoute]?.path || "/", routeLanguage);
+          window.history.replaceState(window.history.state, "", url);
+          renderedLocation = window.location.href;
+        }
+      }
       updateRouteMetadata(activeRoute);
+      updateCrawlableLinks(activeRoute);
       updateCart();
       updateMobileMenuLabel();
       if (stockProfiles) syncStockProfileRows();
