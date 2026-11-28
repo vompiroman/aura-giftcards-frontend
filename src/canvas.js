@@ -1414,8 +1414,13 @@ marketingConsentBanner.addEventListener("keydown", event => {
       const discount = cartSavings(subtotal);
       const total = Math.max(0, subtotal - discount);
       document.getElementById("subtotal-value").textContent = formatPrice(subtotal);
-      document.getElementById("checkout-total").textContent = formatPrice(total);
-      document.getElementById("pay-total").textContent = formatPrice(total);
+      const displayTotal = formatPrice(total);
+      for (const id of ["checkout-total", "checkout-glance-total", "pay-total"]) {
+        document.getElementById(id).textContent = displayTotal;
+      }
+      document.getElementById("checkout-review-items").innerHTML = cart.map(item =>
+        `<li class="flex flex-wrap justify-between gap-x-3 gap-y-1 py-3"><bdi class="font-semibold">${escapeHTML(item.name)}</bdi><span class="text-black/65">${escapeHTML(t(item.duration))}</span></li>`
+      ).join("");
       const discountRow = document.getElementById("promo-discount-row");
       const discountValue = document.getElementById("promo-discount-value");
       const discountLabel = document.getElementById("discount-label");
@@ -1493,6 +1498,13 @@ marketingConsentBanner.addEventListener("keydown", event => {
     function syncCheckoutAccess() {
       const requiresAuthentication = !currentUser && cart.length > 0;
       document.getElementById("checkout-auth-gate")?.classList.toggle("hidden", !requiresAuthentication);
+      const glance = document.getElementById("checkout-glance");
+      const showGlance = cart.length > 0 && currentCheckoutStep < 3;
+      glance.classList.toggle("hidden", !showGlance);
+      glance.classList.toggle("flex", showGlance);
+      const glancePayment = document.getElementById("checkout-glance-payment");
+      glancePayment.hidden = currentCheckoutStep === 2;
+      glancePayment.classList.toggle("block", !glancePayment.hidden);
       document.querySelectorAll("[data-checkout-panel]").forEach(panel => {
         panel.classList.toggle("hidden", requiresAuthentication || Number(panel.dataset.checkoutPanel) !== currentCheckoutStep);
       });
@@ -1546,10 +1558,12 @@ marketingConsentBanner.addEventListener("keydown", event => {
       }
       if (lastSavedProfile !== JSON.stringify(checkoutProfileData())) return;
       setCheckoutStep(2);
+      document.getElementById("checkout-review-title").focus({ preventScroll: true });
     });
 
     document.getElementById("back-to-information").addEventListener("click", () => {
       setCheckoutStep(1);
+      document.getElementById("checkout-info-title").focus({ preventScroll: true });
     });
 
     async function payCheckout(event, wallet = false) {
@@ -3118,7 +3132,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
       if (activeRoute === "order" && currentUser) loadMyOrders();
       if (activeRoute === "admin" && currentUser?.is_admin === true) loadAdminDashboard({ refresh: true });
       renderPartnerPrices();
-      if (activeRoute === "partner") partnerUI.draw();
+      if (activeRoute === "partner" && !document.getElementById("partner-application-form")) partnerUI.draw();
       if (document.getElementById("admin-partner-tab")?.getAttribute("aria-selected")==="true") void partnerUI.loadAdmin();
     });
 

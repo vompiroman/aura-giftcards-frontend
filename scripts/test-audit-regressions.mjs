@@ -256,6 +256,7 @@ async function historyAndPromo(page, context, options) {
     await page.waitForFunction(() => document.querySelector("#promo-feedback-message").textContent.includes("LATEST"));
     const latestTotal = await text(page, "#checkout-total");
     assert.notEqual(latestTotal, initialTotal);
+    assert.equal(await page.locator("#checkout-glance-total").textContent(), latestTotal);
     request.release({ json: promoDiscount });
     await (await request.reply).finished();
     assert.equal(await text(page, "#checkout-total"), latestTotal);

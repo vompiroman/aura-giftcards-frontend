@@ -14,7 +14,7 @@ const groups = {
 };
 const textFields = {
   products:"Produits ou catégories recherchés",
-  quick_contact:"Contact rapide (Telegram, WhatsApp ou téléphone)",
+  quick_contact:"Contact pour le suivi de ta demande",
   additional_info:"Informations complémentaires (facultatif)",
 };
 export const tierNames = { LOCKED:"Verrouillé", STARTER:"Débloqué", BRONZE:"Bronze", SILVER:"Argent", GOLD:"Or" };
@@ -50,12 +50,20 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
   const htmlPrice = amount => escape(price(Number(amount)));
   const msg = (value, error=false) => `<p class="${error ? "text-red-700" : "text-black/60"} text-sm leading-6" role="${error ? "alert" : "status"}">${escape(value)}</p>`;
   const questionMarkup = () => `<div class="grid gap-4 sm:grid-cols-2">
-    ${Object.entries(groups).map(([key,[title,choices]]) => `<label class="grid gap-2 text-sm font-semibold">${label(title)}
-      <select class="${field}" name="${key}" required><option value="">${label("Sélectionne une réponse")}</option>
-      ${Object.entries(choices).map(([id,name])=>`<option value="${id}">${label(name)}</option>`).join("")}</select></label>`).join("")}
-    ${Object.entries(textFields).map(([key,title]) => `<label class="grid gap-2 text-sm font-semibold ${key==="additional_info" ? "sm:col-span-2" : ""}">${label(title)}
-      ${key==="additional_info" ? `<textarea class="${field}" name="${key}" maxlength="1000" rows="3"></textarea>`
-        : `<input class="${field}" name="${key}" required minlength="${key==="quick_contact" ? 3 : 1}" maxlength="${key==="quick_contact" ? 120 : 250}">`}</label>`).join("")}
+    ${Object.entries(groups).map(([key,[title,choices]]) => `<label class="grid gap-2 text-sm font-semibold">${escape(title)}
+      <select class="${field}" name="${key}" required><option value="">Sélectionne une réponse</option>
+      ${Object.entries(choices).map(([id,name])=>`<option value="${id}">${escape(name)}</option>`).join("")}</select></label>`).join("")}
+    <label class="grid gap-2 text-sm font-semibold">${escape(textFields.products)}
+      <input class="${field}" name="products" required maxlength="250" placeholder="Ex. Netflix, Spotify"></label>
+    <label class="grid gap-2 text-sm font-semibold sm:col-span-2">${escape(textFields.quick_contact)}
+      <input class="${field}" name="quick_contact" required minlength="3" maxlength="120"
+        autocomplete="off" autocapitalize="none" placeholder="@identifiant ou +213 5 00 00 00 00">
+      <span class="text-xs font-normal text-black/65">Indique un identifiant Telegram ou un numéro WhatsApp ou de téléphone.</span></label>
+    <details class="sm:col-span-2">
+      <summary class="min-h-11 cursor-pointer content-center py-2 text-sm font-semibold">${escape(textFields.additional_info)}</summary>
+      <label class="mt-2 block"><span class="sr-only">${escape(textFields.additional_info)}</span>
+        <textarea class="${field}" name="additional_info" maxlength="1000" rows="3"></textarea></label>
+    </details>
     </div>`;
   const post = (path,body={}) => api(path,{method:"POST",body:JSON.stringify(body)});
   const operations = createPartnerOperations({api,t,escape,price,date,language,addToCart,showOrder,
@@ -67,7 +75,10 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
     const choice=document.getElementById("signup-partner-choice");
     choice?.classList.toggle("hidden",!enabled);
     const fields=document.getElementById("signup-partner-fields");
-    if (fields && !fields.childElementCount) fields.innerHTML=questionMarkup();
+    if (fields && !fields.childElementCount) {
+      fields.innerHTML=`<legend class="text-sm font-bold">Questionnaire partenaire</legend>
+        <p class="text-sm text-black/65">Après l’envoi, tu peux suivre ta demande dans l’espace partenaire.</p>${questionMarkup()}`;
+    }
     const select=document.getElementById("signup-account-type");
     if (fields) {
       fields.hidden = !enabled || select?.value !== "partner";
@@ -177,14 +188,19 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
       root.innerHTML=msg(t("Programme partenaire indisponible.")); return;
     }
     if(state.partner_status==="PENDING") {
-      root.innerHTML=`<div class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Candidature en cours d’examen")}</h2>${msg(t("Nous examinerons tes réponses avant d’activer le portefeuille."))}<button class="mt-4 ${secondary}" data-partner-refresh>${label("Actualiser")}</button></div>`;
+      root.innerHTML=`<div class="${card}"><h2 tabindex="-1" data-partner-application-result class="font-title text-2xl font-extrabold">${label("Candidature en cours d’examen")}</h2>${msg(t("Nous examinerons tes réponses avant d’activer le portefeuille."))}<button class="mt-4 ${secondary}" data-partner-refresh>${label("Actualiser")}</button></div>`;
       return;
     }
     if(state.partner_status!=="APPROVED") {
-      root.innerHTML=`<form id="partner-application-form" class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Questionnaire partenaire")}</h2>
-        <p class="mb-5 mt-2 text-sm text-black/60">${label(state.partner_status==="REJECTED" ? "Ta demande a été refusée. Tu peux envoyer une nouvelle candidature." : "Présente-nous ton activité de revente.")}</p>
-        ${questionMarkup()}<div class="mt-4" data-partner-feedback></div><button type="submit" class="mt-4 ${button}">${label("Envoyer ma candidature")}</button></form>`;
-      formHandler(document.getElementById("partner-application-form"),async form=>{await submit(partnerAnswers(form));draw();});
+      root.innerHTML=`<form id="partner-application-form" class="${card}"><h2 class="font-title text-2xl font-extrabold">Questionnaire partenaire</h2>
+        ${state.partner_status==="REJECTED" ? '<p class="mt-2 text-sm text-black/65">Ta demande a été refusée. Tu peux envoyer une nouvelle candidature.</p>' : ""}
+        <p class="mb-5 mt-2 text-sm leading-6 text-black/65">Suis ta demande dans cet espace. Tu pourras recharger ton portefeuille après l’approbation.</p>
+        ${questionMarkup()}<div class="mt-4" data-partner-feedback></div><button type="submit" class="mt-4 ${button}">Envoyer ma candidature</button></form>`;
+      formHandler(document.getElementById("partner-application-form"), async form => {
+        await submit(partnerAnswers(form));
+        draw();
+        root.querySelector("[data-partner-application-result]")?.focus();
+      });
       return;
     }
     const unlocked=state.has_unlocked_tiers;
@@ -193,7 +209,7 @@ export function createPartnerUI({api, t, escape, price, date, getUser, onChange,
     const lower=Number(state.tiers?.find(item=>item.tier===state.partner_tier)?.threshold || 0);
     const percent=next ? Math.min(100,Math.max(0,(Number(state.total_spent)-lower) / (Number(next.threshold)-lower) * 100)) : unlocked ? 100 : 0;
     root.innerHTML=`<div class="grid gap-5 lg:grid-cols-2">
-      <section class="${card}"><h2 class="font-title text-2xl font-extrabold">${label("Mon Portefeuille")}</h2>
+      <section class="${card}"><h2 tabindex="-1" data-partner-application-result class="font-title text-2xl font-extrabold">${label("Mon Portefeuille")}</h2>
         <p class="mt-4 text-sm text-black/60">${label("Solde disponible")}</p><strong class="font-title text-4xl font-extrabold text-aura">${htmlPrice(state.wallet_balance)}</strong>
         <p class="mt-4 rounded-xl ${unlocked ? "bg-green-50 text-green-800" : "bg-yellow-100 text-black/80"} p-3 text-sm font-semibold">
         ${unlocked ? label("Tes paliers sont débloqués.") : `${label("Pour débloquer les paliers, effectue un dépôt unique d’au moins")} <strong>${htmlPrice(state.minimum_unlock_deposit)}</strong>.`}</p>
