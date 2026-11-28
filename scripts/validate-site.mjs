@@ -1,5 +1,7 @@
 import { readFile, readdir } from "node:fs/promises";
-import { landingRoutes, productSchema } from "../src/catalog.js";
+import { parse } from "parse5";
+import { contentRoutes, localizedPath, productSchema, seoAlternates, seoRoutes, siteLanguages, siteOrigin } from "../src/catalog.js";
+import { translateForLanguage } from "../src/i18n.js";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -11,7 +13,7 @@ const [html, app, styles, session, catalog, vercel, robots, sitemap, distHtml, d
   read("../src/catalog.js"),
   read("../vercel.json"),
   read("../public/robots.txt"),
-  read("../public/sitemap.xml"),
+  read("../dist/sitemap.xml"),
   read("../dist/index.html"),
   read("../dist/canvas.css"),
 ]);
@@ -20,11 +22,10 @@ const source = [html, app, styles, session, catalog, vercel, robots, sitemap].jo
 if (/connect\.facebook\.net|graph\.facebook\.com|facebook\.com\/tr\b/i.test(source)) {
   throw new Error("Transport marketing tiers réintroduit");
 }
-const generatedPages = await Promise.all(Object.values(landingRoutes).map(async landing => ({
-  ...landing,
-  slug: landing.path.slice(1),
-  html: await read(`../dist${landing.path}/index.html`),
-})));
+const indexedPages = [
+  ...Object.values(seoRoutes).flatMap(page => siteLanguages.map(language => ({ page, language, alternate: true }))),
+  ...Object.values(contentRoutes).map(page => ({ page, language: "fr", alternate: false })),
+];
 const productSection = html.match(/<section id="view-products"[\s\S]*?<\/section>/)?.[0] || "";
 if (!productSection.includes('data-service="snapchat"')) throw new Error("Snapchat doit être dans la boutique");
 const mojibake = /Ã.|Â.|â€|ðŸ|ï¿½|\uFFFD/;
@@ -185,28 +186,42 @@ if (!sitemap.includes("https://www.aura-stream.com/")) {
 if (/serveur se r[eé]veille/i.test(source)) {
   throw new Error("Un message trompeur de réveil serveur est encore présent");
 }
-for (const landingUrl of [
-  "https://www.aura-stream.com/snapchat-plus-algerie",
-  "https://www.aura-stream.com/netflix-algerie",
-  "https://www.aura-stream.com/spotify-family-algerie",
-  "https://www.aura-stream.com/crunchyroll-mega-fan-algerie",
-  "https://www.aura-stream.com/legal",
-]) {
-  if (!sitemap.includes(landingUrl) || !serializedVercel.includes(new URL(landingUrl).pathname)) {
-    throw new Error(`Landing page absente du sitemap ou des rewrites: ${landingUrl}`);
-  }
+const attr = (node, name) => node.attrs?.find(item => item.name === name)?.value;
+function* nodes(node) {
+  yield node;
+  for (const child of node.childNodes || []) yield* nodes(child);
 }
-for (const page of generatedPages) {
-  const canonical = `https://www.aura-stream.com/${page.slug}`;
-  if (!page.html.includes(`<link rel="canonical" href="${canonical}">`)) {
-    throw new Error(`Canonique dédiée absente: ${page.slug}`);
+const advertisedUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, href]) => href);
+const canonicalUrls = indexedPages.map(({ page, language }) => siteOrigin + localizedPath(page.path, language));
+if (JSON.stringify(advertisedUrls) !== JSON.stringify(canonicalUrls)) throw new Error("Le sitemap diffère des URL canoniques générées");
+
+for (const { page, language, alternate } of indexedPages) {
+  const path = localizedPath(page.path, language);
+  const canonical = siteOrigin + path;
+  const tree = [...nodes(parse(await read(`../dist${path === "/" ? "" : path}/index.html`)))];
+  const find = (tag, key, val) => tree.find(node => node.tagName === tag && (key === undefined || attr(node, key) === val));
+  const localize = value => translateForLanguage(language, value);
+  const rootNode = find("html");
+  if (attr(rootNode, "lang") !== language || attr(rootNode, "dir") !== (language === "ar" ? "rtl" : "ltr")) {
+    throw new Error(`Langue HTML incorrecte pour ${path}`);
   }
-  if (!page.html.includes(`content="${canonical}"`) || !page.html.includes('data-page-schema')) {
-    throw new Error(`Métadonnées sociales ou Product JSON-LD absentes: ${page.slug}`);
+  if (attr(find("link", "rel", "canonical"), "href") !== canonical
+    || attr(find("meta", "property", "og:url"), "content") !== canonical
+    || find("title").childNodes[0].value !== localize(page.title)
+    || attr(find("meta", "name", "description"), "content") !== localize(page.description)
+    || attr(find("meta", "name", "robots"), "content") !== "index,follow") {
+    throw new Error(`Métadonnées de référencement incohérentes pour ${path}`);
   }
-  const schema = page.html.match(/<script type="application\/ld\+json" data-page-schema>([^<]+)<\/script>/)?.[1];
-  if (!schema || JSON.stringify(JSON.parse(schema)) !== JSON.stringify(productSchema(page, canonical))) {
-    throw new Error(`Données structurées incohérentes pour ${page.slug}`);
+  const hreflang = tree.filter(node => node.tagName === "link" && attr(node, "hreflang"))
+    .map(node => [attr(node, "hreflang"), attr(node, "href")]);
+  if (JSON.stringify(hreflang) !== JSON.stringify(alternate ? seoAlternates(page.path) : [])) {
+    throw new Error(`Alternatives linguistiques incohérentes pour ${path}`);
+  }
+  if (page.product) {
+    const schema = find("script", "data-page-schema", "");
+    if (!schema || JSON.stringify(JSON.parse(schema.childNodes[0].value)) !== JSON.stringify(productSchema(page, canonical, { translate: localize }))) {
+      throw new Error(`Données structurées incohérentes pour ${path}`);
+    }
   }
 }
 for (const destination of [
@@ -218,7 +233,7 @@ for (const destination of [
 ]) {
   if (!serializedVercel.includes(destination)) throw new Error(`Destination SEO absente: ${destination}`);
 }
-if (!distHtml.includes('type="module" crossorigin src="/assets/')) {
+if (!/<script\b[^>]*type="module"[^>]*src="\/assets\//.test(distHtml)) {
   throw new Error("Bundle Vite absent de dist/index.html");
 }
 if (!distHtml.includes('href="/canvas.css"') || distCss.length < 10_000) {

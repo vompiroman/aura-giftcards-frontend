@@ -133,7 +133,7 @@ test("les deux durées Netflix décrivent le stock réel sans modifier le prix d
     });
     try {
       const page = await context.newPage();
-      await page.goto(server.origin + "/netflix-algerie");
+      await page.goto(server.origin + "/ar/netflix-algerie");
       await page.locator("#decline-marketing").click();
       const expected = available === null ? null : "https://schema.org/" + (available ? "InStock" : "BackOrder");
       await page.waitForFunction(wanted => {
@@ -182,7 +182,7 @@ test("l’admin voit les étapes et les paiements rapprochés sans débordement 
   });
   try {
     const page = await context.newPage();
-    await page.goto(server.origin + "/#admin");
+    await page.goto(server.origin + "/ar#admin");
     await page.locator("#admin-funnel-results h3").waitFor();
     assert.match(await page.locator("#admin-funnel-results").innerText(), /Netflix Premium[\s\S]*5 \/ 9/);
     assert.match(await page.locator("#admin-funnel-status").innerText(), /5 \/ 11/);
