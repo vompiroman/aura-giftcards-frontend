@@ -893,6 +893,7 @@ const phrases = [
   ["Contacter Aura Stream sur WhatsApp", "Contact Aura Stream on WhatsApp", "اتصل بـ Aura Stream عبر واتساب"],
   ["Préférences publicitaires", "Advertising preferences", "تفضيلات الإعلانات"],
   ["Langue du site", "Site language", "لغة الموقع"],
+  ["Français FR — Langue du site", "English EN — Site language", "العربية AR — لغة الموقع"],
   ["E-mail du compte Spotify", "Spotify account email", "بريد حساب Spotify"],
   ["E-mail du compte Crunchyroll", "Crunchyroll account email", "بريد حساب Crunchyroll"],
   ["Mot de passe temporaire", "Temporary password", "كلمة مرور مؤقتة"],

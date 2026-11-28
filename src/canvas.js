@@ -1175,7 +1175,7 @@ marketingConsentBanner.addEventListener("keydown", event => {
       const selected = document.querySelector(`[data-view="${route}"]`) || document.querySelector('[data-view="home"]');
       views.forEach(view => view.classList.toggle("hidden", view !== selected));
       navLinks.forEach(link => {
-        const isCurrent = link.dataset.route === route;
+        const isCurrent = link.dataset.route === route && !link.dataset.scroll;
         link.setAttribute("aria-current", isCurrent ? "page" : "false");
       });
       setMobileMenuOpen(false);
@@ -1503,7 +1503,8 @@ marketingConsentBanner.addEventListener("keydown", event => {
       syncCheckoutAccess();
       if (measure) recordCheckoutView();
       document.querySelectorAll("[data-step-indicator]").forEach(indicator => {
-        indicator.classList.toggle("opacity-40", Number(indicator.dataset.stepIndicator) > step);
+        if (Number(indicator.dataset.stepIndicator) === step) indicator.setAttribute("aria-current", "step");
+        else indicator.removeAttribute("aria-current");
       });
       if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -2744,10 +2745,10 @@ marketingConsentBanner.addEventListener("keydown", event => {
     function showAuthPanel(name) {
       document.querySelectorAll(".auth-tab").forEach(tab => {
         const selected = tab.dataset.auth === name;
-        tab.setAttribute("aria-selected", String(selected));
+        tab.setAttribute("aria-pressed", String(selected));
         tab.classList.toggle("bg-white", selected);
         tab.classList.toggle("shadow-sm", selected);
-        tab.classList.toggle("text-black/60", !selected);
+        tab.classList.toggle("text-black/65", !selected);
       });
       document.querySelectorAll("[data-auth-panel]").forEach(panel => {
         panel.classList.toggle("hidden", panel.dataset.authPanel !== name);

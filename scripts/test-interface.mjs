@@ -188,6 +188,19 @@ for (const width of [320, 390, 1440]) {
         }
 
         await open(page, guest.origin, "/#login");
+        const signInTab = page.locator('.auth-tab[data-auth="signin"]');
+        const signUpTab = page.locator('.auth-tab[data-auth="signup"]');
+        assert.equal(await signInTab.getAttribute("aria-pressed"), "true");
+        await signUpTab.press("Enter");
+        assert.equal(await signUpTab.getAttribute("aria-pressed"), "true");
+        assert.equal(await signInTab.getAttribute("aria-pressed"), "false");
+        assert.equal(await page.locator("#signup-form").isVisible(), true);
+        await signInTab.press("Enter");
+        await page.locator("#signin-email").focus();
+        await page.keyboard.press("Tab");
+        const password = page.locator("#signin-password");
+        await focused(password);
+        assert.equal(await password.evaluate(element => getComputedStyle(element).outlineStyle), "solid");
         for (const name of ["signin-email", "signin-password"]) {
           const color = await contrastFor(page.locator("#" + name), true);
           assert.equal(color.opacity, 1);
@@ -203,13 +216,20 @@ for (const width of [320, 390, 1440]) {
 
         await open(page, admin.origin, "/");
         assert.ok((await contrastFor(page.locator(".support-strip-link"))).ratio >= 4.5);
+        assert.equal(await page.locator('.nav-link[aria-current="page"]').count(), 1);
         await open(page, admin.origin, "/#products");
         await hasIcons(page, "#view-products");
+        assert.ok((await contrastFor(page.locator("#view-products p.text-aura").first())).ratio >= 4.5);
         const snapchat = language === "ar" ? "\u2066Snapchat+\u2069" : "Snapchat+";
         assert.equal((await page.locator(".filter-btn[data-filter=snapchat]").textContent()).trim(), snapchat);
         await page.locator('.product-card[data-service=netflix] .add-product').click();
         await page.locator('.product-card[data-service=snapchat] .add-product').first().click();
         await page.locator("#header-cart-button").click();
+        const steps = page.locator(".checkout-step");
+        assert.equal(await page.locator('.checkout-step[aria-current="step"]').getAttribute("data-step-indicator"), "1");
+        for (const step of await steps.all()) {
+          assert.ok((await contrastFor(step.locator("p"))).ratio >= 4.5);
+        }
         const phone = page.locator("#customer-whatsapp");
         await phone.waitFor();
         assert.deepEqual(await phone.inputValue(), "+213555010100");
@@ -234,6 +254,7 @@ for (const width of [320, 390, 1440]) {
         await page.locator("#to-payment").press("Enter");
         await page.locator("#checkout-payment").waitFor();
         assert.equal(await page.locator("#checkout-payment").isVisible(), true);
+        assert.equal(await page.locator('.checkout-step[aria-current="step"]').getAttribute("data-step-indicator"), "2");
 
         await open(page, admin.origin, "/#admin");
         const overview = page.locator("#admin-overview-tab");
@@ -259,6 +280,7 @@ for (const width of [320, 390, 1440]) {
         const row = page.getByRole("combobox", { name: copy.order + " " + orderReference, exact: true });
         await row.waitFor();
         assert.equal(await row.inputValue(), "active");
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), width);
         await serviceFilter.focus();
         await page.keyboard.press("Space");
         await page.keyboard.press("ArrowDown");
@@ -360,11 +382,15 @@ for (const width of [320, 390, 1440]) {
         const formMenu = width < 1024 ? "mobile" : "desktop";
         if (formMenu === "mobile") await page.locator("#mobile-menu-toggle").click();
         const languageButton = page.locator('[aria-controls="' + formMenu + '-language-options"]');
+        const visibleLanguage = (await languageButton.locator("[data-language-current]").textContent()).trim();
+        const languageLabel = await languageButton.getAttribute("aria-label");
+        assert.ok(languageLabel.startsWith(visibleLanguage + " " + language.toUpperCase()));
         await languageButton.press("Enter");
         const options = page.locator("#" + formMenu + "-language-options [role=option]");
         await options.first().waitFor();
         await page.keyboard.press("End");
         await focused(options.last());
+        assert.equal(await options.last().evaluate(element => getComputedStyle(element).outlineStyle), "solid");
         await page.keyboard.press("Escape");
         await focused(languageButton);
         await languageButton.press("Enter");
