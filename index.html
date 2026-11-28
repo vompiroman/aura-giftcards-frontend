@@ -18,7 +18,7 @@
   <meta name="twitter:title" content="Abonnements streaming en Algérie — Aura Stream">
   <meta name="twitter:description" content="Retrouve Netflix Premium, Spotify Family, Crunchyroll Mega Fan et Snapchat+ en Algérie. Prix en DA et paiement par CIB ou Edahabia.">
   <meta name="twitter:image" content="https://www.aura-stream.com/logo.png">
-  <link rel="icon" href="/logo.png" type="image/png">
+  <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -60,7 +60,7 @@
     <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-[72px] lg:px-8">
       <button type="button" class="route-link flex min-h-11 items-center gap-3 rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2" data-route="home" aria-label="Aura Stream — Accueil">
         <span class="header-brand-logo grid h-12 w-12 shrink-0 place-items-center overflow-visible">
-          <img src="/aura-logo-mark.png" alt="" width="192" height="192" decoding="async" class="header-brand-logo-image h-full w-full object-contain" aria-hidden="true">
+          <img src="/aura-logo-mark.webp" alt="" width="144" height="144" decoding="async" class="header-brand-logo-image h-full w-full object-contain" aria-hidden="true">
         </span>
         <span class="font-title text-lg font-extrabold tracking-tight text-graphite">
           Aura <span class="brand-name-accent">Stream</span>
@@ -77,7 +77,7 @@
 
       <div class="flex items-center gap-2 sm:gap-3">
         <div class="language-menu relative hidden sm:block" data-language-menu>
-          <button class="language-menu-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="desktop-language-options" aria-label="Langue du site">
+          <button class="language-menu-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="desktop-language-options" aria-label="Français FR — Langue du site">
             <span class="language-menu-emblem" aria-hidden="true"><i class="fa-solid fa-globe"></i></span>
             <span class="language-menu-current" data-language-current>Français</span>
             <span class="language-menu-code" aria-hidden="true" data-language-code>FR</span>
@@ -95,7 +95,7 @@
         </button>
         <button type="button" class="header-session-signout session-signout hidden min-h-11 items-center gap-2 rounded-xl border border-black/10 px-3 text-sm font-bold text-graphite transition hover:border-aura/40 hover:bg-aura/5 hover:text-aura" aria-label="Se déconnecter" title="Se déconnecter">
           <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
-          <span class="hidden xl:inline">Déconnexion</span>
+          <span class="hidden xl:inline">Se déconnecter</span>
         </button>
         <button id="header-cart-button" type="button" class="route-link relative flex min-h-11 items-center gap-2 rounded-xl bg-aura px-3.5 text-sm font-bold text-white shadow-lg shadow-aura/20 transition hover:-translate-y-0.5 hover:bg-[#BE2E3D] focus:outline-none focus:ring-2 focus:ring-aura focus:ring-offset-2 sm:px-4" data-route="cart">
           <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
@@ -111,7 +111,7 @@
     <nav id="mobile-menu" class="hidden border-t border-black/10 bg-ivory px-4 py-3 lg:hidden" aria-label="Navigation mobile">
       <div class="mx-auto grid max-w-7xl gap-1">
         <div class="language-menu language-menu-mobile mb-2 sm:hidden" data-language-menu>
-          <button class="language-menu-trigger w-full" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="mobile-language-options" aria-label="Langue du site">
+          <button class="language-menu-trigger w-full" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="mobile-language-options" aria-label="Français FR — Langue du site">
             <span class="language-menu-emblem" aria-hidden="true"><i class="fa-solid fa-globe"></i></span>
             <span class="language-menu-current" data-language-current>Français</span>
             <span class="language-menu-code" aria-hidden="true" data-language-code>FR</span>
@@ -135,9 +135,9 @@
     </nav>
   </header>
 
-  <div id="mobile-cart-bar" class="mobile-cart-bar hidden" aria-live="polite" aria-hidden="true" aria-label="Résumé du panier">
+  <div id="mobile-cart-bar" class="mobile-cart-bar hidden" role="region" aria-hidden="true" aria-label="Résumé du panier">
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
-      <div class="min-w-0">
+      <div class="min-w-0" role="status">
         <p id="mobile-cart-summary" class="truncate font-title text-sm font-extrabold text-graphite">Panier vide</p>
         <p id="mobile-cart-total" class="mt-0.5 text-xs font-semibold text-black/60">0 DA</p>
       </div>
@@ -440,7 +440,7 @@
             <h1 class="mt-3 font-title text-4xl font-extrabold tracking-tight sm:text-5xl">Choisis ton accès</h1>
             <p class="mt-4 max-w-2xl leading-7 text-black/60">Sélectionne une offre et une durée. Les prix et le mode d’activation restent visibles avant l’ajout au panier.</p>
           </div>
-          <div class="flex flex-wrap gap-2" aria-label="Filtres de service">
+          <div class="flex flex-wrap gap-2" role="group" aria-label="Filtres de service">
             <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="true" data-filter="all">Toutes les offres</button>
             <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="false" data-filter="netflix">Netflix</button>
             <button class="filter-btn min-h-11 rounded-xl border border-black/15 px-4 text-sm font-semibold" aria-pressed="false" data-filter="spotify">Spotify</button>
@@ -525,20 +525,20 @@
     <section id="view-cart" class="page-view hidden bg-ivory" data-view="cart">
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div class="mx-auto max-w-3xl">
-          <div class="grid grid-cols-3 gap-3" aria-label="Progression du paiement">
-            <div class="checkout-step text-center" data-step-indicator="1">
-              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-aura text-sm font-bold text-white">1</span>
+          <ol class="grid grid-cols-3 gap-3" role="list" aria-label="Progression du paiement">
+            <li class="checkout-step text-center" data-step-indicator="1" aria-current="step">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold" aria-hidden="true">1</span>
               <p class="mt-2 text-xs font-bold">Informations</p>
-            </div>
-            <div class="checkout-step text-center opacity-40" data-step-indicator="2">
-              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-graphite text-sm font-bold text-white">2</span>
+            </li>
+            <li class="checkout-step text-center" data-step-indicator="2">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold" aria-hidden="true">2</span>
               <p class="mt-2 text-xs font-bold">Paiement</p>
-            </div>
-            <div class="checkout-step text-center opacity-40" data-step-indicator="3">
-              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full bg-graphite text-sm font-bold text-white">3</span>
+            </li>
+            <li class="checkout-step text-center" data-step-indicator="3">
+              <span class="mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold" aria-hidden="true">3</span>
               <p class="mt-2 text-xs font-bold">Confirmation</p>
-            </div>
-          </div>
+            </li>
+          </ol>
         </div>
 
         <div class="mt-10 grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
@@ -751,8 +751,8 @@
         <div class="flex items-center px-4 py-12 sm:px-8 lg:px-16">
           <div class="mx-auto w-full max-w-lg rounded-2xl bg-ivory p-5 text-softblack shadow-2xl sm:p-8">
             <div class="grid grid-cols-2 rounded-xl bg-black/5 p-1">
-              <button class="auth-tab min-h-11 rounded-lg bg-white px-4 text-sm font-bold shadow-sm" aria-selected="true" data-auth="signin">Se connecter</button>
-              <button class="auth-tab min-h-11 rounded-lg px-4 text-sm font-bold text-black/60" aria-selected="false" data-auth="signup">Créer un compte</button>
+              <button class="auth-tab min-h-11 rounded-lg bg-white px-4 text-sm font-bold shadow-sm" type="button" aria-pressed="true" aria-controls="signin-form" data-auth="signin">Se connecter</button>
+              <button class="auth-tab min-h-11 rounded-lg px-4 text-sm font-bold text-black/65" type="button" aria-pressed="false" aria-controls="signup-form" data-auth="signup">Créer un compte</button>
             </div>
 
             <p id="session-recovery-status" class="mt-4 hidden rounded-xl bg-blue-50 p-3 text-sm text-blue-900" role="status" aria-live="polite"></p>
@@ -961,9 +961,9 @@
               </form>
             </div>
             <div id="admin-orders-list" class="mt-6 grid gap-3"></div>
-            <div class="mt-6 flex items-center justify-between gap-4 border-t border-black/10 pt-5">
+            <div class="mt-6 grid grid-cols-2 gap-3 border-t border-black/10 pt-5 sm:flex sm:items-center sm:justify-between sm:gap-4">
               <button id="admin-orders-prev" class="min-h-11 rounded-xl border border-black/15 px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-35" type="button">Précédent</button>
-              <p id="admin-orders-page" class="text-center text-xs font-semibold text-black/60">Page 1</p>
+              <p id="admin-orders-page" class="col-span-2 row-start-1 min-w-0 text-center text-xs font-semibold text-black/60">Page 1</p>
               <button id="admin-orders-next" class="min-h-11 rounded-xl border border-black/15 px-4 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-35" type="button">Suivant</button>
             </div>
           </div>
@@ -1253,7 +1253,7 @@
     <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
       <div>
         <div class="flex items-center gap-3">
-          <span class="grid h-11 w-11 place-items-center overflow-visible"><img src="/logo.png" alt="Aura Stream" width="320" height="320" loading="lazy" decoding="async" class="brand-logo h-11 w-11 object-contain"></span>
+          <span class="grid h-11 w-11 place-items-center overflow-visible"><img src="/aura-footer-logo.webp" alt="Aura Stream" width="132" height="132" loading="lazy" decoding="async" class="brand-logo h-11 w-11 object-contain"></span>
           <span class="font-title text-lg font-extrabold">Aura <span class="brand-name-accent">Stream</span></span>
         </div>
         <p class="mt-4 text-sm leading-6 text-ivory/55">Abonnements streaming en Algérie, avec paiement local et assistance sur WhatsApp.</p>

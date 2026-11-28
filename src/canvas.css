@@ -568,13 +568,12 @@ details[open] > summary::after { transform: rotate(225deg); }
   details > summary::after { border-color: ButtonText; }
 }
 .filter-btn, .admin-tab, .admin-open-tab, .admin-toggle-promo, .admin-delete-stock { transition: color .2s, background-color .2s, border-color .2s, box-shadow .2s, transform .2s; }
-.filter-btn:hover { border-color: #D93646; color: #D93646; transform: translateY(-1px); }
+.filter-btn:hover { border-color: theme('colors.aura'); color: theme('colors.aura'); transform: translateY(-1px); }
 .filter-btn[aria-pressed="true"]:hover { color: #F6F2EC; background: #23242A; }
 .admin-tab[aria-selected="true"],
 .admin-tab[aria-selected="true"]:hover { background: #191A1F; color: #F6F2EC; }
 .faq-category[aria-pressed="true"],
-.faq-category[aria-pressed="true"]:hover { border-color: #D93646; background: #D93646; color: #fff; }
-.page-view { animation: page-in .26s ease-out; }
+.faq-category[aria-pressed="true"]:hover { border-color: theme('colors.aura'); background: theme('colors.aura'); color: #fff; }
 .duration-btn[aria-pressed="true"],
 .filter-btn[aria-pressed="true"] {
   background: #191A1F;
@@ -589,7 +588,20 @@ details[open] > summary::after { transform: rotate(225deg); }
 .faq-answer > div { overflow: hidden; }
 .faq-item[data-open="true"] .faq-answer { grid-template-rows: 1fr; }
 .faq-item[data-open="true"] .faq-icon { transform: rotate(45deg); }
-.nav-link[aria-current="page"] { color: #D93646; }
+.nav-link[aria-current="page"] { color: theme('colors.aura'); }
+
+.checkout-step { color: #555158; }
+.checkout-step > span { color: theme('colors.graphite'); background: #e7e1d9; }
+.checkout-step[aria-current="step"] { color: theme('colors.graphite'); }
+.checkout-step[aria-current="step"] > span { color: #fff; background: theme('colors.aura'); }
+
+.language-menu-trigger:focus-visible,
+.language-menu-option:focus-visible,
+.auth-tab:focus-visible,
+:is(#view-login, #view-cart, #partner-application-form, dialog) :is(input, select, textarea):focus-visible {
+  outline: 2px solid theme('colors.aura');
+  outline-offset: 2px;
+}
 .hero-grid {
   background-image:
     linear-gradient(rgba(246,242,236,.045) 1px, transparent 1px),
@@ -598,11 +610,6 @@ details[open] > summary::after { transform: rotate(225deg); }
 }
 .app-watermark { filter: grayscale(1); opacity: .05; }
 .toast-show { transform: translateY(0); opacity: 1; }
-
-@keyframes page-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -50,7 +50,7 @@ for (const marker of [
   'src="/netflix.svg"',
   'src="/spotify.svg"',
   'src="/crunchyroll.svg"',
-  'src="/aura-logo-mark.png"',
+  'src="/aura-logo-mark.webp"',
   "session-signout",
   "revenue-chart-inner",
   "grid min-w-0 gap-6",

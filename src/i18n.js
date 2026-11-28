@@ -296,7 +296,7 @@ function syncLanguageControls() {
     const activeName = LANGUAGE_NAMES[currentLanguage]?.[currentLanguage] || currentLanguage.toUpperCase();
     if (current) current.textContent = activeName;
     if (code) code.textContent = currentLanguage.toUpperCase();
-    trigger?.setAttribute("aria-label", `${t("Langue du site")} : ${activeName}`);
+    trigger?.setAttribute("aria-label", t("Français FR — Langue du site"));
     panel?.setAttribute("aria-label", t("Langue du site"));
 
     for (const option of root.querySelectorAll("[data-language-option]")) {
@@ -419,7 +419,8 @@ export function setLanguage(language, { persist = true, announce = true } = {}) 
 export function initializeI18n() {
   if (initialized) return;
   initialized = true;
-  for (const element of document.querySelectorAll("[data-i18n-original]")) {
+  const localizedElements = document.querySelectorAll("[data-i18n-original]");
+  for (const element of localizedElements) {
     const { text, attributes } = JSON.parse(element.dataset.i18nOriginal);
     for (const [index, value] of text) {
       const node = element.childNodes[index];
@@ -429,13 +430,17 @@ export function initializeI18n() {
     element.removeAttribute("data-i18n-original");
   }
   updateDocumentLanguage();
-  translateTree(document, true);
+  // A fresh French page already contains the source text. Start tracking DOM
+  // changes once the visitor switches language, or when restoring translated HTML.
+  if (currentLanguage !== "fr" || localizedElements.length) {
+    translateTree(document, true);
+    observeDocument();
+  }
   syncLanguageControls();
   for (const select of document.querySelectorAll("[data-language-select]")) {
     select.addEventListener("change", () => setLanguage(select.value));
   }
   initializeLanguageMenus();
-  observeDocument();
 }
 
 export const I18N_SUPPORTED_LANGUAGES = [...SUPPORTED_LANGUAGES];

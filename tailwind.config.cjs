@@ -5,7 +5,7 @@ module.exports = {
       colors: {
         graphite: "#191A1F",
         ivory: "#F6F2EC",
-        aura: "#D93646",
+        aura: "#C32D40",
         softblack: "#23242A",
         sand: "#D8AC78",
       },
